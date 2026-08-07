@@ -14,17 +14,18 @@ requireLogin();
 $stats = Product::stats();
 $recent = Product::recentUpdated(5);
 $supplierCount = Supplier::count();
+$selfStats = class_exists('SelfProduct') ? SelfProduct::stats() : ['total' => 0, 'active' => 0];
 
 $pageTitle = '首页';
 $activeMenu = 'dashboard';
 require __DIR__ . '/includes/views/header.php';
 ?>
 
-<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
     <div class="card p-5">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm text-slate-500">产品总数</div>
+                <div class="text-sm text-slate-500">外采产品</div>
                 <div class="text-2xl font-semibold text-slate-800 mt-1 tabular-nums"><?= $stats['total'] ?></div>
             </div>
             <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -32,10 +33,21 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </div>
     </div>
+    <a href="/self_products.php" class="card p-5 hover:border-emerald-200 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-sm text-slate-500">自产产品</div>
+                <div class="text-2xl font-semibold text-emerald-600 mt-1 tabular-nums"><?= $selfStats['total'] ?></div>
+            </div>
+            <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                <i data-lucide="factory" class="w-5 h-5 text-emerald-600"></i>
+            </div>
+        </div>
+    </a>
     <div class="card p-5">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm text-slate-500">上架中</div>
+                <div class="text-sm text-slate-500">外采上架中</div>
                 <div class="text-2xl font-semibold text-green-600 mt-1 tabular-nums"><?= $stats['on_sale'] ?></div>
             </div>
             <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
@@ -46,7 +58,7 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card p-5">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm text-slate-500">已下架</div>
+                <div class="text-sm text-slate-500">外采已下架</div>
                 <div class="text-2xl font-semibold text-slate-500 mt-1 tabular-nums"><?= $stats['off_sale'] ?></div>
             </div>
             <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -68,7 +80,7 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card p-5">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm text-slate-500">平均毛利率</div>
+                <div class="text-sm text-slate-500">外采平均毛利率</div>
                 <div class="text-2xl font-semibold mt-1 tabular-nums <?= marginClass($stats['avg_margin']) ?>">
                     <?= number_format($stats['avg_margin'], 2) ?>%
                 </div>

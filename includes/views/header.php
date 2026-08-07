@@ -47,7 +47,12 @@ $bodyClass = $bodyClass ?? '';
                     </li>
                     <li>
                         <a href="/products.php" class="nav-link <?= $activeMenu === 'products' ? 'active' : '' ?>">
-                            <i data-lucide="package" class="w-4 h-4 mr-2"></i>产品管理
+                            <i data-lucide="package" class="w-4 h-4 mr-2"></i>外采产品管理
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/self_products.php" class="nav-link <?= $activeMenu === 'self_products' ? 'active' : '' ?>">
+                            <i data-lucide="factory" class="w-4 h-4 mr-2"></i>自产产品
                         </a>
                     </li>
                     <li>
