@@ -1,0 +1,27 @@
+# 敏感文件 - 绝不提交
+.env
+uploads/*
+!uploads/.htaccess
+
+# 运行时文件
+installed.lock
+.user.ini
+*.bak*
+includes.bak*
+
+# 宝塔自动生成
+index.html
+404.html
+
+# 开发工具
+.preview
+.cozeproj/reduction
+.codegraph
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.tmp/
+assets/image*
