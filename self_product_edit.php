@@ -192,10 +192,10 @@ require __DIR__ . '/includes/views/header.php';
         <div class="border-t border-slate-100 pt-4 mb-4">
             <div class="grid grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label class="form-label">指导售价系数</label>
+                    <label class="form-label">指导毛利率</label>
                     <div class="relative">
                         <input type="number" x-model="form.guide_margin_rate" step="0.01" min="0" max="99" class="form-input tabular-nums pr-8" @input="calcTotal">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
                     </div>
                 </div>
                 <div>
@@ -205,17 +205,17 @@ require __DIR__ . '/includes/views/header.php';
                         <input type="text" class="form-input pl-7 bg-slate-50 font-medium tabular-nums" readonly
                                :value="formatMoney(totalCost / (1 - form.guide_margin_rate / 100))" tabindex="-1">
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
+                    <p class="text-xs text-slate-400 mt-1">= 总成本 / (1 - 毛利率)</p>
                 </div>
                 <div></div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="form-label">最低售价系数</label>
+                    <label class="form-label">最低毛利率</label>
                     <div class="relative">
                         <input type="number" x-model="form.min_margin_rate" step="0.01" min="0" max="99" class="form-input tabular-nums pr-8" @input="calcTotal">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
                     </div>
                 </div>
                 <div>
@@ -225,7 +225,7 @@ require __DIR__ . '/includes/views/header.php';
                         <input type="text" class="form-input pl-7 bg-slate-50 tabular-nums" readonly
                                :value="formatMoney(totalCost / (1 - form.min_margin_rate / 100))" tabindex="-1">
                     </div>
-                    <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
+                    <p class="text-xs text-slate-400 mt-1">= 总成本 / (1 - 最低毛利率)</p>
                 </div>
                 <div>
                     <label class="form-label">最高折扣</label>
