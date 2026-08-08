@@ -25,6 +25,8 @@ $supplierId = $_POST['supplier_id'] ?? '';
 $status = isset($_POST['status']) ? 1 : 0;
 $remark = trim($_POST['remark'] ?? '');
 $priceRemark = trim($_POST['price_remark'] ?? '');
+$guideCoefficient = (float)($_POST['guide_price_coefficient'] ?? 1.100);
+$minPrice = (float)($_POST['min_price'] ?? 0);
 
 if ($name === '') jsonResponse(['ok' => false, 'message' => '产品名称必填']);
 if ($sku === '') jsonResponse(['ok' => false, 'message' => 'SKU 必填']);
@@ -50,6 +52,8 @@ $data = [
     'status' => $status,
     'remark' => $remark,
     'price_remark' => $priceRemark,
+    'guide_price_coefficient' => $guideCoefficient,
+    'min_price' => $minPrice,
 ];
 
 try {

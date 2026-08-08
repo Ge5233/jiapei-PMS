@@ -187,6 +187,25 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </div>
 
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div>
+                <label class="form-label">指导价系数</label>
+                <div class="relative">
+                    <input type="number" x-model="form.guide_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">建议售价 = 总成本 × 系数。当前建议：<span class="font-medium text-slate-700" x-text="'¥' + formatMoney(totalCost * form.guide_price_coefficient)"></span></p>
+            </div>
+            <div>
+                <label class="form-label">最低售价</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
+                    <input type="number" x-model="form.min_price" step="0.01" min="0" class="form-input pl-7">
+                </div>
+                <p class="text-xs text-slate-400 mt-1">绝对底线价，报价不得低于此值</p>
+            </div>
+        </div>
+
         <div class="bg-slate-50 rounded-lg p-4 flex items-center gap-4">
             <div class="text-sm text-slate-500">毛利率</div>
             <div class="text-2xl font-bold" :class="marginColor" x-text="marginPercent + '%'"></div>
@@ -341,6 +360,8 @@ document.addEventListener('alpine:init', () => {
                 overhead_cost: init.selfProduct?.overhead_cost || 0,
                 guide_price: init.selfProduct?.guide_price || 0,
                 min_discount: init.selfProduct?.min_discount || 1.00,
+                guide_price_coefficient: init.selfProduct?.guide_price_coefficient || 1.600,
+                min_price: init.selfProduct?.min_price || 0,
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
             },
@@ -476,6 +497,8 @@ document.addEventListener('alpine:init', () => {
                 fd.append('overhead_cost', this.form.overhead_cost);
                 fd.append('guide_price', this.form.guide_price);
                 fd.append('min_discount', this.form.min_discount);
+                fd.append('guide_price_coefficient', this.form.guide_price_coefficient);
+                fd.append('min_price', this.form.min_price);
                 fd.append('remark', this.form.remark);
                 fd.append('material_cost', this.calcMaterialCost.toFixed(2));
                 fd.append('total_cost', this.totalCost.toFixed(2));

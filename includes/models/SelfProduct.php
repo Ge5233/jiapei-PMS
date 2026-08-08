@@ -67,8 +67,8 @@ class SelfProduct
     {
         $sql = "INSERT INTO self_products (name, image, model_no, spec, unit, description,
                 labor_cost, overhead_cost, material_cost, total_cost,
-                guide_price, min_discount, status, remark, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                guide_price, min_discount, guide_price_coefficient, min_price, status, remark, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
             $data['name'],
@@ -83,6 +83,8 @@ class SelfProduct
             $data['total_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
+            $data['guide_price_coefficient'] ?? 1.600,
+            $data['min_price'] ?? 0,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
             $data['created_by'] ?? null,
@@ -121,7 +123,8 @@ class SelfProduct
         $sql = "UPDATE self_products SET
                 name = ?, model_no = ?, spec = ?, unit = ?, description = ?,
                 labor_cost = ?, overhead_cost = ?, material_cost = ?, total_cost = ?,
-                guide_price = ?, min_discount = ?, status = ?, remark = ?
+                guide_price = ?, min_discount = ?, guide_price_coefficient = ?, min_price = ?,
+                status = ?, remark = ?
                 $imageUpdate
                 WHERE id = ?";
 
@@ -137,6 +140,8 @@ class SelfProduct
             $data['total_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
+            $data['guide_price_coefficient'] ?? 1.600,
+            $data['min_price'] ?? 0,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
             $id

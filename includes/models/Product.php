@@ -109,8 +109,8 @@ class Product
      */
     public static function create(array $data): int
     {
-        $sql = "INSERT INTO products (sku, name, category_id, spec, unit, cost_price, guide_price, min_discount, supplier_id, status, remark, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO products (sku, name, category_id, spec, unit, cost_price, guide_price, min_discount, guide_price_coefficient, min_price, supplier_id, status, remark, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
             $data['sku'],
@@ -121,6 +121,8 @@ class Product
             $data['cost_price'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
+            $data['guide_price_coefficient'] ?? 1.100,
+            $data['min_price'] ?? 0,
             $data['supplier_id'] ?: null,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
@@ -140,8 +142,8 @@ class Product
 
         $sql = "UPDATE products SET
                 sku = ?, name = ?, category_id = ?, spec = ?, unit = ?,
-                cost_price = ?, guide_price = ?, min_discount = ?, supplier_id = ?,
-                status = ?, remark = ?
+                cost_price = ?, guide_price = ?, min_discount = ?, guide_price_coefficient = ?, min_price = ?,
+                supplier_id = ?, status = ?, remark = ?
                 WHERE id = ?";
         $stmt = $db->prepare($sql);
         $stmt->execute([
@@ -153,6 +155,8 @@ class Product
             $data['cost_price'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
+            $data['guide_price_coefficient'] ?? 1.100,
+            $data['min_price'] ?? 0,
             $data['supplier_id'] ?: null,
             $data['status'] ?? 1,
             $data['remark'] ?: null,

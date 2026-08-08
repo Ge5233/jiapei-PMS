@@ -237,6 +237,25 @@ require __DIR__ . '/includes/views/header.php';
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+                <div>
+                    <label class="form-label">指导价系数</label>
+                    <div class="relative">
+                        <input type="number" step="0.001" min="0.1" max="5" name="guide_price_coefficient" id="guide_price_coefficient" class="form-input tabular-nums" value="<?= h($product['guide_price_coefficient'] ?? '1.100') ?>">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                    </div>
+                    <p class="form-help">建议售价 = 进价 × 系数。当前建议：<span id="suggested_price" class="font-medium text-slate-700">¥0.00</span></p>
+                </div>
+                <div>
+                    <label class="form-label">最低售价</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
+                        <input type="number" step="0.01" min="0" name="min_price" id="min_price" class="form-input pl-7 tabular-nums" value="<?= h($product['min_price'] ?? '0.00') ?>">
+                    </div>
+                    <p class="form-help">绝对底线价，报价不得低于此值</p>
+                </div>
+            </div>
+
             <div class="bg-slate-50 border border-slate-200 rounded-md p-3 text-sm">
                 <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
                     <div class="flex items-center gap-2">
@@ -632,6 +651,17 @@ if (_priceEl) {
 if (_discEl) {
     _discEl.addEventListener('input', () => calcMarginLive('discount'));
     _discEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+}
+// 指导价系数 → 自动更新建议售价
+const _coefEl = document.getElementById('guide_price_coefficient');
+if (_coefEl) {
+    _coefEl.addEventListener('input', () => {
+        const cost = parseFloat(document.getElementById('cost_price').value) || 0;
+        const coef = parseFloat(_coefEl.value) || 0;
+        const suggested = cost * coef;
+        const sp = document.getElementById('suggested_price');
+        if (sp) sp.textContent = '¥' + suggested.toFixed(2);
+    });
 }
 if (_marginInputEl) {
     _marginInputEl.addEventListener('input', () => calcMarginLive('margin'));

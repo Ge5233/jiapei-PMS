@@ -24,6 +24,8 @@ $laborCost = (float)($_POST['labor_cost'] ?? 0);
 $overheadCost = (float)($_POST['overhead_cost'] ?? 0);
 $guidePrice = (float)($_POST['guide_price'] ?? 0);
 $minDiscount = (float)($_POST['min_discount'] ?? 1.00);
+$guideCoefficient = (float)($_POST['guide_price_coefficient'] ?? 1.600);
+$minPrice = (float)($_POST['min_price'] ?? 0);
 $remark = trim($_POST['remark'] ?? '');
 $materialCost = (float)($_POST['material_cost'] ?? 0);
 $totalCost = (float)($_POST['total_cost'] ?? 0);
@@ -76,6 +78,8 @@ $updateData = [
     'total_cost' => $totalCost,
     'guide_price' => $guidePrice,
     'min_discount' => $minDiscount,
+    'guide_price_coefficient' => $guideCoefficient,
+    'min_price' => $minPrice,
     'remark' => $remark,
 ];
 
