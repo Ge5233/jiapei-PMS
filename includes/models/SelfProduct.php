@@ -68,7 +68,7 @@ class SelfProduct
         $sql = "INSERT INTO self_products (name, image, model_no, spec, unit, description,
                 labor_cost, overhead_cost, other_cost, material_cost, total_cost,
                 guide_price, min_discount, guide_price_coefficient, min_price_coefficient, cost_remark, status, remark, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
             $data['name'],
