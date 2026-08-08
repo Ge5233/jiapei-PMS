@@ -67,7 +67,6 @@ $bodyClass = $bodyClass ?? '';
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php endif; ?>
                     <li>
                         <a href="/quotes.php" class="nav-link <?= $activeMenu === 'quotes' ? 'active' : '' ?>">
                             <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>报价管理
