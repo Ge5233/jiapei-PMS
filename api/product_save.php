@@ -19,6 +19,7 @@ $categoryId = $_POST['category_id'] ?? '';
 $spec = trim($_POST['spec'] ?? '');
 $unit = trim($_POST['unit'] ?? '');
 $costPrice = (float)($_POST['cost_price'] ?? 0);
+$otherCost = (float)($_POST['other_cost'] ?? 0);
 $guidePrice = (float)($_POST['guide_price'] ?? 0);
 $minDiscount = (float)($_POST['min_discount'] ?? 1.0);
 $supplierId = $_POST['supplier_id'] ?? '';
@@ -47,6 +48,7 @@ $data = [
     'spec' => $spec,
     'unit' => $unit,
     'cost_price' => $costPrice,
+    'other_cost' => $otherCost,
     'guide_price' => $guidePrice,
     'min_discount' => $minDiscount,
     'supplier_id' => $supplierId !== '' ? (int)$supplierId : null,

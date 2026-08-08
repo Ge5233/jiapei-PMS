@@ -212,20 +212,34 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card mb-4">
         <div class="card-header">价格信息</div>
         <div class="card-body">
-            <!-- 综合进价 + 费用说明 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- 进价 + 其它费用 = 综合进价 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label class="form-label">综合进价 <span class="text-red-500">*</span></label>
+                    <label class="form-label">进价 <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
-                        <input type="number" step="0.01" min="0" name="cost_price" id="cost_price" class="form-input pl-7 tabular-nums" required value="<?= h($product['cost_price'] ?? '0.00') ?>">
+                        <input type="number" step="0.01" min="0" name="cost_price" id="cost_price" class="form-input pl-7 tabular-nums" required value="<?= h($product['cost_price'] ?? '0.00') ?>" oninput="calcPrices()">
                     </div>
                 </div>
                 <div>
-                    <label class="form-label">费用说明</label>
-                    <input type="text" name="cost_remark" class="form-input" maxlength="200" placeholder="含运费、管理费等" value="<?= h($product['cost_remark'] ?? '') ?>">
-                    <p class="form-help">说明进价包含的额外费用</p>
+                    <label class="form-label">其它费用</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
+                        <input type="number" step="0.01" min="0" name="other_cost" id="other_cost" class="form-input pl-7 tabular-nums" value="<?= h($product['other_cost'] ?? '0.00') ?>" oninput="calcPrices()">
+                    </div>
                 </div>
+                <div>
+                    <label class="form-label">综合进价</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
+                        <input type="text" id="total_cost_display" class="form-input pl-7 bg-slate-50 tabular-nums font-medium" readonly value="<?= h(number_format(($product['cost_price']??0)+($product['other_cost']??0), 2)) ?>">
+                    </div>
+                    <p class="form-help text-slate-400">= 进价 + 其它费用</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">费用说明</label>
+                <input type="text" name="cost_remark" class="form-input" maxlength="200" placeholder="含运费、管理费等" value="<?= h($product['cost_remark'] ?? '') ?>">
             </div>
 
             <!-- 指导售价系数 → 指导售价 -->
@@ -535,12 +549,19 @@ window.supplierCombobox = supplierCombobox;
 // 价格自动计算（进价×系数）
 function calcPrices() {
     const cost = parseFloat(document.getElementById('cost_price').value) || 0;
+    const other = parseFloat(document.getElementById('other_cost').value) || 0;
+    const totalCost = cost + other;
     const gpCoef = parseFloat(document.getElementById('guide_price_coefficient').value) || 0;
     const mpCoef = parseFloat(document.getElementById('min_price_coefficient').value) || 0;
-    const gp = cost * gpCoef;
-    const mp = cost * mpCoef;
+    // 综合进价
+    document.getElementById('total_cost_display').value = totalCost.toFixed(2);
+    // 指导售价
+    const gp = totalCost * gpCoef;
     document.getElementById('guide_price').value = gp.toFixed(2);
+    // 最低售价
+    const mp = totalCost * mpCoef;
     document.getElementById('min_price_display').value = mp.toFixed(2);
+    // 最高折扣
     document.getElementById('min_discount_display').value = gp > 0 ? (mp / gp * 100).toFixed(0) + '%' : '-';
 }
 document.getElementById('cost_price').addEventListener('input', calcPrices);

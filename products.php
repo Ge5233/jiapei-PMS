@@ -150,9 +150,10 @@ require __DIR__ . '/includes/views/header.php';
                 <tbody>
                     <?php foreach ($rows as $p):
                         $m = calcMargin((float)$p['cost_price'], (float)$p['guide_price']);
+                        $totalCost = (float)$p['cost_price'] + (float)($p['other_cost'] ?? 0);
                         $gpCoef = (float)($p['guide_price_coefficient'] ?? 1.1);
                         $mpCoef = (float)($p['min_price_coefficient'] ?? 0.9);
-                        $minPrice = (float)$p['cost_price'] * $mpCoef;
+                        $minPrice = $totalCost * $mpCoef;
                         $maxDisc = $gpCoef > 0 ? round($mpCoef / $gpCoef * 100) : 0;
                     ?>
                         <tr>
@@ -173,7 +174,7 @@ require __DIR__ . '/includes/views/header.php';
                             <td class="text-slate-600"><?= h($p['supplier_name'] ?? '-') ?></td>
                             <td><?= h($p['unit'] ?? '-') ?></td>
                             <?php if (canViewCost()): ?>
-                            <td class="text-right tabular-nums"><?= formatPrice($p['cost_price']) ?></td>
+                            <td class="text-right tabular-nums"><?= formatPrice($totalCost) ?></td>
                             <?php endif; ?>
                             <td class="text-right tabular-nums"><?= formatPrice($p['guide_price']) ?></td>
                             <td class="text-right tabular-nums"><?= formatPrice($minPrice) ?></td>
