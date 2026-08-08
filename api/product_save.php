@@ -27,8 +27,8 @@ $supplierId = $_POST['supplier_id'] ?? '';
 $status = isset($_POST['status']) ? 1 : 0;
 $remark = trim($_POST['remark'] ?? '');
 $priceRemark = trim($_POST['price_remark'] ?? '');
-$guideCoefficient = (float)($_POST['guide_price_coefficient'] ?? 1.100);
-$minPriceCoefficient = (float)($_POST['min_price_coefficient'] ?? 0.900);
+$guideMarginRate = (float)($_POST['guide_margin_rate'] ?? 30.00);
+$minMarginRate = (float)($_POST['min_margin_rate'] ?? 15.00);
 $costRemark = trim($_POST['cost_remark'] ?? '');
 
 if ($name === '') jsonResponse(['ok' => false, 'message' => '产品名称必填']);
@@ -56,8 +56,8 @@ $data = [
     'status' => $status,
     'remark' => $remark,
     'price_remark' => $priceRemark,
-    'guide_price_coefficient' => $guideCoefficient,
-    'min_price_coefficient' => $minPriceCoefficient,
+    'guide_margin_rate' => $guideMarginRate,
+    'min_margin_rate' => $minMarginRate,
     'cost_remark' => $costRemark,
 ];
 

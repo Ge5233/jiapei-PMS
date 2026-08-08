@@ -243,13 +243,13 @@ require __DIR__ . '/includes/views/header.php';
                 <input type="text" name="cost_remark" class="form-input" maxlength="200" placeholder="含运费、管理费等" value="<?= h($product['cost_remark'] ?? '') ?>">
             </div>
 
-            <!-- 指导售价系数 → 指导售价 -->
+            <!-- 指导毛利率 → 指导售价 -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 pt-4 border-t border-slate-100">
                 <div>
-                    <label class="form-label">指导售价系数</label>
+                    <label class="form-label">指导毛利率</label>
                     <div class="relative">
-                        <input type="number" step="0.001" min="0.1" max="5" name="guide_price_coefficient" id="guide_price_coefficient" class="form-input tabular-nums" value="<?= h($product['guide_price_coefficient'] ?? '1.100') ?>" oninput="calcPrices()">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                        <input type="number" step="0.01" min="0" max="99" name="guide_margin_rate" id="guide_margin_rate" class="form-input tabular-nums pr-8" value="<?= h($product['guide_margin_rate'] ?? '30.00') ?>" oninput="calcPrices()">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
                     </div>
                 </div>
                 <div>
@@ -258,35 +258,35 @@ require __DIR__ . '/includes/views/header.php';
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
                         <input type="text" id="guide_price" class="form-input pl-7 bg-slate-50 tabular-nums font-medium" readonly value="<?= h($product['guide_price'] ?? '0.00') ?>">
                     </div>
-                    <p class="form-help text-slate-400">= 进价 × 系数，自动计算</p>
+                    <p class="form-help text-slate-400">= 综合进价 / (1 - 毛利率)</p>
                 </div>
                 <div></div>
             </div>
 
-            <!-- 最低售价系数 → 最低售价 → 最高折扣 -->
+            <!-- 最低毛利率 → 最低售价 → 最高折扣 -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label class="form-label">最低售价系数</label>
+                    <label class="form-label">最低毛利率</label>
                     <div class="relative">
-                        <input type="number" step="0.001" min="0.1" max="5" name="min_price_coefficient" id="min_price_coefficient" class="form-input tabular-nums" value="<?= h($product['min_price_coefficient'] ?? '0.900') ?>" oninput="calcPrices()">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                        <input type="number" step="0.01" min="0" max="99" name="min_margin_rate" id="min_margin_rate" class="form-input tabular-nums pr-8" value="<?= h($product['min_margin_rate'] ?? '15.00') ?>" oninput="calcPrices()">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
                     </div>
                 </div>
                 <div>
                     <label class="form-label">最低售价</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
-                        <input type="text" id="min_price_display" class="form-input pl-7 bg-slate-50 tabular-nums" readonly value="<?= h(number_format(($product['cost_price']??0)*($product['min_price_coefficient']??0.9), 2)) ?>">
+                        <input type="text" id="min_price_display" class="form-input pl-7 bg-slate-50 tabular-nums" readonly value="<?= h(number_format(($product['guide_price']??0)*(float)($product['min_discount'] ?? 1.00), 2)) ?>">
                     </div>
-                    <p class="form-help text-slate-400">= 进价 × 系数，自动计算</p>
+                    <p class="form-help text-slate-400">= 综合进价 / (1 - 最低毛利率)</p>
                 </div>
                 <div>
                     <label class="form-label">最高折扣</label>
                     <div class="relative">
-                        <input type="text" id="min_discount_display" class="form-input pr-9 bg-slate-50 tabular-nums" readonly value="<?php $gp = ($product['guide_price']??0); $mp = ($product['cost_price']??0)*($product['min_price_coefficient']??0.9); echo $gp>0 ? number_format($mp/$gp*100,0).'%' : '-'; ?>">
+                        <input type="text" id="min_discount_display" class="form-input pr-9 bg-slate-50 tabular-nums" readonly value="<?= $product['min_discount'] ? number_format((float)$product['min_discount']*100, 0).'%' : '-' ?>">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">折</span>
                     </div>
-                    <p class="form-help text-slate-400">= 最低售价 ÷ 指导售价</p>
+                    <p class="form-help text-slate-400">= (1-指导毛利率) / (1-最低毛利率)</p>
                 </div>
             </div>
 
@@ -552,27 +552,29 @@ window.categoryCombobox = categoryCombobox;
 window.supplierCombobox = supplierCombobox;
 
 // 实时毛利 + 实际售价 + 实际毛利率（双向计算）
-// 价格自动计算（进价×系数）
+// 价格自动计算（毛利率模式）
 function calcPrices() {
     const cost = parseFloat(document.getElementById('cost_price').value) || 0;
     const other = parseFloat(document.getElementById('other_cost').value) || 0;
     const totalCost = cost + other;
-    const gpCoef = parseFloat(document.getElementById('guide_price_coefficient').value) || 0;
-    const mpCoef = parseFloat(document.getElementById('min_price_coefficient').value) || 0;
+    const gm = parseFloat(document.getElementById('guide_margin_rate').value) || 0;
+    const mm = parseFloat(document.getElementById('min_margin_rate').value) || 0;
     // 综合进价
     document.getElementById('total_cost_display').value = totalCost.toFixed(2);
-    // 指导售价
-    const gp = totalCost * gpCoef;
+    // 指导售价 = 综合进价 / (1-毛利率)
+    const gp = gm < 100 ? totalCost / (1 - gm / 100) : totalCost;
     document.getElementById('guide_price').value = gp.toFixed(2);
-    // 最低售价
-    const mp = totalCost * mpCoef;
+    // 最低售价 = 综合进价 / (1-最低毛利率)
+    const mp = mm < 100 ? totalCost / (1 - mm / 100) : totalCost;
     document.getElementById('min_price_display').value = mp.toFixed(2);
-    // 最高折扣
-    document.getElementById('min_discount_display').value = gp > 0 ? (mp / gp * 100).toFixed(0) + '%' : '-';
+    // 最高折扣 = (1-指导毛利率)/(1-最低毛利率)
+    const disc = gm < 100 && mm < 100 ? ((1-gm/100)/(1-mm/100)*100) : 0;
+    document.getElementById('min_discount_display').value = disc > 0 ? disc.toFixed(0) + '%' : '-';
 }
 document.getElementById('cost_price').addEventListener('input', calcPrices);
-document.getElementById('guide_price_coefficient').addEventListener('input', calcPrices);
-document.getElementById('min_price_coefficient').addEventListener('input', calcPrices);
+document.getElementById('guide_margin_rate').addEventListener('input', calcPrices);
+document.getElementById('min_margin_rate').addEventListener('input', calcPrices);
+document.getElementById('other_cost').addEventListener('input', calcPrices);
 calcPrices();
 
 // SKU 自动生成
@@ -690,17 +692,6 @@ if (_priceEl) {
 if (_discEl) {
     _discEl.addEventListener('input', () => calcMarginLive('discount'));
     _discEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
-}
-// 指导价系数 → 自动更新建议售价
-const _coefEl = document.getElementById('guide_price_coefficient');
-if (_coefEl) {
-    _coefEl.addEventListener('input', () => {
-        const cost = parseFloat(document.getElementById('cost_price').value) || 0;
-        const coef = parseFloat(_coefEl.value) || 0;
-        const suggested = cost * coef;
-        const sp = document.getElementById('suggested_price');
-        if (sp) sp.textContent = '¥' + suggested.toFixed(2);
-    });
 }
 if (_marginInputEl) {
     _marginInputEl.addEventListener('input', () => calcMarginLive('margin'));

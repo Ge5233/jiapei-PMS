@@ -52,8 +52,8 @@ require __DIR__ . '/includes/views/header.php';
     <div class="space-y-3" id="level1Container">
         <?php foreach ($categories as $c): ?>
             <?php
-            $gpCoef = (float)($c['guide_price_coefficient'] ?? 1.100);
-            $mpCoef = (float)($c['min_price_coefficient'] ?? 0.900);
+            $gm = (float)($c['guide_margin_rate'] ?? 30.00);
+            $mm = (float)($c['min_margin_rate'] ?? 15.00);
             ?>
             <div class="card cat-card" data-id="<?= $c['id'] ?>" data-level="1">
                 <!-- 一级分类标题栏 -->
@@ -67,8 +67,8 @@ require __DIR__ . '/includes/views/header.php';
                         <span class="badge badge-slate text-xs flex-shrink-0">一级分类</span>
                         <!-- 定价系数 -->
                         <span class="text-xs text-slate-400 hidden sm:inline flex-shrink-0">
-                            售价系数 <b class="text-slate-600"><?= number_format($gpCoef, 3) ?></b>
-                            最低系数 <b class="text-slate-600"><?= number_format($mpCoef, 3) ?></b>
+                            售价毛利率 <b class="text-slate-600"><?= number_format($gm, 1) ?>%</b>
+                            最低毛利率 <b class="text-slate-600"><?= number_format($mm, 1) ?>%</b>
                         </span>
                     </div>
 
@@ -85,7 +85,7 @@ require __DIR__ . '/includes/views/header.php';
                         <button class="btn-ghost-xs" onclick="event.stopPropagation();openLevel2Modal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>')" title="新增子类">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         </button>
-                        <button class="btn-ghost-xs" onclick="event.stopPropagation();openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0, <?= $gpCoef ?>, <?= $mpCoef ?>)" title="编辑">
+                        <button class="btn-ghost-xs" onclick="event.stopPropagation();openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0, <?= $gm ?>, <?= $mm ?>)" title="编辑">
                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                         </button>
                         <button class="btn-ghost-xs" onclick="event.stopPropagation();deleteCategory(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', true)" title="删除">
@@ -151,14 +151,18 @@ require __DIR__ . '/includes/views/header.php';
                 <div id="level1Fields" class="hidden">
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div>
-                            <label class="form-label">默认指导售价系数</label>
-                            <input type="number" step="0.001" min="0.1" max="5" name="guide_price_coefficient" id="cat_gp_coef" class="form-input" value="1.100"
-                                   title="该分类下新建产品时的默认指导售价系数">
+                            <label class="form-label">默认指导毛利率</label>
+                            <div class="relative">
+                                <input type="number" step="0.01" min="0" max="99" name="guide_margin_rate" id="cat_gm_rate" class="form-input pr-8" value="30.00">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                            </div>
                         </div>
                         <div>
-                            <label class="form-label">默认最低售价系数</label>
-                            <input type="number" step="0.001" min="0.1" max="5" name="min_price_coefficient" id="cat_mp_coef" class="form-input" value="0.900"
-                                   title="该分类下新建产品时的默认最低售价系数">
+                            <label class="form-label">默认最低毛利率</label>
+                            <div class="relative">
+                                <input type="number" step="0.01" min="0" max="99" name="min_margin_rate" id="cat_mm_rate" class="form-input pr-8" value="15.00">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,8 +185,8 @@ function openLevel1Modal() {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_parent_id').value = '0';
     document.getElementById('cat_name').value = '';
-    document.getElementById('cat_gp_coef').value = '1.100';
-    document.getElementById('cat_mp_coef').value = '0.900';
+    document.getElementById('cat_gm_rate').value = '30.00';
+    document.getElementById('cat_mm_rate').value = '15.00';
     document.getElementById('level1Fields').classList.remove('hidden');
     showModal();
 }
@@ -200,8 +204,8 @@ function openEditModal(id, name, parentId, gpCoef, mpCoef) {
     document.getElementById('cat_parent_id').value = parentId;
     document.getElementById('cat_name').value = name;
     if (parentId === 0) {
-        document.getElementById('cat_gp_coef').value = gpCoef || 1.100;
-        document.getElementById('cat_mp_coef').value = mpCoef || 0.900;
+        document.getElementById('cat_gm_rate').value = gpCoef || 30.00;
+        document.getElementById('cat_mm_rate').value = mpCoef || 15.00;
         document.getElementById('level1Fields').classList.remove('hidden');
     } else {
         document.getElementById('level1Fields').classList.add('hidden');

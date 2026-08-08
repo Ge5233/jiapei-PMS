@@ -67,7 +67,7 @@ class SelfProduct
     {
         $sql = "INSERT INTO self_products (name, image, model_no, spec, unit, description,
                 labor_cost, overhead_cost, other_cost, material_cost, total_cost,
-                guide_price, min_discount, guide_price_coefficient, min_price_coefficient, cost_remark, status, remark, created_by)
+                guide_price, min_discount, guide_margin_rate, min_margin_rate, cost_remark, status, remark, created_by)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
@@ -84,8 +84,8 @@ class SelfProduct
             $data['total_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
-            $data['guide_price_coefficient'] ?? 1.600,
-            $data['min_price_coefficient'] ?? 0.900,
+            $data['guide_margin_rate'] ?? 30.00,
+            $data['min_margin_rate'] ?? 15.00,
             $data['cost_remark'] ?: null,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
@@ -125,7 +125,7 @@ class SelfProduct
         $sql = "UPDATE self_products SET
                 name = ?, model_no = ?, spec = ?, unit = ?, description = ?,
                 labor_cost = ?, overhead_cost = ?, other_cost = ?, material_cost = ?, total_cost = ?,
-                guide_price = ?, min_discount = ?, guide_price_coefficient = ?, min_price_coefficient = ?, cost_remark = ?,
+                guide_price = ?, min_discount = ?, guide_margin_rate = ?, min_margin_rate = ?, cost_remark = ?,
                 status = ?, remark = ?
                 $imageUpdate
                 WHERE id = ?";
@@ -143,8 +143,8 @@ class SelfProduct
             $data['total_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
-            $data['guide_price_coefficient'] ?? 1.600,
-            $data['min_price_coefficient'] ?? 0.900,
+            $data['guide_margin_rate'] ?? 30.00,
+            $data['min_margin_rate'] ?? 15.00,
             $data['cost_remark'] ?: null,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
@@ -254,7 +254,7 @@ class SelfProduct
     public static function allForSelect(): array
     {
         return Database::getInstance()->query(
-            "SELECT id, name, model_no, guide_price, total_cost, guide_price_coefficient, min_price_coefficient
+            "SELECT id, name, model_no, guide_price, total_cost, guide_margin_rate, min_margin_rate
              FROM self_products WHERE status = 1
              ORDER BY name ASC"
         )->fetchAll();

@@ -109,7 +109,7 @@ class Product
      */
     public static function create(array $data): int
     {
-        $sql = "INSERT INTO products (sku, name, category_id, spec, unit, cost_price, other_cost, guide_price, min_discount, guide_price_coefficient, min_price_coefficient, cost_remark, supplier_id, status, remark, created_by)
+        $sql = "INSERT INTO products (sku, name, category_id, spec, unit, cost_price, other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate, cost_remark, supplier_id, status, remark, created_by)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
@@ -122,8 +122,8 @@ class Product
             $data['other_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
-            $data['guide_price_coefficient'] ?? 1.100,
-            $data['min_price_coefficient'] ?? 0.900,
+            $data['guide_margin_rate'] ?? 30.00,
+            $data['min_margin_rate'] ?? 15.00,
             $data['cost_remark'] ?: null,
             $data['supplier_id'] ?: null,
             $data['status'] ?? 1,
@@ -144,7 +144,7 @@ class Product
 
         $sql = "UPDATE products SET
                 sku = ?, name = ?, category_id = ?, spec = ?, unit = ?,
-                cost_price = ?, other_cost = ?, guide_price = ?, min_discount = ?, guide_price_coefficient = ?, min_price_coefficient = ?, cost_remark = ?,
+                cost_price = ?, other_cost = ?, guide_price = ?, min_discount = ?, guide_margin_rate = ?, min_margin_rate = ?, cost_remark = ?,
                 supplier_id = ?, status = ?, remark = ?
                 WHERE id = ?";
         $stmt = $db->prepare($sql);
@@ -158,8 +158,8 @@ class Product
             $data['other_cost'] ?? 0,
             $data['guide_price'] ?? 0,
             $data['min_discount'] ?? 1.00,
-            $data['guide_price_coefficient'] ?? 1.100,
-            $data['min_price_coefficient'] ?? 0.900,
+            $data['guide_margin_rate'] ?? 30.00,
+            $data['min_margin_rate'] ?? 15.00,
             $data['cost_remark'] ?: null,
             $data['supplier_id'] ?: null,
             $data['status'] ?? 1,
@@ -234,8 +234,8 @@ class Product
     public static function allForSelect(): array
     {
         $fields = canViewCost()
-            ? "id, sku, name, cost_price, other_cost, guide_price, min_discount, guide_price_coefficient, min_price_coefficient"
-            : "id, sku, name, 0 AS cost_price, 0 AS other_cost, guide_price, min_discount, guide_price_coefficient, min_price_coefficient";
+            ? "id, sku, name, cost_price, other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate"
+            : "id, sku, name, 0 AS cost_price, 0 AS other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate";
         return Database::getInstance()->query(
             "SELECT $fields FROM products WHERE status = 1 ORDER BY name ASC"
         )->fetchAll();

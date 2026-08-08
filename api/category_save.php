@@ -16,8 +16,8 @@ verifyCsrf();
 $id = (int)($_POST['id'] ?? 0);
 $parentId = (int)($_POST['parent_id'] ?? 0);
 $name = trim($_POST['name'] ?? '');
-$gpCoef = (float)($_POST['guide_price_coefficient'] ?? 1.100);
-$mpCoef = (float)($_POST['min_price_coefficient'] ?? 0.900);
+$gm = (float)($_POST['guide_margin_rate'] ?? 30.00);
+$mm = (float)($_POST['min_margin_rate'] ?? 15.00);
 
 if ($name === '') {
     flash('error', '分类名称必填');
@@ -54,7 +54,7 @@ if ($id > 0) {
 
 try {
     if ($id > 0) {
-        Category::update($id, $name, $parentId, (int)($existing['sort_order'] ?? 0), $gpCoef, $mpCoef);
+        Category::update($id, $name, $parentId, (int)($existing['sort_order'] ?? 0), $gm, $mm);
         logAction('update', 'category', $id, "更新分类：{$name}");
     } else {
         // 排序到末尾
@@ -65,7 +65,7 @@ try {
             $rows = Category::childrenOf($parentId);
         }
         $sort = count($rows);
-        $newId = Category::create($name, $parentId, $sort, $gpCoef, $mpCoef);
+        $newId = Category::create($name, $parentId, $sort, $gm, $mm);
         logAction('create', 'category', $newId, "创建分类：{$name}（parent=" . ($parentId ?: '无') . "）");
     }
     flash('success', '保存成功');

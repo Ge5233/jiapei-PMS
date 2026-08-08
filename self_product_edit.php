@@ -194,7 +194,7 @@ require __DIR__ . '/includes/views/header.php';
                 <div>
                     <label class="form-label">指导售价系数</label>
                     <div class="relative">
-                        <input type="number" x-model="form.guide_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                        <input type="number" x-model="form.guide_margin_rate" step="0.01" min="0" max="99" class="form-input tabular-nums pr-8" @input="calcTotal">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
                     </div>
                 </div>
@@ -203,7 +203,7 @@ require __DIR__ . '/includes/views/header.php';
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
                         <input type="text" class="form-input pl-7 bg-slate-50 font-medium tabular-nums" readonly
-                               :value="formatMoney(totalCost * form.guide_price_coefficient)" tabindex="-1">
+                               :value="formatMoney(totalCost / (1 - form.guide_margin_rate / 100))" tabindex="-1">
                     </div>
                     <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
                 </div>
@@ -214,7 +214,7 @@ require __DIR__ . '/includes/views/header.php';
                 <div>
                     <label class="form-label">最低售价系数</label>
                     <div class="relative">
-                        <input type="number" x-model="form.min_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                        <input type="number" x-model="form.min_margin_rate" step="0.01" min="0" max="99" class="form-input tabular-nums pr-8" @input="calcTotal">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
                     </div>
                 </div>
@@ -223,7 +223,7 @@ require __DIR__ . '/includes/views/header.php';
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
                         <input type="text" class="form-input pl-7 bg-slate-50 tabular-nums" readonly
-                               :value="formatMoney(totalCost * form.min_price_coefficient)" tabindex="-1">
+                               :value="formatMoney(totalCost / (1 - form.min_margin_rate / 100))" tabindex="-1">
                     </div>
                     <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
                 </div>
@@ -231,7 +231,7 @@ require __DIR__ . '/includes/views/header.php';
                     <label class="form-label">最高折扣</label>
                     <div class="relative">
                         <input type="text" class="form-input pr-9 bg-slate-50 tabular-nums" readonly
-                               :value="form.guide_price_coefficient > 0 ? (form.min_price_coefficient / form.guide_price_coefficient * 100).toFixed(0) + '%' : '-'" tabindex="-1">
+                               :value="form.guide_margin_rate < 100 && form.min_margin_rate < 100 ? ((1 - form.guide_margin_rate / 100) / (1 - form.min_margin_rate / 100) * 100).toFixed(0) + '%' : '-'" tabindex="-1">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">折</span>
                     </div>
                     <p class="text-xs text-slate-400 mt-1">= 最低售价 ÷ 指导售价</p>
@@ -430,8 +430,8 @@ document.addEventListener('alpine:init', () => {
                 other_cost: init.selfProduct?.other_cost || 0,
                 guide_price: init.selfProduct?.guide_price || 0,
                 min_discount: init.selfProduct?.min_discount || 1.00,
-                guide_price_coefficient: init.selfProduct?.guide_price_coefficient || 1.600,
-                min_price_coefficient: init.selfProduct?.min_price_coefficient || 0.900,
+                guide_margin_rate: init.selfProduct?.guide_margin_rate || 30.00,
+                min_margin_rate: init.selfProduct?.min_margin_rate || 15.00,
                 cost_remark: init.selfProduct?.cost_remark || '',
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
@@ -576,7 +576,7 @@ document.addEventListener('alpine:init', () => {
             },
             calcTotal() {},
             get marginPercent() {
-                const price = this.totalCost * parseFloat(this.form.guide_price_coefficient || 1.6);
+                const price = this.totalCost / (1 - parseFloat(this.form.guide_margin_rate || 30) / 100);
                 if (price <= 0) return '—';
                 const m = ((price - this.totalCost) / price * 100);
                 return m.toFixed(1);
@@ -614,11 +614,11 @@ document.addEventListener('alpine:init', () => {
                 fd.append('overhead_cost', this.form.overhead_cost);
                 fd.append('other_cost', this.form.other_cost);
                 // 指导售价 = 总成本 × 系数（自动计算）
-                const gp = this.totalCost * parseFloat(this.form.guide_price_coefficient || 1.6);
+                const gp = this.totalCost / (1 - parseFloat(this.form.guide_margin_rate || 30) / 100);
                 fd.append('guide_price', gp.toFixed(2));
                 fd.append('min_discount', this.form.min_discount);
-                fd.append('guide_price_coefficient', this.form.guide_price_coefficient);
-                fd.append('min_price_coefficient', this.form.min_price_coefficient);
+                fd.append('guide_margin_rate', this.form.guide_margin_rate);
+                fd.append('min_margin_rate', this.form.min_margin_rate);
                 fd.append('cost_remark', this.form.cost_remark || '');
                 fd.append('remark', this.form.remark);
                 fd.append('material_cost', this.calcMaterialCost.toFixed(2));

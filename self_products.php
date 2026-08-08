@@ -105,12 +105,12 @@ require __DIR__ . '/includes/views/header.php';
         </thead>
         <tbody class="divide-y divide-slate-100">
             <?php foreach ($rows as $row):
-                $gpCoef = (float)($row['guide_price_coefficient'] ?? 1.6);
-                $mpCoef = (float)($row['min_price_coefficient'] ?? 0.9);
+                $gm = (float)($row['guide_margin_rate'] ?? 30.00);
+                $mm = (float)($row['min_margin_rate'] ?? 15.00);
                 $totalCost = (float)$row['total_cost'];
-                $guidePrice = $totalCost * $gpCoef;
-                $minPrice = $totalCost * $mpCoef;
-                $maxDisc = $gpCoef > 0 ? round($mpCoef / $gpCoef * 100) : 0;
+                $guidePrice = $totalCost / (1 - $gm / 100);
+                $minPrice = $totalCost / (1 - $mm / 100);
+                $maxDisc = $gm < 100 && $mm < 100 ? round((1-$gm/100)/(1-$mm/100)*100) : 0;
             ?>
             <tr class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3">

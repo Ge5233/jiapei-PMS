@@ -151,10 +151,10 @@ require __DIR__ . '/includes/views/header.php';
                     <?php foreach ($rows as $p):
                         $m = calcMargin((float)$p['cost_price'], (float)$p['guide_price']);
                         $totalCost = (float)$p['cost_price'] + (float)($p['other_cost'] ?? 0);
-                        $gpCoef = (float)($p['guide_price_coefficient'] ?? 1.1);
-                        $mpCoef = (float)($p['min_price_coefficient'] ?? 0.9);
-                        $minPrice = $totalCost * $mpCoef;
-                        $maxDisc = $gpCoef > 0 ? round($mpCoef / $gpCoef * 100) : 0;
+                        $gm = (float)($p['guide_margin_rate'] ?? 30.00);
+                        $mm = (float)($p['min_margin_rate'] ?? 15.00);
+                        $minPrice = $gm < 100 ? $totalCost / (1 - $mm / 100) : 0;
+                        $maxDisc = $gm < 100 && $mm < 100 ? round((1-$gm/100)/(1-$mm/100)*100) : 0;
                     ?>
                         <tr>
                             <td class="tabular-nums text-slate-500"><?= h($p['sku']) ?></td>
@@ -178,7 +178,7 @@ require __DIR__ . '/includes/views/header.php';
                             <?php endif; ?>
                             <td class="text-right tabular-nums"><?= formatPrice($p['guide_price']) ?></td>
                             <td class="text-right tabular-nums"><?= formatPrice($minPrice) ?></td>
-                            <td class="text-right tabular-nums text-slate-500"><?= $gpCoef > 0 ? $maxDisc . '%' : '-' ?></td>
+                            <td class="text-right tabular-nums text-slate-500"><?= $gm > 0 ? $maxDisc . '%' : '-' ?></td>
                             <td class="text-center">
                                 <span class="badge <?= (int)$p['status'] === 1 ? 'badge-green' : 'badge-slate' ?>">
                                     <?= (int)$p['status'] === 1 ? '上架' : '下架' ?>
