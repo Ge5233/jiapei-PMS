@@ -9,14 +9,16 @@
 -- ----------------------------
 ALTER TABLE `products`
   ADD COLUMN `guide_price_coefficient` DECIMAL(5,3) NOT NULL DEFAULT 1.100 COMMENT '指导价系数',
-  ADD COLUMN `min_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '最低售价（绝对底线）';
+  ADD COLUMN `min_price_coefficient` DECIMAL(5,3) NOT NULL DEFAULT 0.900 COMMENT '最低售价系数',
+  ADD COLUMN `cost_remark` VARCHAR(200) DEFAULT NULL COMMENT '进价费用说明';
 
 -- ----------------------------
 -- 2. self_products 表加字段（自产产品定价）
 -- ----------------------------
 ALTER TABLE `self_products`
   ADD COLUMN `guide_price_coefficient` DECIMAL(5,3) NOT NULL DEFAULT 1.600 COMMENT '指导价系数',
-  ADD COLUMN `min_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '最低售价（绝对底线）';
+  ADD COLUMN `min_price_coefficient` DECIMAL(5,3) NOT NULL DEFAULT 0.900 COMMENT '最低售价系数',
+  ADD COLUMN `cost_remark` VARCHAR(200) DEFAULT NULL COMMENT '进价费用说明';
 
 -- ----------------------------
 -- 3. 报价单主表

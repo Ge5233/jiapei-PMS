@@ -159,7 +159,7 @@ require __DIR__ . '/includes/views/header.php';
         </div>
 
         <div class="border-t border-slate-100 pt-4 mb-4">
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="form-label font-medium">总成本</label>
                     <div class="relative">
@@ -169,20 +169,8 @@ require __DIR__ . '/includes/views/header.php';
                     </div>
                 </div>
                 <div>
-                    <label class="form-label">参考售价 <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
-                        <input type="number" x-model="form.guide_price" step="0.01" min="0" class="form-input pl-7" required
-                               @input="calcTotal">
-                    </div>
-                </div>
-                <div>
-                    <label class="form-label">最低折扣</label>
-                    <div class="flex items-center gap-1">
-                        <input type="number" x-model="form.min_discount" step="0.01" min="0.01" max="1.00" class="form-input w-24"
-                               @input="calcTotal">
-                        <span class="text-sm text-slate-500" x-text="'= ' + (form.min_discount * 100).toFixed(0) + '%'"></span>
-                    </div>
+                    <label class="form-label">费用说明</label>
+                    <input type="text" x-model="form.cost_remark" class="form-input" maxlength="200" placeholder="含包装、运输、管理费等">
                 </div>
             </div>
         </div>
@@ -202,7 +190,7 @@ require __DIR__ . '/includes/views/header.php';
                     <input type="number" x-model="form.min_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">最低售价 = 总成本 × 系数<br>最高折扣：<span class="font-medium" x-text="totalCost>0&&form.guide_price>0 ? ((totalCost*form.min_price_coefficient)/form.guide_price*100).toFixed(0)+'%' : '-'"></span></p>
+                <p class="text-xs text-slate-400 mt-1">最低售价 = 总成本 × 系数<br>最高折扣：<span class="font-medium" x-text="totalCost>0 ? (form.min_price_coefficient / (form.guide_price_coefficient||0.01) *100).toFixed(0)+'%' : '-'"></span></p>
             </div>
         </div>
 
@@ -362,6 +350,7 @@ document.addEventListener('alpine:init', () => {
                 min_discount: init.selfProduct?.min_discount || 1.00,
                 guide_price_coefficient: init.selfProduct?.guide_price_coefficient || 1.600,
                 min_price_coefficient: init.selfProduct?.min_price_coefficient || 0.900,
+                cost_remark: init.selfProduct?.cost_remark || '',
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
             },
@@ -459,7 +448,7 @@ document.addEventListener('alpine:init', () => {
             },
             calcTotal() {},
             get marginPercent() {
-                const price = parseFloat(this.form.guide_price) || 0;
+                const price = this.totalCost * parseFloat(this.form.guide_price_coefficient || 1.6);
                 if (price <= 0) return '—';
                 const m = ((price - this.totalCost) / price * 100);
                 return m.toFixed(1);
@@ -495,10 +484,13 @@ document.addEventListener('alpine:init', () => {
                 fd.append('status', this.form.status);
                 fd.append('labor_cost', this.form.labor_cost);
                 fd.append('overhead_cost', this.form.overhead_cost);
-                fd.append('guide_price', this.form.guide_price);
+                // 指导售价 = 总成本 × 系数（自动计算）
+                const gp = this.totalCost * parseFloat(this.form.guide_price_coefficient || 1.6);
+                fd.append('guide_price', gp.toFixed(2));
                 fd.append('min_discount', this.form.min_discount);
                 fd.append('guide_price_coefficient', this.form.guide_price_coefficient);
                 fd.append('min_price_coefficient', this.form.min_price_coefficient);
+                fd.append('cost_remark', this.form.cost_remark || '');
                 fd.append('remark', this.form.remark);
                 fd.append('material_cost', this.calcMaterialCost.toFixed(2));
                 fd.append('total_cost', this.totalCost.toFixed(2));

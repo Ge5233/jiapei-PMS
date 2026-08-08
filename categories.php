@@ -72,7 +72,7 @@ require __DIR__ . '/includes/views/header.php';
                         <button class="btn btn-ghost btn-sm" onclick="openLevel2Modal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>')">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         </button>
-                        <button class="btn btn-ghost btn-sm" onclick="openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0)">
+                        <button class="btn btn-ghost btn-sm" onclick="openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0, <?= (float)($c['guide_price_coefficient'] ?? 1.100) ?>, <?= (float)($c['min_price_coefficient'] ?? 0.900) ?>)">
                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                         </button>
                         <button class="btn btn-ghost btn-sm" onclick="deleteCategory(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', true)">
@@ -130,6 +130,20 @@ require __DIR__ . '/includes/views/header.php';
                     <label class="form-label">分类名称 <span class="text-red-500">*</span></label>
                     <input type="text" name="name" id="cat_name" class="form-input" required maxlength="50">
                 </div>
+                <div id="level1Fields" class="hidden">
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="form-label">默认指导售价系数</label>
+                            <input type="number" step="0.001" min="0.1" max="5" name="guide_price_coefficient" id="cat_gp_coef" class="form-input" value="1.100"
+                                   title="该分类下新建产品时的默认指导售价系数">
+                        </div>
+                        <div>
+                            <label class="form-label">默认最低售价系数</label>
+                            <input type="number" step="0.001" min="0.1" max="5" name="min_price_coefficient" id="cat_mp_coef" class="form-input" value="0.900"
+                                   title="该分类下新建产品时的默认最低售价系数">
+                        </div>
+                    </div>
+                </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
                     <button type="submit" class="btn btn-primary">保存</button>
@@ -175,6 +189,9 @@ function openLevel1Modal() {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_parent_id').value = '0';
     document.getElementById('cat_name').value = '';
+    document.getElementById('cat_gp_coef').value = '1.100';
+    document.getElementById('cat_mp_coef').value = '0.900';
+    document.getElementById('level1Fields').classList.remove('hidden');
     showModal();
 }
 function openLevel2Modal(parentId, parentName) {
@@ -182,13 +199,21 @@ function openLevel2Modal(parentId, parentName) {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_parent_id').value = parentId;
     document.getElementById('cat_name').value = '';
+    document.getElementById('level1Fields').classList.add('hidden');
     showModal();
 }
-function openEditModal(id, name, parentId) {
+function openEditModal(id, name, parentId, gpCoef, mpCoef) {
     document.getElementById('modalTitle').textContent = parentId === 0 ? '编辑一级分类' : '编辑二级分类';
     document.getElementById('cat_id').value = id;
     document.getElementById('cat_parent_id').value = parentId;
     document.getElementById('cat_name').value = name;
+    if (parentId === 0) {
+        document.getElementById('cat_gp_coef').value = gpCoef || 1.100;
+        document.getElementById('cat_mp_coef').value = mpCoef || 0.900;
+        document.getElementById('level1Fields').classList.remove('hidden');
+    } else {
+        document.getElementById('level1Fields').classList.add('hidden');
+    }
     showModal();
 }
 function showModal() { document.getElementById('modal').classList.remove('hidden'); }

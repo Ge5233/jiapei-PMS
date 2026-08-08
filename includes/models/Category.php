@@ -53,7 +53,7 @@ class Category
         return $stmt->fetchAll();
     }
 
-    public static function create(string $name, int $parentId, int $sortOrder = 0): int
+    public static function create(string $name, int $parentId, int $sortOrder = 0, float $gpCoef = 1.100, float $mpCoef = 0.900): int
     {
         $subId = 0;
         $parentSortId = 0;
@@ -75,18 +75,18 @@ class Category
         }
         
         $stmt = Database::getInstance()->prepare(
-            "INSERT INTO categories (name, parent_id, parent_sort_id, sub_id, sort_order) VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO categories (name, parent_id, parent_sort_id, sub_id, sort_order, guide_price_coefficient, min_price_coefficient) VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->execute([$name, $parentId, $parentSortId, $subId, $sortOrder]);
+        $stmt->execute([$name, $parentId, $parentSortId, $subId, $sortOrder, $gpCoef, $mpCoef]);
         return (int)Database::getInstance()->lastInsertId();
     }
 
-    public static function update(int $id, string $name, int $parentId, int $sortOrder): void
+    public static function update(int $id, string $name, int $parentId, int $sortOrder, float $gpCoef = 1.100, float $mpCoef = 0.900): void
     {
         $stmt = Database::getInstance()->prepare(
-            "UPDATE categories SET name = ?, parent_id = ?, sort_order = ? WHERE id = ?"
+            "UPDATE categories SET name = ?, parent_id = ?, sort_order = ?, guide_price_coefficient = ?, min_price_coefficient = ? WHERE id = ?"
         );
-        $stmt->execute([$name, $parentId, $sortOrder, $id]);
+        $stmt->execute([$name, $parentId, $sortOrder, $gpCoef, $mpCoef, $id]);
     }
 
     /**
