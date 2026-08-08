@@ -124,7 +124,7 @@ require __DIR__ . '/includes/views/header.php';
                     <?php endif; ?>
                 </td>
                 <td class="px-4 py-3">
-                    <div class="font-medium text-slate-800"><?= h($row['name']) ?></div>
+                    <a href="/self_product_edit.php?id=<?= $row['id'] ?>" class="font-medium text-blue-600 hover:underline"><?= h($row['name']) ?></a>
                     <?php if ($row['model_no']): ?>
                     <div class="text-xs text-slate-400 mt-0.5"><?= h($row['model_no']) ?></div>
                     <?php endif; ?>
