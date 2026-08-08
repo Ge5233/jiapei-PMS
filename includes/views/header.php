@@ -66,8 +66,8 @@ $bodyClass = $bodyClass ?? '';
                         </a>
                     </li>
                     <li>
-                        <a href="/quote.php" class="nav-link <?= $activeMenu === 'quote' ? 'active' : '' ?>">
-                            <i data-lucide="calculator" class="w-4 h-4 mr-2"></i>报价计算器
+                        <a href="/quotes.php" class="nav-link <?= $activeMenu === 'quotes' ? 'active' : '' ?>">
+                            <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>报价管理
                         </a>
                     </li>
                 </ul>
