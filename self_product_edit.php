@@ -559,7 +559,9 @@ document.addEventListener('alpine:init', () => {
                         },
                         body: fd,
                     });
-                    const data = await resp.json();
+                    const text = await resp.text();
+                    let data;
+                    try { data = JSON.parse(text); } catch { throw new Error('服务器返回非JSON (' + resp.status + '): ' + text.substring(0, 200)); }
                     if (data.ok) {
                         window.location.href = '/self_products.php';
                     } else {
@@ -567,7 +569,7 @@ document.addEventListener('alpine:init', () => {
                         this.submitted = false;
                     }
                 } catch (e) {
-                    alert('网络错误，请重试');
+                    alert('保存失败：' + e.message);
                     this.submitted = false;
                 }
             },
