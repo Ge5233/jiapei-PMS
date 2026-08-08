@@ -149,14 +149,22 @@ require __DIR__ . '/includes/views/header.php';
                            @input="calcTotal">
                 </div>
             </div>
-            <div>
-                <label class="form-label">制造费用</label>
-                <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
-                    <input type="number" x-model="form.overhead_cost" step="0.01" min="0" class="form-input pl-7"
-                           @input="calcTotal">
+                <div>
+                    <label class="form-label">制造费用</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
+                        <input type="number" x-model="form.overhead_cost" step="0.01" min="0" class="form-input pl-7"
+                               @input="calcTotal">
+                    </div>
                 </div>
-            </div>
+                <div>
+                    <label class="form-label">其它费用</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
+                        <input type="number" x-model="form.other_cost" step="0.01" min="0" class="form-input pl-7"
+                               @input="calcTotal">
+                    </div>
+                </div>
         </div>
 
         <div class="border-t border-slate-100 pt-4 mb-4">
@@ -277,7 +285,7 @@ require __DIR__ . '/includes/views/header.php';
                             <tr class="border-b border-slate-100 hover:bg-slate-50">
                                 <td class="px-3 py-2 text-sm text-slate-500" x-text="idx + 1"></td>
                                 <td class="px-3 py-2">
-                                    <select :value="item.product_id ? 'linked' : 'adhoc'"
+                                    <select :value="item.product_id === null ? 'adhoc' : 'linked'"
                                             class="form-select text-xs py-1 px-2"
                                             @change="switchBomType(idx, $event.target.value)">
                                         <option value="linked">外采产品</option>
@@ -385,6 +393,7 @@ document.addEventListener('alpine:init', () => {
                 status: init.selfProduct?.status !== undefined ? String(init.selfProduct.status) : '1',
                 labor_cost: init.selfProduct?.labor_cost || 0,
                 overhead_cost: init.selfProduct?.overhead_cost || 0,
+                other_cost: init.selfProduct?.other_cost || 0,
                 guide_price: init.selfProduct?.guide_price || 0,
                 min_discount: init.selfProduct?.min_discount || 1.00,
                 guide_price_coefficient: init.selfProduct?.guide_price_coefficient || 1.600,
@@ -483,7 +492,8 @@ document.addEventListener('alpine:init', () => {
             get totalCost() {
                 return this.calcMaterialCost
                     + (parseFloat(this.form.labor_cost) || 0)
-                    + (parseFloat(this.form.overhead_cost) || 0);
+                    + (parseFloat(this.form.overhead_cost) || 0)
+                    + (parseFloat(this.form.other_cost) || 0);
             },
             calcTotal() {},
             get marginPercent() {
@@ -523,6 +533,7 @@ document.addEventListener('alpine:init', () => {
                 fd.append('status', this.form.status);
                 fd.append('labor_cost', this.form.labor_cost);
                 fd.append('overhead_cost', this.form.overhead_cost);
+                fd.append('other_cost', this.form.other_cost);
                 // 指导售价 = 总成本 × 系数（自动计算）
                 const gp = this.totalCost * parseFloat(this.form.guide_price_coefficient || 1.6);
                 fd.append('guide_price', gp.toFixed(2));
