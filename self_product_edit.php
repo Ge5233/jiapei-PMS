@@ -237,9 +237,16 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card p-6 mb-4">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
-            <button type="button" class="btn btn-secondary text-sm" @click="addBomItem">
-                <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加物料
-            </button>
+            <div class="flex gap-2">
+                <?php if ($isEdit): ?>
+                <a href="/export_bom.php?self_product_id=<?= $id ?>" class="btn btn-secondary text-sm">
+                    <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
+                </a>
+                <?php endif; ?>
+                <button type="button" class="btn btn-secondary text-sm" @click="addBomItem">
+                    <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加物料
+                </button>
+            </div>
         </div>
 
         <template x-if="bomItems.length === 0">

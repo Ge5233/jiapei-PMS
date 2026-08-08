@@ -99,6 +99,7 @@ require __DIR__ . '/includes/views/header.php';
                     <div class="flex items-center justify-center gap-1">
                         <a href="/quote_edit.php?id=<?= $q['id'] ?>" class="btn-ghost-xs" title="编辑"><i data-lucide="pencil" class="w-4 h-4"></i></a>
                         <a href="/quote_print.php?id=<?= $q['id'] ?>" class="btn-ghost-xs" title="打印" target="_blank"><i data-lucide="printer" class="w-4 h-4"></i></a>
+                        <a href="/export_quote.php?id=<?= $q['id'] ?>" class="btn-ghost-xs" title="导出Excel"><i data-lucide="download" class="w-4 h-4"></i></a>
                         <button class="btn-ghost-xs text-red-500" title="删除" onclick="delQuote(<?= $q['id'] ?>,'<?= h(addslashes($q['quote_no'])) ?>')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </td>
