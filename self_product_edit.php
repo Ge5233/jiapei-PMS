@@ -48,6 +48,7 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <form @submit.prevent="save">
+    <?= csrfField() ?>
 
     <!-- 基本信息 -->
     <div class="card p-6 mb-4">
