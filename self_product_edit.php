@@ -250,7 +250,8 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card p-6 mb-4">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
+                <input type="text" class="form-input text-sm w-44" placeholder="搜索产品..." x-model="bomSearch">
                 <?php if ($isEdit): ?>
                 <a href="/export_bom.php?self_product_id=<?= $id ?>" class="btn btn-secondary text-sm">
                     <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
@@ -299,17 +300,13 @@ require __DIR__ . '/includes/views/header.php';
                                 <td class="px-3 py-2">
                                     <!-- 外采产品模式 -->
                                     <template x-if="item.product_id || item.product_id === ''">
-                                        <div>
-                                            <input type="text" class="form-input text-sm mb-1" placeholder="搜索产品..."
-                                                   x-model="bomSearch">
-                                            <select class="form-select text-sm w-full"
-                                                    @change="bomProductChanged(idx, $event.target.value)">
-                                                <option value="">-- 选择产品 --</option>
+                                        <select class="form-select text-sm w-full"
+                                                @change="bomProductChanged(idx, $event.target.value)">
+                                            <option value="">-- 选择产品 --</option>
                                                 <template x-for="p in filteredBomProducts" :key="p.id">
                                                     <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
                                                 </template>
                                             </select>
-                                        </div>
                                     </template>
                                     <!-- 临时物料模式 -->
                                     <template x-if="item.product_id === null">
@@ -430,7 +427,7 @@ document.addEventListener('alpine:init', () => {
                     (p.sku + ' ' + p.name).toLowerCase().includes(q)
                 );
             },
-            filterBomProducts() { /* trigger getter */ },
+            filterBomProducts() { /* getter 处理 */ },
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
             imageFile: null,           // File 对象
             imageChanged: false,       // 是否改过图片

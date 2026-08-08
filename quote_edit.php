@@ -89,7 +89,9 @@ require __DIR__ . '/includes/views/header.php';
     <div class="card p-6 mb-4">
         <div class="flex items-center justify-between mb-4 pb-2 border-b">
             <h3 class="text-base font-medium">产品明细</h3>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
+                <input type="text" class="form-input text-sm w-36" placeholder="搜外采..." x-model="prodSearch">
+                <input type="text" class="form-input text-sm w-36" placeholder="搜自产..." x-model="spSearch">
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>外采产品</button>
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('self_product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>自产产品</button>
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('adhoc')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>临时项</button>
@@ -131,31 +133,23 @@ require __DIR__ . '/includes/views/header.php';
                             <td class="px-2 py-2">
                                 <!-- 外采 -->
                                 <template x-if="item.source_type==='product'">
-                                    <div>
-                                        <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
-                                               x-model="prodSearch">
-                                        <select class="form-select text-sm w-full"
-                                                @change="productChanged(idx, $event.target.value)">
-                                            <option value="">--选择产品--</option>
-                                            <template x-for="p in filteredProducts" :key="p.id">
-                                                <option :value="p.id" x-text="p.sku+' '+p.name"></option>
-                                            </template>
-                                        </select>
-                                    </div>
+                                    <select class="form-select text-sm w-full"
+                                            @change="productChanged(idx, $event.target.value)">
+                                        <option value="">--选择产品--</option>
+                                        <template x-for="p in filteredProducts" :key="p.id">
+                                            <option :value="p.id" x-text="p.sku+' '+p.name"></option>
+                                        </template>
+                                    </select>
                                 </template>
                                 <!-- 自产 -->
                                 <template x-if="item.source_type==='self_product'">
-                                    <div>
-                                        <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
-                                               x-model="spSearch">
-                                        <select class="form-select text-sm w-full"
-                                                @change="selfProductChanged(idx, $event.target.value)">
-                                            <option value="">--选择产品--</option>
-                                            <template x-for="p in filteredSpProducts" :key="p.id">
-                                                <option :value="p.id" x-text="p.name"></option>
-                                            </template>
-                                        </select>
-                                    </div>
+                                    <select class="form-select text-sm w-full"
+                                            @change="selfProductChanged(idx, $event.target.value)">
+                                        <option value="">--选择产品--</option>
+                                        <template x-for="p in filteredSpProducts" :key="p.id">
+                                            <option :value="p.id" x-text="p.name"></option>
+                                        </template>
+                                    </select>
                                 </template>
                                 <!-- 临时 -->
                                 <template x-if="item.source_type==='adhoc'">
