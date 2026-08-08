@@ -175,22 +175,53 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
-            <div>
-                <label class="form-label">指导售价系数</label>
-                <div class="relative">
-                    <input type="number" x-model="form.guide_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+        <div class="border-t border-slate-100 pt-4 mb-4">
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="form-label">指导售价系数</label>
+                    <div class="relative">
+                        <input type="number" x-model="form.guide_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                    </div>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">当前建议售价：<span class="font-medium text-slate-700" x-text="'¥' + formatMoney(totalCost * form.guide_price_coefficient)"></span></p>
+                <div>
+                    <label class="form-label">指导售价</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
+                        <input type="text" class="form-input pl-7 bg-slate-50 font-medium tabular-nums" readonly
+                               :value="formatMoney(totalCost * form.guide_price_coefficient)" tabindex="-1">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
+                </div>
+                <div></div>
             </div>
-            <div>
-                <label class="form-label">最低售价系数</label>
-                <div class="relative">
-                    <input type="number" x-model="form.min_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
-                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="form-label">最低售价系数</label>
+                    <div class="relative">
+                        <input type="number" x-model="form.min_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
+                    </div>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">最低售价 = 总成本 × 系数<br>最高折扣：<span class="font-medium" x-text="totalCost>0 ? (form.min_price_coefficient / (form.guide_price_coefficient||0.01) *100).toFixed(0)+'%' : '-'"></span></p>
+                <div>
+                    <label class="form-label">最低售价</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
+                        <input type="text" class="form-input pl-7 bg-slate-50 tabular-nums" readonly
+                               :value="formatMoney(totalCost * form.min_price_coefficient)" tabindex="-1">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">= 总成本 × 系数</p>
+                </div>
+                <div>
+                    <label class="form-label">最高折扣</label>
+                    <div class="relative">
+                        <input type="text" class="form-input pr-9 bg-slate-50 tabular-nums" readonly
+                               :value="form.guide_price_coefficient > 0 ? (form.min_price_coefficient / form.guide_price_coefficient * 100).toFixed(0) + '%' : '-'" tabindex="-1">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">折</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">= 最低售价 ÷ 指导售价</p>
+                </div>
             </div>
         </div>
 
