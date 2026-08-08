@@ -246,7 +246,8 @@ class SelfProduct
         $db = Database::getInstance();
         $total = (int)$db->query("SELECT COUNT(*) FROM self_products")->fetchColumn();
         $active = (int)$db->query("SELECT COUNT(*) FROM self_products WHERE status = 1")->fetchColumn();
-        return ['total' => $total, 'active' => $active];
+        $inactive = $total - $active;
+        return ['total' => $total, 'active' => $active, 'inactive' => $inactive];
     }
 
     /** 下拉选项（用于报价等其他页面） */
