@@ -46,6 +46,7 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <form @submit.prevent="save">
+    <?= csrfField() ?>
 
     <!-- 报价单头 -->
     <div class="card p-6 mb-4">
@@ -381,10 +382,12 @@ Alpine.data('quoteForm',(init)=>{
             }))));
             try{
                 const r=await fetch('/api/quote_save.php',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRF-Token':document.querySelector('input[name="_csrf"]')?.value||''},body:fd});
-                const d=await r.json();
+                const text=await r.text();
+                let d;
+                try{d=JSON.parse(text)}catch{throw new Error('服务器返回非JSON ('+r.status+'): '+text.substring(0,200))}
                 if(d.ok) window.location.href='/quotes.php';
                 else {alert(d.message);this.submitted=false;}
-            }catch(e){alert('网络错误');this.submitted=false;}
+            }catch(e){alert('保存失败：'+e.message);this.submitted=false;}
         },
     };
 });
