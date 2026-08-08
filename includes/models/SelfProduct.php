@@ -182,9 +182,11 @@ class SelfProduct
     public static function getBom(int $selfProductId): array
     {
         $sql = "SELECT i.*, p.name AS product_name, p.sku AS product_sku,
-                       p.cost_price AS product_cost_price
+                       p.cost_price AS product_cost_price,
+                       sp.name AS bom_sp_name, sp.total_cost AS bom_sp_cost
                 FROM self_product_items i
                 LEFT JOIN products p ON p.id = i.product_id
+                LEFT JOIN self_products sp ON sp.id = i.bom_self_product_id
                 WHERE i.self_product_id = ?
                 ORDER BY i.sort_order ASC, i.id ASC";
         $stmt = Database::getInstance()->prepare($sql);
@@ -220,14 +222,15 @@ class SelfProduct
         $db = Database::getInstance();
         $db->prepare("DELETE FROM self_product_items WHERE self_product_id = ?")->execute([$selfProductId]);
 
-        $sql = "INSERT INTO self_product_items (self_product_id, product_id, item_name, quantity, unit, unit_cost, sort_order, remark)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO self_product_items (self_product_id, product_id, bom_self_product_id, item_name, quantity, unit, unit_cost, sort_order, remark)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $db->prepare($sql);
         foreach ($items as $i => $item) {
             $stmt->execute([
                 $selfProductId,
                 !empty($item['product_id']) ? (int)$item['product_id'] : null,
-                empty($item['product_id']) ? ($item['item_name'] ?: null) : null,
+                !empty($item['bom_self_product_id']) ? (int)$item['bom_self_product_id'] : null,
+                (empty($item['product_id']) && empty($item['bom_self_product_id'])) ? ($item['item_name'] ?: null) : null,
                 $item['quantity'] ?? 1,
                 $item['unit'] ?: null,
                 $item['unit_cost'] ?? 0,

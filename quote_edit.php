@@ -93,8 +93,7 @@ require __DIR__ . '/includes/views/header.php';
             <div class="flex gap-2 items-center">
                 <input type="text" class="form-input text-sm w-36" placeholder="搜外采..." x-model="prodSearch">
                 <input type="text" class="form-input text-sm w-36" placeholder="搜自产..." x-model="spSearch">
-                <button type="button" class="btn btn-secondary text-sm" @click="addItem('product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>外采产品</button>
-                <button type="button" class="btn btn-secondary text-sm" @click="addItem('self_product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>自产产品</button>
+                <button type="button" class="btn btn-secondary text-sm" @click="addItem('product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加产品</button>
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('adhoc')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>临时项</button>
             </div>
         </div>

@@ -25,6 +25,8 @@ if ($isEdit) {
 
 // 外采产品列表（给BOM下拉）
 $allProducts = Product::allForSelect();
+// 自产产品列表（BOM自产类型）
+$allSelfProducts = class_exists('SelfProduct') ? SelfProduct::allForSelect() : [];
 
 $pageTitle = $isEdit ? '编辑自产产品' : '新增自产产品';
 $activeMenu = 'self_products';
@@ -37,6 +39,7 @@ require __DIR__ . '/includes/views/header.php';
     'selfProduct' => $selfProduct,
     'bomItems' => $bomItems,
     'allProducts' => $allProducts,
+    'allSelfProducts' => $allSelfProducts,
 ], JSON_UNESCAPED_UNICODE)) ?>)">
 
     <div class="flex items-center justify-between mb-4">
@@ -251,7 +254,8 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
-                <input type="text" class="form-input text-sm w-44" placeholder="搜索产品..." x-model="bomSearch">
+                <input type="text" class="form-input text-sm w-36" placeholder="搜外采..." x-model="bomProdSearch">
+                <input type="text" class="form-input text-sm w-36" placeholder="搜自产..." x-model="bomSpSearch">
                 <?php if ($isEdit): ?>
                 <a href="/export_bom.php?self_product_id=<?= $id ?>" class="btn btn-secondary text-sm">
                     <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
@@ -290,26 +294,37 @@ require __DIR__ . '/includes/views/header.php';
                             <tr class="border-b border-slate-100 hover:bg-slate-50">
                                 <td class="px-3 py-2 text-sm text-slate-500" x-text="idx + 1"></td>
                                 <td class="px-3 py-2">
-                                    <select :value="item.product_id === null ? 'adhoc' : 'linked'"
+                                    <select :value="bomTypeOf(item)"
                                             class="form-select text-xs py-1 px-2"
                                             @change="switchBomType(idx, $event.target.value)">
-                                        <option value="linked">外采产品</option>
+                                        <option value="product">外采产品</option>
+                                        <option value="self_product">自产产品</option>
                                         <option value="adhoc">临时物料</option>
                                     </select>
                                 </td>
                                 <td class="px-3 py-2">
-                                    <!-- 外采产品模式 -->
-                                    <template x-if="item.product_id || item.product_id === ''">
+<!-- 外采产品模式 -->
+                                    <template x-if="bomTypeOf(item)==='product'">
                                         <select class="form-select text-sm w-full"
                                                 @change="bomProductChanged(idx, $event.target.value)">
                                             <option value="">-- 选择产品 --</option>
-                                                <template x-for="p in filteredBomProducts" :key="p.id">
-                                                    <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
-                                                </template>
-                                            </select>
+                                            <template x-for="p in filteredBomProducts" :key="p.id">
+                                                <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
+                                            </template>
+                                        </select>
+                                    </template>
+                                    <!-- 自产产品模式 -->
+                                    <template x-if="bomTypeOf(item)==='self_product'">
+                                        <select class="form-select text-sm w-full"
+                                                @change="bomSpChanged(idx, $event.target.value)">
+                                            <option value="">-- 选择产品 --</option>
+                                            <template x-for="p in filteredBomSpProducts" :key="p.id">
+                                                <option :value="p.id" x-text="p.name"></option>
+                                            </template>
+                                        </select>
                                     </template>
                                     <!-- 临时物料模式 -->
-                                    <template x-if="item.product_id === null">
+                                    <template x-if="bomTypeOf(item)==='adhoc'">
                                         <input type="text" x-model="item.item_name" class="form-input text-sm"
                                                placeholder="物料名称" @input="calcTotal">
                                     </template>
@@ -330,8 +345,15 @@ require __DIR__ . '/includes/views/header.php';
                                             <div class="text-xs text-slate-400">（最新进价）</div>
                                         </div>
                                     </template>
+                                    <!-- 关联自产产品：显示BOM成本 -->
+                                    <template x-if="item.bom_self_product_id">
+                                        <div class="text-sm text-right tabular-nums text-slate-600">
+                                            ¥<span x-text="formatMoney(item._sp_cost ?? 0)"></span>
+                                            <div class="text-xs text-slate-400">（BOM总成本）</div>
+                                        </div>
+                                    </template>
                                     <!-- 临时物料：手动填 -->
-                                    <template x-if="item.product_id === null">
+                                    <template x-if="bomTypeOf(item)==='adhoc'">
                                         <input type="number" x-model="item.unit_cost" step="0.01" min="0"
                                                class="form-input text-sm text-right w-full" @input="calcTotal">
                                     </template>
@@ -391,6 +413,8 @@ document.addEventListener('alpine:init', () => {
         // 构建外采产品索引（id → 对象）
         const productMap = {};
         (init.allProducts || []).forEach(p => { productMap[p.id] = p; });
+        const selfProductMap = {};
+        (init.allSelfProducts || []).forEach(p => { selfProductMap[p.id] = p; });
 
         return {
             isEdit: init.isEdit,
@@ -414,18 +438,30 @@ document.addEventListener('alpine:init', () => {
             },
             bomItems: (init.bomItems || []).map(item => ({
                 ...item,
-                product_id: item.product_id ? String(item.product_id) : null,
+                product_id: item.product_id ? String(item.product_id) : (item.bom_self_product_id ? '' : ''),
+                bom_self_product_id: item.bom_self_product_id ? String(item.bom_self_product_id) : '',
                 // 如果是关联产品，从 productMap 取得最新进价
                 _product_cost: item.product_id ? (productMap[item.product_id]?.cost_price || 0) : 0,
+                _sp_cost: item.bom_self_product_id ? (selfProductMap[item.bom_self_product_id]?.total_cost || 0) : 0,
             })),
             allProducts: init.allProducts || [],
-            bomSearch: '',
+            allSelfProducts: init.allSelfProducts || [],
+            bomProdSearch: '',
+            bomSpSearch: '',
             get filteredBomProducts() {
-                const q = (this.bomSearch || '').toLowerCase();
+                const q = (this.bomProdSearch || '').toLowerCase();
                 if (!q) return this.allProducts;
-                return this.allProducts.filter(p =>
-                    (p.sku + ' ' + p.name).toLowerCase().includes(q)
-                );
+                return this.allProducts.filter(p => (p.sku + ' ' + p.name).toLowerCase().includes(q));
+            },
+            get filteredBomSpProducts() {
+                const q = (this.bomSpSearch || '').toLowerCase();
+                if (!q) return this.allSelfProducts;
+                return this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q));
+            },
+            bomTypeOf(item) {
+                if (item.product_id === null && item.bom_self_product_id === null) return 'adhoc';
+                if (item.bom_self_product_id) return 'self_product';
+                return 'product';
             },
             filterBomProducts() { /* getter 处理 */ },
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
@@ -459,11 +495,13 @@ document.addEventListener('alpine:init', () => {
             addBomItem() {
                 this.bomItems.push({
                     product_id: '',
+                    bom_self_product_id: '',
                     item_name: '',
                     quantity: 1,
                     unit: '',
                     unit_cost: 0,
                     _product_cost: 0,
+                    _sp_cost: 0,
                     sort_order: this.bomItems.length,
                     remark: '',
                 });
@@ -475,13 +513,19 @@ document.addEventListener('alpine:init', () => {
             },
             switchBomType(idx, type) {
                 const item = this.bomItems[idx];
-                if (type === 'linked') {
+                // clear all
+                item.product_id = '';
+                item.bom_self_product_id = '';
+                item.item_name = '';
+                item._product_cost = 0;
+                item._sp_cost = 0;
+                item.unit_cost = 0;
+                if (type === 'product') {
                     item.product_id = '';
-                    item._product_cost = 0;
+                } else if (type === 'self_product') {
+                    item.bom_self_product_id = '';
                 } else {
-                    item.product_id = null;
-                    item.item_name = '';
-                    item.unit_cost = 0;
+                    // adhoc - stays cleared
                 }
                 this.calcTotal();
             },
@@ -496,11 +540,27 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.calcTotal();
             },
+            bomSpChanged(idx, sid) {
+                const item = this.bomItems[idx];
+                item.bom_self_product_id = sid;
+                if (sid && selfProductMap[sid]) {
+                    item.unit = selfProductMap[sid].unit || '';
+                    item._sp_cost = parseFloat(selfProductMap[sid].total_cost) || 0;
+                } else {
+                    item._sp_cost = 0;
+                }
+                this.calcTotal();
+            },
             bomItemSubtotal(item) {
                 const qty = parseFloat(item.quantity) || 0;
-                const cost = item.product_id
-                    ? (parseFloat(item._product_cost) || 0)
-                    : (parseFloat(item.unit_cost) || 0);
+                let cost = 0;
+                if (item.product_id) {
+                    cost = parseFloat(item._product_cost) || 0;
+                } else if (item.bom_self_product_id) {
+                    cost = parseFloat(item._sp_cost) || 0;
+                } else {
+                    cost = parseFloat(item.unit_cost) || 0;
+                }
                 return qty * cost;
             },
 
@@ -573,10 +633,11 @@ document.addEventListener('alpine:init', () => {
                 // BOM 数据
                 fd.append('bom', JSON.stringify(this.bomItems.map((item, i) => ({
                     product_id: item.product_id || null,
+                    bom_self_product_id: item.bom_self_product_id || null,
                     item_name: item.item_name || null,
                     quantity: parseFloat(item.quantity) || 0,
                     unit: item.unit || '',
-                    unit_cost: item.product_id ? 0 : (parseFloat(item.unit_cost) || 0),
+                    unit_cost: item.product_id || item.bom_self_product_id ? 0 : (parseFloat(item.unit_cost) || 0),
                     sort_order: i,
                     remark: item.remark || '',
                 }))));
