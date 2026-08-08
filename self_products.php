@@ -41,9 +41,11 @@ require __DIR__ . '/includes/views/header.php';
         <p class="text-sm text-slate-500 mt-0.5">共 <?= $total ?> 个产品</p>
     </div>
     <div>
+<?php if (canViewCost()): ?>
         <a href="/self_product_edit.php" class="btn btn-primary">
             <i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>新增自产产品
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -78,7 +80,9 @@ require __DIR__ . '/includes/views/header.php';
 <div class="card p-12 text-center">
     <i data-lucide="package-open" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
     <p class="text-slate-500">暂无自产产品</p>
+    <?php if (canViewCost()): ?>
     <a href="/self_product_edit.php" class="btn btn-primary mt-4">新增第一个产品</a>
+    <?php endif; ?>
 </div>
 <?php else: ?>
 <div class="card overflow-hidden">
