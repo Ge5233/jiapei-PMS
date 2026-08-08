@@ -120,3 +120,18 @@ function isAdmin(): bool
 {
     return ($_SESSION['role'] ?? '') === 'admin';
 }
+
+/** 员工能否看成本（只有管理员能看） */
+function canViewCost(): bool
+{
+    return isAdmin();
+}
+
+/** 阻止非管理员访问成本相关页面 */
+function requireCostView(): void
+{
+    if (!canViewCost()) {
+        header('Location: /quotes.php');
+        exit;
+    }
+}

@@ -6,6 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/includes/bootstrap.php';
 if (!PMS_INSTALLED) { header('Location: /install.php'); exit; }
 requireLogin();
+requireCostView();
 
 $canManage = isAdmin(); // 只有管理员能增删改
 
