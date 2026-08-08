@@ -141,9 +141,6 @@ require __DIR__ . '/includes/views/header.php';
                         <th class="text-right">指导售价</th>
                         <th class="text-right">最低售价</th>
                         <th class="text-right">最高折扣</th>
-                        <?php if (canViewCost()): ?>
-                        <?php endif; ?>
-                        <?php endif; ?>
                         <th class="text-center">状态</th>
                         <?php if (canViewCost()): ?>
                         <th class="text-right">操作</th>
