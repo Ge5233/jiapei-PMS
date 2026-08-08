@@ -6,7 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/includes/bootstrap.php';
 if (!PMS_INSTALLED) { header('Location: /install.php'); exit; }
 requireLogin();
-requireCostView();
+// 员工可浏览但不编辑
 
 $keyword = trim($_GET['q'] ?? '');
 $status = $_GET['status'] ?? '';

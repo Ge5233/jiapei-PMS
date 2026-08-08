@@ -45,7 +45,6 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="layout-dashboard" class="w-4 h-4 mr-2"></i>首页
                         </a>
                     </li>
-                    <?php if (canViewCost()): ?>
                     <li>
                         <a href="/products.php" class="nav-link <?= $activeMenu === 'products' ? 'active' : '' ?>">
                             <i data-lucide="package" class="w-4 h-4 mr-2"></i>外采产品管理
@@ -56,6 +55,7 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="factory" class="w-4 h-4 mr-2"></i>自产产品
                         </a>
                     </li>
+                    <?php if (canViewCost()): ?>
                     <li>
                         <a href="/categories.php" class="nav-link <?= $activeMenu === 'categories' ? 'active' : '' ?>">
                             <i data-lucide="folder-tree" class="w-4 h-4 mr-2"></i>分类管理
@@ -66,6 +66,7 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="truck" class="w-4 h-4 mr-2"></i>供应商管理
                         </a>
                     </li>
+                    <?php endif; ?>
                     <?php endif; ?>
                     <li>
                         <a href="/quotes.php" class="nav-link <?= $activeMenu === 'quotes' ? 'active' : '' ?>">

@@ -6,7 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/includes/bootstrap.php';
 if (!PMS_INSTALLED) { header('Location: /install.php'); exit; }
 requireLogin();
-requireCostView();
+// 员工可浏览但不编辑（成本列在页面内按角色隐藏）
 
 $categories = Category::allGrouped();
 $suppliers = Supplier::allActive();
@@ -53,7 +53,6 @@ require __DIR__ . '/includes/views/header.php';
         <button type="button" id="batchGenerateSkuBtn" class="btn btn-secondary">
             <i data-lucide="refresh-cw" class="w-4 h-4 mr-1.5"></i>批量生成 SKU
         </button>
-        <?php endif; ?>
         <a href="/export.php?<?= http_build_query(array_filter(['q' => $keyword, 'category_id' => $categoryId, 'supplier_id' => $supplierId, 'status' => $status])) ?>"
            class="btn btn-secondary">
             <i data-lucide="download" class="w-4 h-4 mr-1.5"></i>导出 Excel
@@ -61,6 +60,7 @@ require __DIR__ . '/includes/views/header.php';
         <a href="/product_edit.php" class="btn btn-primary">
             <i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>新增产品
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -135,12 +135,18 @@ require __DIR__ . '/includes/views/header.php';
                         <th>分类</th>
                         <th>供应商</th>
                         <th>单位</th>
+                        <?php if (canViewCost()): ?>
                         <th class="text-right">进价</th>
+                        <?php endif; ?>
                         <th class="text-right">售价</th>
                         <th class="text-right">最低折扣</th>
+                        <?php if (canViewCost()): ?>
                         <th class="text-right">毛利率</th>
+                        <?php endif; ?>
                         <th class="text-center">状态</th>
+                        <?php if (canViewCost()): ?>
                         <th class="text-right">操作</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,9 +156,13 @@ require __DIR__ . '/includes/views/header.php';
                         <tr>
                             <td class="tabular-nums text-slate-500"><?= h($p['sku']) ?></td>
                             <td>
+                                <?php if (canViewCost()): ?>
                                 <a href="/product_edit.php?id=<?= $p['id'] ?>" class="text-blue-600 hover:underline font-medium">
                                     <?= h(strLimit($p['name'], 40)) ?>
                                 </a>
+                                <?php else: ?>
+                                <span class="font-medium"><?= h(strLimit($p['name'], 40)) ?></span>
+                                <?php endif; ?>
                                 <?php if ($p['spec']): ?>
                                     <div class="text-xs text-slate-400"><?= h($p['spec']) ?></div>
                                 <?php endif; ?>
@@ -160,19 +170,24 @@ require __DIR__ . '/includes/views/header.php';
                             <td><?= h($p['category_name'] ?? '-') ?></td>
                             <td class="text-slate-600"><?= h($p['supplier_name'] ?? '-') ?></td>
                             <td><?= h($p['unit'] ?? '-') ?></td>
+                            <?php if (canViewCost()): ?>
                             <td class="text-right tabular-nums"><?= formatPrice($p['cost_price']) ?></td>
+                            <?php endif; ?>
                             <td class="text-right tabular-nums"><?= formatPrice($p['guide_price']) ?></td>
                             <td class="text-right tabular-nums text-slate-500"><?= number_format((float)$p['min_discount'] * 10, 1) ?>折</td>
+                            <?php if (canViewCost()): ?>
                             <td class="text-right">
                                 <span class="badge <?= marginClass($m) ?>">
                                     <?= $m !== null ? number_format($m, 2) . '%' : '-' ?>
                                 </span>
                             </td>
+                            <?php endif; ?>
                             <td class="text-center">
                                 <span class="badge <?= (int)$p['status'] === 1 ? 'badge-green' : 'badge-slate' ?>">
                                     <?= (int)$p['status'] === 1 ? '上架' : '下架' ?>
                                 </span>
                             </td>
+                            <?php if (canViewCost()): ?>
                             <td class="text-right whitespace-nowrap">
                                 <a href="/product_edit.php?id=<?= $p['id'] ?>" class="btn btn-ghost btn-sm">
                                     <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
@@ -181,6 +196,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-500"></i>
                                 </button>
                             </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
