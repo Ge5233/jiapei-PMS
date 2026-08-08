@@ -136,12 +136,13 @@ require __DIR__ . '/includes/views/header.php';
                         <th>供应商</th>
                         <th>单位</th>
                         <?php if (canViewCost()): ?>
-                        <th class="text-right">进价</th>
+                        <th class="text-right">综合进价</th>
                         <?php endif; ?>
-                        <th class="text-right">售价</th>
-                        <th class="text-right">最低折扣</th>
+                        <th class="text-right">指导售价</th>
+                        <th class="text-right">最低售价</th>
+                        <th class="text-right">最高折扣</th>
                         <?php if (canViewCost()): ?>
-                        <th class="text-right">毛利率</th>
+                        <?php endif; ?>
                         <?php endif; ?>
                         <th class="text-center">状态</th>
                         <?php if (canViewCost()): ?>
@@ -152,6 +153,10 @@ require __DIR__ . '/includes/views/header.php';
                 <tbody>
                     <?php foreach ($rows as $p):
                         $m = calcMargin((float)$p['cost_price'], (float)$p['guide_price']);
+                        $gpCoef = (float)($p['guide_price_coefficient'] ?? 1.1);
+                        $mpCoef = (float)($p['min_price_coefficient'] ?? 0.9);
+                        $minPrice = (float)$p['cost_price'] * $mpCoef;
+                        $maxDisc = $gpCoef > 0 ? round($mpCoef / $gpCoef * 100) : 0;
                     ?>
                         <tr>
                             <td class="tabular-nums text-slate-500"><?= h($p['sku']) ?></td>
@@ -174,14 +179,8 @@ require __DIR__ . '/includes/views/header.php';
                             <td class="text-right tabular-nums"><?= formatPrice($p['cost_price']) ?></td>
                             <?php endif; ?>
                             <td class="text-right tabular-nums"><?= formatPrice($p['guide_price']) ?></td>
-                            <td class="text-right tabular-nums text-slate-500"><?= number_format((float)$p['min_discount'] * 10, 1) ?>折</td>
-                            <?php if (canViewCost()): ?>
-                            <td class="text-right">
-                                <span class="badge <?= marginClass($m) ?>">
-                                    <?= $m !== null ? number_format($m, 2) . '%' : '-' ?>
-                                </span>
-                            </td>
-                            <?php endif; ?>
+                            <td class="text-right tabular-nums"><?= formatPrice($minPrice) ?></td>
+                            <td class="text-right tabular-nums text-slate-500"><?= $gpCoef > 0 ? $maxDisc . '%' : '-' ?></td>
                             <td class="text-center">
                                 <span class="badge <?= (int)$p['status'] === 1 ? 'badge-green' : 'badge-slate' ?>">
                                     <?= (int)$p['status'] === 1 ? '上架' : '下架' ?>
