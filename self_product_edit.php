@@ -301,9 +301,9 @@ require __DIR__ . '/includes/views/header.php';
                                     <template x-if="item.product_id || item.product_id === ''">
                                         <div>
                                             <input type="text" class="form-input text-sm mb-1" placeholder="搜索产品..."
-                                                   x-model="bomSearch" @input="filterBomProducts">
-                                            <select class="form-select text-sm w-full" :value="item.product_id"
-                                                    @change="bomProductChanged(idx, $event.target.value)" size="8">
+                                                   x-model="bomSearch">
+                                            <select class="form-select text-sm w-full"
+                                                    @change="bomProductChanged(idx, $event.target.value)">
                                                 <option value="">-- 选择产品 --</option>
                                                 <template x-for="p in filteredBomProducts" :key="p.id">
                                                     <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>

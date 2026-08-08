@@ -133,8 +133,8 @@ require __DIR__ . '/includes/views/header.php';
                                 <template x-if="item.source_type==='product'">
                                     <div>
                                         <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
-                                               x-model="prodSearch" @input="filterProducts">
-                                        <select class="form-select text-sm w-full" size="6"
+                                               x-model="prodSearch">
+                                        <select class="form-select text-sm w-full"
                                                 @change="productChanged(idx, $event.target.value)">
                                             <option value="">--选择产品--</option>
                                             <template x-for="p in filteredProducts" :key="p.id">
@@ -147,8 +147,8 @@ require __DIR__ . '/includes/views/header.php';
                                 <template x-if="item.source_type==='self_product'">
                                     <div>
                                         <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
-                                               x-model="spSearch" @input="filterSpProducts">
-                                        <select class="form-select text-sm w-full" size="6"
+                                               x-model="spSearch">
+                                        <select class="form-select text-sm w-full"
                                                 @change="selfProductChanged(idx, $event.target.value)">
                                             <option value="">--选择产品--</option>
                                             <template x-for="p in filteredSpProducts" :key="p.id">
