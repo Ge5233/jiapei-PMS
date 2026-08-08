@@ -6,7 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/includes/bootstrap.php';
 if (!PMS_INSTALLED) { header('Location: /install.php'); exit; }
 requireLogin();
-requireCostView();
+// 员工可浏览但不编辑
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $product = null;
@@ -209,6 +209,7 @@ require __DIR__ . '/includes/views/header.php';
         </div>
     </div>
 
+    <?php if (canViewCost()): ?>
     <div class="card mb-4">
         <div class="card-header">价格信息</div>
         <div class="card-body">
@@ -298,6 +299,7 @@ require __DIR__ . '/includes/views/header.php';
             <?php endif; ?>
         </div>
     </div>
+    <?php endif; ?>
 
 
     <div class="card mb-4">
@@ -312,10 +314,14 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <div class="flex justify-end gap-2 mb-8">
-        <a href="/products.php" class="btn btn-secondary">取消</a>
+        <a href="/products.php" class="btn btn-secondary">返回</a>
+        <?php if (canViewCost()): ?>
         <button type="submit" class="btn btn-primary">
             <i data-lucide="save" class="w-4 h-4 mr-1.5"></i><?= $isEdit ? '保存修改' : '创建产品' ?>
         </button>
+        <?php else: ?>
+        <span class="text-sm text-slate-400">您没有编辑权限</span>
+        <?php endif; ?>
     </div>
 </form>
 

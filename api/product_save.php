@@ -6,6 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/../includes/bootstrap.php';
 if (!PMS_INSTALLED) { jsonResponse(['ok' => false, 'message' => '系统未安装'], 400); }
 requireLogin();
+requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['ok' => false, 'message' => 'Method not allowed'], 405);

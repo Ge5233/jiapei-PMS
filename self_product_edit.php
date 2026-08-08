@@ -6,7 +6,7 @@ define('PMS_ENTRY', true);
 require_once __DIR__ . '/includes/bootstrap.php';
 if (!PMS_INSTALLED) { header('Location: /install.php'); exit; }
 requireLogin();
-requireCostView();
+// 员工可浏览但不编辑
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $isEdit = $id > 0;
@@ -128,6 +128,7 @@ require __DIR__ . '/includes/views/header.php';
         </div>
     </div>
 
+    <?php if (canViewCost()): ?>
     <!-- 成本与定价 -->
     <div class="card p-6 mb-4">
         <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">成本与定价</h3>
@@ -242,7 +243,9 @@ require __DIR__ . '/includes/views/header.php';
             <div class="text-xs text-slate-400 ml-auto">（售价 - 总成本）/ 售价 × 100%</div>
         </div>
     </div>
+    <?php endif; ?>
 
+    <?php if (canViewCost()): ?>
     <!-- BOM 物料清单 -->
     <div class="card p-6 mb-4">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
@@ -353,6 +356,7 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </template>
     </div>
+    <?php endif; ?>
 
     <!-- 备注 -->
     <div class="card p-6 mb-4">
@@ -365,11 +369,15 @@ require __DIR__ . '/includes/views/header.php';
     <div class="flex items-center justify-between">
         <div class="text-xs text-slate-400" x-show="isEdit" x-text="'最后更新：' + form.updated_at"></div>
         <div class="flex gap-3">
-            <a href="/self_products.php" class="btn btn-secondary">取消</a>
+            <a href="/self_products.php" class="btn btn-secondary">返回</a>
+            <?php if (canViewCost()): ?>
             <button type="submit" class="btn btn-primary">
                 <i data-lucide="save" class="w-4 h-4 mr-1.5"></i>
                 <span x-text="isEdit ? '保存修改' : '创建产品'"></span>
             </button>
+            <?php else: ?>
+            <span class="text-sm text-slate-400">您没有编辑权限</span>
+            <?php endif; ?>
         </div>
     </div>
 
