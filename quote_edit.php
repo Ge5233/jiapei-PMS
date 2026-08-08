@@ -279,9 +279,14 @@ Alpine.data('quoteForm',(init)=>{
                 const p=productMap[pid];
                 item.spec=p.spec||'';
                 item.unit=p.unit||'套';
-                // 建议售价 = 进价 × 系数
-                const coef=parseFloat(p.guide_price_coefficient||1.1);
-                item.unit_price=parseFloat(((p.cost_price||0)*coef).toFixed(2));
+                // 指导售价 = 进价 × 指导售价系数
+                const cost=parseFloat(p.cost_price)||0;
+                const gpCoef=parseFloat(p.guide_price_coefficient||1.1);
+                const mpCoef=parseFloat(p.min_price_coefficient||0.9);
+                const guidePrice=cost*gpCoef;
+                item.unit_price=parseFloat(guidePrice.toFixed(2));
+                // 折扣 = 最低售价系数 / 指导售价系数
+                item.discount=gpCoef>0?parseFloat((mpCoef/gpCoef).toFixed(4)):1;
                 item.item_name='';
             }
             this.calc();
@@ -293,8 +298,12 @@ Alpine.data('quoteForm',(init)=>{
                 const p=selfProductMap[pid];
                 item.spec=p.model_no||'';
                 item.unit=p.unit||'套';
-                const coef=parseFloat(p.guide_price_coefficient||1.6);
-                item.unit_price=parseFloat(((p.total_cost||0)*coef).toFixed(2));
+                const cost=parseFloat(p.total_cost)||0;
+                const gpCoef=parseFloat(p.guide_price_coefficient||1.6);
+                const mpCoef=parseFloat(p.min_price_coefficient||0.9);
+                const guidePrice=cost*gpCoef;
+                item.unit_price=parseFloat(guidePrice.toFixed(2));
+                item.discount=gpCoef>0?parseFloat((mpCoef/gpCoef).toFixed(4)):1;
                 item.item_name='';
             }
             this.calc();

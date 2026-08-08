@@ -189,20 +189,20 @@ require __DIR__ . '/includes/views/header.php';
 
         <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
             <div>
-                <label class="form-label">指导价系数</label>
+                <label class="form-label">指导售价系数</label>
                 <div class="relative">
                     <input type="number" x-model="form.guide_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">建议售价 = 总成本 × 系数。当前建议：<span class="font-medium text-slate-700" x-text="'¥' + formatMoney(totalCost * form.guide_price_coefficient)"></span></p>
+                <p class="text-xs text-slate-400 mt-1">当前建议售价：<span class="font-medium text-slate-700" x-text="'¥' + formatMoney(totalCost * form.guide_price_coefficient)"></span></p>
             </div>
             <div>
-                <label class="form-label">最低售价</label>
+                <label class="form-label">最低售价系数</label>
                 <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
-                    <input type="number" x-model="form.min_price" step="0.01" min="0" class="form-input pl-7">
+                    <input type="number" x-model="form.min_price_coefficient" step="0.001" min="0.1" max="5" class="form-input tabular-nums" @input="calcTotal">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">×</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">绝对底线价，报价不得低于此值</p>
+                <p class="text-xs text-slate-400 mt-1">最低售价 = 总成本 × 系数<br>最高折扣：<span class="font-medium" x-text="totalCost>0&&form.guide_price>0 ? ((totalCost*form.min_price_coefficient)/form.guide_price*100).toFixed(0)+'%' : '-'"></span></p>
             </div>
         </div>
 
@@ -361,7 +361,7 @@ document.addEventListener('alpine:init', () => {
                 guide_price: init.selfProduct?.guide_price || 0,
                 min_discount: init.selfProduct?.min_discount || 1.00,
                 guide_price_coefficient: init.selfProduct?.guide_price_coefficient || 1.600,
-                min_price: init.selfProduct?.min_price || 0,
+                min_price_coefficient: init.selfProduct?.min_price_coefficient || 0.900,
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
             },
@@ -498,7 +498,7 @@ document.addEventListener('alpine:init', () => {
                 fd.append('guide_price', this.form.guide_price);
                 fd.append('min_discount', this.form.min_discount);
                 fd.append('guide_price_coefficient', this.form.guide_price_coefficient);
-                fd.append('min_price', this.form.min_price);
+                fd.append('min_price_coefficient', this.form.min_price_coefficient);
                 fd.append('remark', this.form.remark);
                 fd.append('material_cost', this.calcMaterialCost.toFixed(2));
                 fd.append('total_cost', this.totalCost.toFixed(2));
