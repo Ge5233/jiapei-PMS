@@ -152,6 +152,7 @@ require __DIR__ . '/includes/views/header.php';
                         </button>
                     </div>
                 </td>
+                <?php endif; ?>
             </tr>
             <?php endforeach; ?>
         </tbody>

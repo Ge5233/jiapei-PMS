@@ -299,13 +299,17 @@ require __DIR__ . '/includes/views/header.php';
                                 <td class="px-3 py-2">
                                     <!-- 外采产品模式 -->
                                     <template x-if="item.product_id || item.product_id === ''">
-                                        <select class="form-select text-sm" :value="item.product_id"
-                                                @change="bomProductChanged(idx, $event.target.value)">
-                                            <option value="">-- 选择产品 --</option>
-                                            <template x-for="p in allProducts" :key="p.id">
-                                                <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
-                                            </template>
-                                        </select>
+                                        <div>
+                                            <input type="text" class="form-input text-sm mb-1" placeholder="搜索产品..."
+                                                   x-model="bomSearch" @input="filterBomProducts">
+                                            <select class="form-select text-sm w-full" :value="item.product_id"
+                                                    @change="bomProductChanged(idx, $event.target.value)" size="8">
+                                                <option value="">-- 选择产品 --</option>
+                                                <template x-for="p in filteredBomProducts" :key="p.id">
+                                                    <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
                                     </template>
                                     <!-- 临时物料模式 -->
                                     <template x-if="item.product_id === null">
@@ -418,6 +422,15 @@ document.addEventListener('alpine:init', () => {
                 _product_cost: item.product_id ? (productMap[item.product_id]?.cost_price || 0) : 0,
             })),
             allProducts: init.allProducts || [],
+            bomSearch: '',
+            get filteredBomProducts() {
+                const q = (this.bomSearch || '').toLowerCase();
+                if (!q) return this.allProducts;
+                return this.allProducts.filter(p =>
+                    (p.sku + ' ' + p.name).toLowerCase().includes(q)
+                );
+            },
+            filterBomProducts() { /* trigger getter */ },
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
             imageFile: null,           // File 对象
             imageChanged: false,       // 是否改过图片

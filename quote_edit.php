@@ -131,21 +131,31 @@ require __DIR__ . '/includes/views/header.php';
                             <td class="px-2 py-2">
                                 <!-- 外采 -->
                                 <template x-if="item.source_type==='product'">
-                                    <select class="form-select text-sm" @change="productChanged(idx, $event.target.value)">
-                                        <option value="">--选择产品--</option>
-                                        <template x-for="p in allProducts" :key="p.id">
-                                            <option :value="p.id" x-text="p.sku+' '+p.name"></option>
-                                        </template>
-                                    </select>
+                                    <div>
+                                        <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
+                                               x-model="prodSearch" @input="filterProducts">
+                                        <select class="form-select text-sm w-full" size="6"
+                                                @change="productChanged(idx, $event.target.value)">
+                                            <option value="">--选择产品--</option>
+                                            <template x-for="p in filteredProducts" :key="p.id">
+                                                <option :value="p.id" x-text="p.sku+' '+p.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
                                 </template>
                                 <!-- 自产 -->
                                 <template x-if="item.source_type==='self_product'">
-                                    <select class="form-select text-sm" @change="selfProductChanged(idx, $event.target.value)">
-                                        <option value="">--选择产品--</option>
-                                        <template x-for="p in allSelfProducts" :key="p.id">
-                                            <option :value="p.id" x-text="p.name"></option>
-                                        </template>
-                                    </select>
+                                    <div>
+                                        <input type="text" class="form-input text-sm mb-1" placeholder="搜索..."
+                                               x-model="spSearch" @input="filterSpProducts">
+                                        <select class="form-select text-sm w-full" size="6"
+                                                @change="selfProductChanged(idx, $event.target.value)">
+                                            <option value="">--选择产品--</option>
+                                            <template x-for="p in filteredSpProducts" :key="p.id">
+                                                <option :value="p.id" x-text="p.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
                                 </template>
                                 <!-- 临时 -->
                                 <template x-if="item.source_type==='adhoc'">
@@ -259,6 +269,20 @@ Alpine.data('quoteForm',(init)=>{
         })),
         allProducts: init.allProducts||[],
         allSelfProducts: init.allSelfProducts||[],
+        prodSearch: '',
+        spSearch: '',
+        get filteredProducts() {
+            const q = (this.prodSearch || '').toLowerCase();
+            if (!q) return this.allProducts;
+            return this.allProducts.filter(p => (p.sku+' '+p.name).toLowerCase().includes(q));
+        },
+        get filteredSpProducts() {
+            const q = (this.spSearch || '').toLowerCase();
+            if (!q) return this.allSelfProducts;
+            return this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q));
+        },
+        filterProducts() {},
+        filterSpProducts() {},
         submitted: false,
 
         addItem(type){
