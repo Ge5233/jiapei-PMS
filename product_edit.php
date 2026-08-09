@@ -443,38 +443,7 @@ function supplierCombobox() {
             this.selectedId = id;
             this.selectedLabel = label;
             this.open = false;
-            // 选择分类后自动生成 SKU
-            this.generateSku(id);
-        },
-        async generateSku(categoryId) {
-            if (!categoryId || categoryId <= 0) return;
-            
-            // 如果 SKU 已有值且用户手动修改过，不自动覆盖
-            const skuInput = document.getElementById('sku');
-            if (skuInput && skuInput.value && skuInput.dataset.manualEdit === 'true') {
-                return;
-            }
-            
-            try {
-                const formData = new FormData();
-                formData.append('category_id', categoryId);
-                formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
-                
-                const response = await fetch('/api/generate_sku.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                if (data.success && skuInput) {
-                    skuInput.value = data.sku;
-                    skuInput.dataset.manualEdit = 'false';
-                } else if (data.error) {
-                    console.warn('SKU 生成失败:', data.error);
-                }
-            } catch (error) {
-                console.error('SKU 生成请求失败:', error);
-            }
+            // 供应商改变不触发 SKU 生成（SKU 只与分类相关）
         },
         filter() {
             const kw = this.keyword.trim().toLowerCase();
@@ -519,6 +488,8 @@ function categoryCombobox() {
             this.selectedId = id;
             this.selectedLabel = label;
             this.open = false;
+            // 选择分类后自动生成 SKU
+            this.$nextTick(() => generateSkuFromCategory(id));
         },
         filteredGroups: [],
         filter() {
@@ -718,42 +689,40 @@ if (skuInput) {
         this.dataset.manualEdit = 'true';
     });
 }
+// 全局 SKU 生成函数
+async function generateSkuFromCategory(categoryId) {
+    if (!categoryId || categoryId <= 0) return;
+    const skuIn = document.getElementById('sku');
+    if (skuIn && skuIn.dataset.manualEdit === 'true') return; // 用户手动改过就不覆盖
+    try {
+        const fd = new FormData();
+        fd.append('category_id', categoryId);
+        fd.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        const r = await fetch('/api/generate_sku.php', { method: 'POST', body: fd });
+        const d = await r.json();
+        if (d.success && skuIn) {
+            skuIn.value = d.sku;
+            skuIn.dataset.manualEdit = 'false';
+            checkSkuFormat();
+        } else if (d.error) {
+            console.warn('SKU 生成:', d.error);
+        }
+    } catch (e) {
+        console.warn('SKU 请求失败:', e);
+    }
+}
+
 if (generateSkuBtn) {
-    generateSkuBtn.addEventListener('click', async function() {
-        // 从隐藏 input 获取分类 ID
+    generateSkuBtn.addEventListener('click', function() {
         const categoryIdInput = document.querySelector('input[name="category_id"]');
         if (!categoryIdInput || !categoryIdInput.value) {
             alert('请先选择分类');
             return;
         }
-        
-        const categoryId = parseInt(categoryIdInput.value);
-        if (categoryId <= 0) {
-            alert('请先选择分类');
-            return;
-        }
-        
-        // 调用 API 生成 SKU
-        try {
-            const formData = new FormData();
-            formData.append('category_id', categoryId);
-            formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
-            
-            const response = await fetch('/api/generate_sku.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            if (data.success && skuInput) {
-                skuInput.value = data.sku;
-                skuInput.dataset.manualEdit = 'false';
-            } else if (data.error) {
-                alert('SKU 生成失败: ' + data.error);
-            }
-        } catch (error) {
-            alert('SKU 生成请求失败: ' + error.message);
-        }
+        // 强制生成（允许覆盖手动输入）
+        const skuIn = document.getElementById('sku');
+        if (skuIn) skuIn.dataset.manualEdit = 'false';
+        generateSkuFromCategory(parseInt(categoryIdInput.value));
     });
 }
 
