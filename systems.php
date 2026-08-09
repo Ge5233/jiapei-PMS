@@ -237,7 +237,7 @@ document.addEventListener('alpine:init',()=>{
             addMod(){this.modules.push({name:'',_open:true,items:[]})},
             moveMod(i,d){const t=i+d;if(t<0||t>=this.modules.length)return;[this.modules[i],this.modules[t]]=[this.modules[t],this.modules[i]]},
             addItem(mi){this.modules[mi].items=[...this.modules[mi].items,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:'',subs:[]}];this.modules[mi]._open=true},
-            addSub(it){it.subs=[...it.subs,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:''}]},
+            addSub(it){it.subs=[...it.subs,{src:'a',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:''}]},
             moduleSum(i){const mod=this.modules[i];let t=0;(mod.items||[]).forEach(it=>{t+=(it.qty||0)*(it.price||0);(it.subs||[]).forEach(s=>t+=(s.qty||0)*(s.price||0))});return t},
 
             filteredProducts(q){q=(q||'').toLowerCase();return q?PL.filter(p=>p.label.toLowerCase().includes(q)):PL},
