@@ -775,46 +775,35 @@ if (form) {
     form.addEventListener('submit', () => { formDirty = false; });
 }
 
-// 拦截返回列表
-const backBtn = document.getElementById('backToList');
-if (backBtn) {
-    backBtn.addEventListener('click', function(e) {
-        if (!formDirty) return; // clean, allow
-        e.preventDefault();
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-        overlay.innerHTML = '<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button><button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button></div></div>';
-        document.body.appendChild(overlay);
-        overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
-        overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = '/products.php'; };
-        overlay.onclick = (ev) => { if (ev.target === overlay) { document.body.removeChild(overlay); } };
-    });
-}
-
-// 拦截所有侧栏/导航跳转
-window.addEventListener('beforeunload', function(e) {
-    if (formDirty) {
-        e.preventDefault();
-        e.returnValue = '有未保存的修改，确定离开吗？';
-        return e.returnValue;
-    }
+// 拦截所有链接跳转（委托模式，页面加载时就生效）
+document.addEventListener('click', function(e) {
+    if (!formDirty) return;
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || href === '#' || href === 'javascript:;' || href === 'javascript:void(0)') return;
+    if (a.hostname && a.hostname !== location.hostname) return; // external
+    if (a.closest('#productForm')) return;
+    e.preventDefault();
+    showLeaveModal(href);
 });
 
-// 也拦截 .nav-link 的点击（左侧菜单）
-document.querySelectorAll('a[href]:not([target]):not([download])').forEach(a => {
-    a.addEventListener('click', function(e) {
-        if (!formDirty) return;
-        const href = this.getAttribute('href');
-        if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('#') || this === backBtn) return;
-        e.preventDefault();
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-        overlay.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button><button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button></div></div>`;
-        document.body.appendChild(overlay);
-        overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
-        overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = href; };
-        overlay.onclick = (ev) => { if (ev.target === overlay) { document.body.removeChild(overlay); } };
-    });
+function showLeaveModal(targetHref) {
+    const el = document.getElementById('leaveModal');
+    if (el) { document.body.removeChild(el); }
+    const overlay = document.createElement('div');
+    overlay.id = 'leaveModal';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+    overlay.innerHTML = '<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button class="btn btn-primary text-sm px-4" id="modalSave">保存并离开</button><button class="btn btn-secondary text-sm px-4" id="modalDiscard">不保存</button></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#modalSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
+    overlay.querySelector('#modalDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = targetHref; };
+    overlay.addEventListener('click', function(ev) { if (ev.target === overlay) document.body.removeChild(overlay); });
+}
+
+// 刷新/关闭页面的保护
+window.addEventListener('beforeunload', function(e) {
+    if (formDirty) { e.preventDefault(); e.returnValue = ''; }
 });
 
 // 文件上传
