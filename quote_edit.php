@@ -91,8 +91,6 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b">
             <h3 class="text-base font-medium">产品明细</h3>
             <div class="flex gap-2 items-center">
-                <input type="text" class="form-input text-sm w-36" placeholder="搜外采..." x-model="prodSearch">
-                <input type="text" class="form-input text-sm w-36" placeholder="搜自产..." x-model="spSearch">
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('product')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加产品</button>
                 <button type="button" class="btn btn-secondary text-sm" @click="addItem('adhoc')"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>临时项</button>
             </div>
@@ -131,25 +129,31 @@ require __DIR__ . '/includes/views/header.php';
                                 </select>
                             </td>
                             <td class="px-2 py-2">
-                                <!-- 外采 -->
+                                <!-- 外采: 搜索 -->
                                 <template x-if="item.source_type==='product'">
-                                    <select class="form-select text-sm w-full"
-                                            @change="productChanged(idx, $event.target.value)">
-                                        <option value="">--选择产品--</option>
-                                        <template x-for="p in filteredProducts" :key="p.id">
-                                            <option :value="p.id" x-text="p.sku+' '+p.name"></option>
-                                        </template>
-                                    </select>
+                                    <div class="relative">
+                                        <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
+                                               @click.away="item._prodOpen=false"
+                                               x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
+                                        <div x-show="item._prodOpen && filteredQProducts(item._prodFilter||'').length>0" class="search-drop">
+                                            <template x-for="p in filteredQProducts(item._prodFilter||'')" :key="p.id">
+                                                <div @mousedown.prevent="qPickProduct(idx, p)" x-text="p.sku+' '+p.name"></div>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </template>
-                                <!-- 自产 -->
+                                <!-- 自产: 搜索 -->
                                 <template x-if="item.source_type==='self_product'">
-                                    <select class="form-select text-sm w-full"
-                                            @change="selfProductChanged(idx, $event.target.value)">
-                                        <option value="">--选择产品--</option>
-                                        <template x-for="p in filteredSpProducts" :key="p.id">
-                                            <option :value="p.id" x-text="p.name"></option>
-                                        </template>
-                                    </select>
+                                    <div class="relative">
+                                        <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
+                                               @click.away="item._spOpen=false"
+                                               x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产..." autocomplete="off">
+                                        <div x-show="item._spOpen && filteredQSp(item._spFilter||'').length>0" class="search-drop">
+                                            <template x-for="p in filteredQSp(item._spFilter||'')" :key="p.id">
+                                                <div @mousedown.prevent="qPickSp(idx, p)" x-text="p.name"></div>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </template>
                                 <!-- 临时 -->
                                 <template x-if="item.source_type==='adhoc'">
@@ -227,6 +231,7 @@ require __DIR__ . '/includes/views/header.php';
 document.addEventListener('alpine:init',()=>{
 Alpine.data('quoteForm',(init)=>{
     const productMap={}; (init.allProducts||[]).forEach(p=>{productMap[p.id]=p});
+    const spMap={}; (init.allSelfProducts||[]).forEach(p=>{spMap[p.id]=p});
     const selfProductMap={}; (init.allSelfProducts||[]).forEach(p=>{selfProductMap[p.id]=p});
     const level1Cats=init.level1Categories||{};
 
@@ -260,27 +265,20 @@ Alpine.data('quoteForm',(init)=>{
             unit_price: parseFloat(item.unit_price)||0,
             discount: parseFloat(item.discount)||1,
             _subtotal: parseFloat(item.line_total)||0,
+            _prodShow: item.product_id?(productMap[item.product_id]?.sku+' '+productMap[item.product_id]?.name||''):'',
+            _spShow: item.self_product_id?(spMap[item.self_product_id]?.name||''):'',
+            _prodOpen: false, _prodFilter: '', _spOpen: false, _spFilter: '',
         })),
         allProducts: init.allProducts||[],
         allSelfProducts: init.allSelfProducts||[],
-        prodSearch: '',
-        spSearch: '',
-        get filteredProducts() {
-            const q = (this.prodSearch || '').toLowerCase();
-            if (!q) return this.allProducts;
-            return this.allProducts.filter(p => (p.sku+' '+p.name).toLowerCase().includes(q));
-        },
-        get filteredSpProducts() {
-            const q = (this.spSearch || '').toLowerCase();
-            if (!q) return this.allSelfProducts;
-            return this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q));
-        },
-        filterProducts() {},
-        filterSpProducts() {},
+        filteredQProducts(q){ q=(q||'').toLowerCase(); return q?this.allProducts.filter(p=>(p.sku+' '+p.name).toLowerCase().includes(q)):this.allProducts; },
+        filteredQSp(q){ q=(q||'').toLowerCase(); return q?this.allSelfProducts.filter(p=>p.name.toLowerCase().includes(q)):this.allSelfProducts; },
+        qPickProduct(idx,p){ const it=this.items[idx]; it.product_id=String(p.id); it._prodShow=p.sku+' '+p.name; it._prodFilter=''; it._prodOpen=false; it.unit=p.unit||''; this.productChanged(idx,String(p.id)); },
+        qPickSp(idx,p){ const it=this.items[idx]; it.self_product_id=String(p.id); it._spShow=p.name; it._spFilter=''; it._spOpen=false; it.unit=p.unit||''; this.selfProductChanged(idx,String(p.id)); },
         submitted: false,
 
         addItem(type){
-            this.items.push({source_type:type,product_id:'',self_product_id:'',item_name:'',quantity:1,unit:'套',unit_price:0,discount:1,_subtotal:0,spec:'',category_id:null,category_name:''});
+            this.items.push({source_type:type,product_id:'',self_product_id:'',item_name:'',quantity:1,unit:'套',unit_price:0,discount:1,_subtotal:0,spec:'',category_id:null,category_name:'',_prodShow:'',_spShow:'',_prodOpen:false,_prodFilter:'',_spOpen:false,_spFilter:''});
             this.$nextTick(()=>lucide.createIcons());
         },
         switchType(idx,type){

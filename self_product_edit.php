@@ -254,8 +254,6 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
-                <input type="text" class="form-input text-sm w-36" placeholder="搜外采..." x-model="bomProdSearch">
-                <input type="text" class="form-input text-sm w-36" placeholder="搜自产..." x-model="bomSpSearch">
                 <?php if ($isEdit): ?>
                 <a href="/export_bom.php?self_product_id=<?= $id ?>" class="btn btn-secondary text-sm">
                     <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
@@ -302,26 +300,32 @@ require __DIR__ . '/includes/views/header.php';
                                         <option value="adhoc">临时物料</option>
                                     </select>
                                 </td>
-                                <td class="px-3 py-2">
-<!-- 外采产品模式 -->
+<td class="px-3 py-2">
+                                    <!-- 外采产品 : 搜索输入框 -->
                                     <template x-if="bomTypeOf(item)==='product'">
-                                        <select class="form-select text-sm w-full"
-                                                @change="bomProductChanged(idx, $event.target.value)">
-                                            <option value="">-- 选择产品 --</option>
-                                            <template x-for="p in filteredBomProducts" :key="p.id">
-                                                <option :value="p.id" x-text="p.sku + ' ' + p.name"></option>
-                                            </template>
-                                        </select>
+                                        <div class="relative">
+                                            <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
+                                                   @click.away="item._prodOpen=false"
+                                                   x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
+                                            <div x-show="item._prodOpen && filteredBomProducts(item._prodFilter||'').length>0" class="search-drop-bom">
+                                                <template x-for="p in filteredBomProducts(item._prodFilter||'')" :key="p.id">
+                                                    <div @mousedown.prevent="bomPickProduct(idx, p)" x-text="p.sku + ' ' + p.name"></div>
+                                                </template>
+                                            </div>
+                                        </div>
                                     </template>
-                                    <!-- 自产产品模式 -->
+                                    <!-- 自产产品 : 搜索输入框 -->
                                     <template x-if="bomTypeOf(item)==='self_product'">
-                                        <select class="form-select text-sm w-full"
-                                                @change="bomSpChanged(idx, $event.target.value)">
-                                            <option value="">-- 选择产品 --</option>
-                                            <template x-for="p in filteredBomSpProducts" :key="p.id">
-                                                <option :value="p.id" x-text="p.name"></option>
-                                            </template>
-                                        </select>
+                                        <div class="relative">
+                                            <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
+                                                   @click.away="item._spOpen=false"
+                                                   x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产产品..." autocomplete="off">
+                                            <div x-show="item._spOpen && filteredBomSpProducts(item._spFilter||'').length>0" class="search-drop-bom">
+                                                <template x-for="p in filteredBomSpProducts(item._spFilter||'')" :key="p.id">
+                                                    <div @mousedown.prevent="bomPickSp(idx, p)" x-text="p.name"></div>
+                                                </template>
+                                            </div>
+                                        </div>
                                     </template>
                                     <!-- 临时物料模式 -->
                                     <template x-if="bomTypeOf(item)==='adhoc'">
@@ -440,28 +444,46 @@ document.addEventListener('alpine:init', () => {
                 ...item,
                 product_id: item.product_id ? String(item.product_id) : (item.bom_self_product_id ? '' : ''),
                 bom_self_product_id: item.bom_self_product_id ? String(item.bom_self_product_id) : '',
-                // 如果是关联产品，从 productMap 取得最新进价
                 _product_cost: item.product_id ? (productMap[item.product_id]?.cost_price || 0) : 0,
                 _sp_cost: item.bom_self_product_id ? (selfProductMap[item.bom_self_product_id]?.total_cost || 0) : 0,
+                _prodShow: item.product_id ? ((productMap[item.product_id]?.sku||'') + ' ' + (productMap[item.product_id]?.name||'')) : '',
+                _spShow: item.bom_self_product_id ? (selfProductMap[item.bom_self_product_id]?.name||'') : '',
+                _prodOpen: false, _prodFilter: '', _spOpen: false, _spFilter: '',
             })),
             allProducts: init.allProducts || [],
             allSelfProducts: init.allSelfProducts || [],
-            bomProdSearch: '',
-            bomSpSearch: '',
-            get filteredBomProducts() {
-                const q = (this.bomProdSearch || '').toLowerCase();
-                if (!q) return this.allProducts;
-                return this.allProducts.filter(p => (p.sku + ' ' + p.name).toLowerCase().includes(q));
+            filteredBomProducts(q) {
+                q = (q || '').toLowerCase();
+                return q ? this.allProducts.filter(p => (p.sku + ' ' + p.name).toLowerCase().includes(q)) : this.allProducts;
             },
-            get filteredBomSpProducts() {
-                const q = (this.bomSpSearch || '').toLowerCase();
-                if (!q) return this.allSelfProducts;
-                return this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q));
+            filteredBomSpProducts(q) {
+                q = (q || '').toLowerCase();
+                return q ? this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q)) : this.allSelfProducts;
             },
             bomTypeOf(item) {
                 if (item.product_id === null && item.bom_self_product_id === null) return 'adhoc';
                 if (item.bom_self_product_id) return 'self_product';
                 return 'product';
+            },
+            bomPickProduct(idx, p) {
+                const item = this.bomItems[idx];
+                item.product_id = p.id;
+                item._prodShow = p.sku + ' ' + p.name;
+                item._prodFilter = '';
+                item._prodOpen = false;
+                item.unit = p.unit || '';
+                item._product_cost = parseFloat(p.cost_price) || 0;
+                this.calcTotal();
+            },
+            bomPickSp(idx, p) {
+                const item = this.bomItems[idx];
+                item.bom_self_product_id = p.id;
+                item._spShow = p.name;
+                item._spFilter = '';
+                item._spOpen = false;
+                item.unit = p.unit || '';
+                item._sp_cost = parseFloat(p.total_cost) || 0;
+                this.calcTotal();
             },
             filterBomProducts() { /* getter 处理 */ },
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
@@ -502,6 +524,12 @@ document.addEventListener('alpine:init', () => {
                     unit_cost: 0,
                     _product_cost: 0,
                     _sp_cost: 0,
+                    _prodShow: '',
+                    _spShow: '',
+                    _prodOpen: false,
+                    _prodFilter: '',
+                    _spOpen: false,
+                    _spFilter: '',
                     sort_order: this.bomItems.length,
                     remark: '',
                 });

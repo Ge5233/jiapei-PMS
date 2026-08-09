@@ -231,3 +231,33 @@
     max-height: 90vh;
     overflow: auto;
 }
+
+/* ============================================================
+   可搜索下拉框
+   ============================================================ */
+.search-drop,
+.search-drop-bom {
+    position: absolute;
+    z-index: 50;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    max-height: 12rem;
+    overflow-y: auto;
+}
+.search-drop > div,
+.search-drop-bom > div {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-drop > div:hover,
+.search-drop-bom > div:hover {
+    background: #eff6ff;
+}
