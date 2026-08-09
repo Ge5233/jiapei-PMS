@@ -192,6 +192,9 @@ require __DIR__ . '/includes/views/header.php';
                 </div>
             </div>
         </template>
+        <div class="text-right font-medium text-sm mt-3 pr-2" x-show="modules.length>0">
+            系统总价：<span class="text-blue-600 text-lg" x-text="'¥'+fmt(totalAll)"></span>
+        </div>
         <button class="btn btn-secondary text-sm w-full" @click="addMod" x-show="editMode">+ 添加模块</button>
     </div>
 
@@ -251,8 +254,9 @@ document.addEventListener('alpine:init',()=>{
                 try{const r=await fetch('/api/system_save.php',{method:'POST',body:fd});const d=await r.json();if(d.ok){if(this.activeId==='new'){this.activeId=d.id;this.projects.unshift({id:d.id,name:this.form.name,status:this.form.status})}else{const p=this.projects.find(x=>x.id===this.activeId);if(p){p.name=this.form.name;p.status=this.form.status}}alert('保存成功')}else alert(d.message)}catch(e){alert('出错：'+e.message)}
             },
             async doDelete(){if(!confirm('删除「'+this.form.name+'」？'))return;const fd=new FormData();fd.append('action','delete');fd.append('id',this.activeId);fd.append('_csrf',this.CSRF);await fetch('/api/system_save.php',{method:'POST',body:fd});this.projects=this.projects.filter(x=>x.id!==this.activeId);this.activeId=null},
-            get summary(){const m={};const add=(k,n,spec,u,q,p,src)=>{if(!m[k])m[k]={k,n,spec,u,q:0,p,t:0,srcs:new Set};m[k].q=+(m[k].q+q).toFixed(2);m[k].t=+(m[k].t+q*p).toFixed(2);m[k].srcs.add(src)};this.modules.forEach(mod=>{(mod.items||[]).forEach(it=>{const nm=it.src==='a'?it.name:(it.pid?(PL.find(x=>x.id==it.pid)?.label):SL.find(x=>x.id==it.sid)?.label);add(nm||'?',nm||'?',it.spec,it.unit,it.qty||0,it.price||0,mod.name);(it.subs||[]).forEach(s=>{const sn=s.src==='a'?s.name:(s.pid?(PL.find(x=>x.id==s.pid)?.label):SL.find(x=>x.id==s.sid)?.label);add(sn||'?',sn||'?',s.spec,s.unit,s.qty||0,s.price||0,mod.name)})})});return Object.values(m).map(r=>({...r,srcs:[...r.srcs].join(', ')}))},
+            get summary(){const m={};const add=(k,n,spec,u,q,p,src)=>{if(!m[k])m[k]={k,n,spec,u,q:0,p,t:0,srcs:new Set};m[k].q=+(m[k].q+parseFloat(q)).toFixed(2);m[k].t=+(m[k].t+parseFloat(q)*parseFloat(p)).toFixed(2);m[k].srcs.add(src)};this.modules.forEach(mod=>{(mod.items||[]).forEach(it=>{const nm=it.src==='a'?it.name:(it.pid?(PL.find(x=>String(x.id)==String(it.pid))?.label):SL.find(x=>String(x.id)==String(it.sid))?.label);add(nm||'?',nm||'?',it.spec,it.unit,it.qty||0,it.price||0,mod.name);(it.subs||[]).forEach(s=>{const sn=s.src==='a'?s.name:(s.pid?(PL.find(x=>String(x.id)==String(s.pid))?.label):SL.find(x=>String(x.id)==String(s.sid))?.label);add(sn||'?',sn||'?',s.spec,s.unit,s.qty||0,s.price||0,mod.name)})})});return Object.values(m).map(r=>({...r,srcs:[...r.srcs].join(', ')}))},
             get summaryTotal(){return this.summary.reduce((t,r)=>t+r.t,0)},
+            get totalAll(){let t=0;this.modules.forEach((m,i)=>t+=this.moduleSum(i));return t},
             fmt(v){return(parseFloat(v)||0).toFixed(2)},
         }
     })
