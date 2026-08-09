@@ -17,6 +17,22 @@ $supplierId = $_GET['supplier_id'] ?? '';
 $status = $_GET['status'] ?? '';
 $page = max(1, (int)($_GET['page'] ?? 1));
 $pageSize = 20;
+$sort = $_GET['sort'] ?? 'updated_at';
+$dir = strtolower($_GET['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+$sortWhitelist = [
+    'sku' => 'p.sku', 'name' => 'p.name', 'category' => 'c.name',
+    'supplier' => 's.name', 'cost' => 'p.cost_price', 'guide' => 'p.guide_price',
+    'updated_at' => 'p.updated_at', 'created_at' => 'p.created_at'
+];
+$sortCol = $sortWhitelist[$sort] ?? 'p.updated_at';
+function sortUrl(string $field, string $curSort, string $curDir): string {
+    $newDir = ($curSort === $field && $curDir === 'asc') ? 'desc' : 'asc';
+    return '?' . http_build_query(array_merge($_GET, ['sort' => $field, 'dir' => $newDir, 'page' => 1]));
+}
+function sortIcon(string $field, string $curSort, string $curDir): string {
+    if ($curSort !== $field) return '';
+    return $curDir === 'asc' ? ' ↑' : ' ↓';
+}
 
 $result = Product::list([
     'keyword' => $keyword,
@@ -25,6 +41,8 @@ $result = Product::list([
     'status' => $status !== '' ? (int)$status : null,
     'page' => $page,
     'page_size' => $pageSize,
+    'sort_col' => $sortCol,
+    'sort_dir' => $dir,
 ]);
 
 $rows = $result['rows'];
@@ -130,15 +148,17 @@ require __DIR__ . '/includes/views/header.php';
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>SKU</th>
-                        <th>名称 / 规格</th>
-                        <th>分类</th>
-                        <th>供应商</th>
+                        <th><a href="<?= h(sortUrl('sku', $sort, $dir)) ?>" class="hover:text-blue-600">SKU<?= sortIcon('sku', $sort, $dir) ?></a></th>
+                        <th><a href="<?= h(sortUrl('name', $sort, $dir)) ?>" class="hover:text-blue-600">名称 / 规格<?= sortIcon('name', $sort, $dir) ?></a></th>
+                        <th><a href="<?= h(sortUrl('category', $sort, $dir)) ?>" class="hover:text-blue-600">分类<?= sortIcon('category', $sort, $dir) ?></a></th>
+                        <th><a href="<?= h(sortUrl('supplier', $sort, $dir)) ?>" class="hover:text-blue-600">供应商<?= sortIcon('supplier', $sort, $dir) ?></a></th>
                         <th>单位</th>
                         <?php if (canViewCost()): ?>
-                        <th class="text-right">综合进价</th>
+                        <th class="text-right"><a href="<?= h(sortUrl('cost', $sort, $dir)) ?>" class="hover:text-blue-600">综合进价<?= sortIcon('cost', $sort, $dir) ?></a></th>
+                        <th class="text-right"><a href="<?= h(sortUrl('guide', $sort, $dir)) ?>" class="hover:text-blue-600">指导售价<?= sortIcon('guide', $sort, $dir) ?></a></th>
+                        <?php else: ?>
+                        <th class="text-right"><a href="<?= h(sortUrl('guide', $sort, $dir)) ?>" class="hover:text-blue-600">指导售价<?= sortIcon('guide', $sort, $dir) ?></a></th>
                         <?php endif; ?>
-                        <th class="text-right">指导售价</th>
                         <th class="text-right">最低售价</th>
                         <th class="text-right">最高折扣</th>
                         <th class="text-center">状态</th>

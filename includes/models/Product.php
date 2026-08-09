@@ -77,6 +77,8 @@ class Product
         $page = max(1, (int)($filters['page'] ?? 1));
         $pageSize = max(1, min(200, (int)($filters['page_size'] ?? 20)));
         $offset = ($page - 1) * $pageSize;
+        $sortCol = $filters['sort_col'] ?? 'p.updated_at';
+        $sortDir = strtolower($filters['sort_dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
         // 总数
         $stmt = Database::getInstance()->prepare("SELECT COUNT(*) AS c FROM products p WHERE $whereSql");
@@ -85,12 +87,14 @@ class Product
 
         // 列表
         $sql = "SELECT p.*, c.name AS category_name, s.name AS supplier_name,
-                       c.parent_sort_id, c.sub_id
+                       COALESCE(pc.parent_sort_id, 0) AS parent_sort_id,
+                       COALESCE(c.sub_id, 0) AS sub_id
                 FROM products p
                 LEFT JOIN categories c ON c.id = p.category_id
+                LEFT JOIN categories pc ON pc.id = c.parent_id
                 LEFT JOIN suppliers s ON s.id = p.supplier_id
                 WHERE $whereSql
-                ORDER BY p.updated_at DESC
+                ORDER BY $sortCol $sortDir
                 LIMIT $offset, $pageSize";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute($params);
