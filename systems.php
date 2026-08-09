@@ -72,6 +72,9 @@ require __DIR__ . '/includes/views/header.php';
                     <button class="text-xs text-red-400" @click.stop="modules.splice(mi,1)">×</button>
                 </div>
                 <div x-show="mod._open !== false">
+                    <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">
+                        还没有主材，点上方 +主材 添加
+                    </div>
                     <template x-for="(it, ii) in (mod.items||[])" :key="ii">
                         <div>
                             <div class="flex items-center gap-1 px-3 py-1.5 text-sm border-b border-slate-50">
@@ -235,10 +238,11 @@ document.addEventListener('alpine:init', () => {
                 [this.modules[i], this.modules[t]] = [this.modules[t], this.modules[i]];
             },
             addItem(mi) {
-                this.modules[mi].items.push({ src: 'p', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0, subs: [] });
+                const newItem = { src: 'p', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0, subs: [] };
+                this.modules[mi].items = [...this.modules[mi].items, newItem];
                 this.modules[mi]._open = true;
             },
-            addSub(it) { it.subs.push({ src: 'a', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0 }); },
+            addSub(it) { it.subs = [...it.subs, { src: 'a', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0 }]; },
             moduleSum(i) {
                 const mod = this.modules[i]; let t = 0;
                 (mod.items||[]).forEach(it => { t += (it.qty||0)*(it.price||0); (it.subs||[]).forEach(s => t += (s.qty||0)*(s.price||0)); });
