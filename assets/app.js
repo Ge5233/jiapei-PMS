@@ -7,6 +7,55 @@ function pmsConfirm(message, onOk) {
     }
 }
 
+// ============================================================
+// 可搜索下拉框组件
+// 用法: <div x-data="searchSelect(options, selectedIdGetter, onSelect, placeholder)">...</div>
+// options: [{id:'',label:'SKU 名称',price:0,unit:''}, ...]
+//   - 外采产品: options=products.map(p=>({id:p.id,label:p.sku+' '+p.name,price:p.cost_price,unit:p.unit}))
+//   - 自产产品: options=selfProducts.map(sp=>({id:sp.id,label:sp.name,price:sp.total_cost,unit:sp.unit}))
+// 模板 (放在需要的位置即可):
+//   <input type="text" x-model="search" @focus="open=true;if(!search)filter()" @input="filter" @keydown.escape="open=false"
+//          :placeholder="placeholder" class="form-input text-sm w-full" autocomplete="off">
+//   <div x-show="open && filtered.length>0" class="absolute z-50 w-full bg-white border rounded shadow-lg max-h-48 overflow-y-auto">
+//     <template x-for="o in filtered" :key="o.id">
+//       <div @mousedown.prevent="pick(o)" class="px-2 py-1.5 text-sm hover:bg-blue-50 cursor-pointer" :class="{'bg-blue-100': o.id==selectedId}">
+//         <span x-text="o.label"></span>
+//       </div>
+//     </template>
+//   </div>
+//   <input type="hidden" :name="name" :value="selectedId">
+document.addEventListener('alpine:init', () => {
+    Alpine.data('searchSelect', (options, initialId, onPick, ph) => ({
+        options: options || [],
+        selectedId: initialId || '',
+        displayText: '',
+        search: '',
+        open: false,
+        placeholder: ph || '搜索...',
+        get filtered() {
+            const q = (this.search || '').toLowerCase();
+            if (!q) return this.options;
+            return this.options.filter(o => o.label.toLowerCase().includes(q));
+        },
+        init() {
+            if (this.selectedId) {
+                const o = this.options.find(o => o.id == this.selectedId);
+                if (o) this.displayText = o.label;
+            }
+        },
+        filter() { /* reactive getter */ },
+        pick(o) {
+            this.selectedId = o.id;
+            this.displayText = o.label;
+            this.search = o.label;
+            this.open = false;
+            if (typeof onPick === 'function') onPick(o);
+        },
+        // Detect click outside to close
+        // Uses @click.away in template
+    }));
+});
+
 // 异步 fetch 包装
 async function pmsFetch(url, options = {}) {
     const defaults = {
