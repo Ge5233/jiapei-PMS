@@ -132,8 +132,8 @@ require __DIR__ . '/includes/views/header.php';
 
                                 <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-40" placeholder="规格">
                                 <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-12 text-center" placeholder="单位">
-                                <input x-model.number="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-16 text-right" placeholder="数量">
-                                <input x-model.number="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-20 text-right" placeholder="单价">
+                                <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-16 text-right" placeholder="数量">
+                                <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-20 text-right" placeholder="单价">
                                 <span class="w-20 text-right text-xs" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                 <button class="text-xs text-blue-400" @click="addSub(it)" x-show="editMode">+配件</button>
                                 <button class="text-xs text-red-400" @click="mod.items.splice(ii,1)" x-show="editMode">×</button>
@@ -179,8 +179,8 @@ require __DIR__ . '/includes/views/header.php';
                                             <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 flex-1 min-w-0" placeholder="名称">
                                             <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-32" placeholder="规格">
                                             <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-10 text-center">
-                                            <input x-model.number="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-14 text-right">
-                                            <input x-model.number="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-16 text-right">
+                                            <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-14 text-right">
+                                            <input x-model="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-16 text-right">
                                             <span class="w-16 text-right" x-text="'¥'+fmt(s.qty*s.price)"></span>
                                             <button class="text-xs text-red-400" @click="it.subs.splice(si,1)" x-show="editMode">×</button>
                                         </div>
