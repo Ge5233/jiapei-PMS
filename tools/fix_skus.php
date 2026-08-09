@@ -30,7 +30,16 @@ foreach ($rows as $r) {
     
     $prefix = str_pad($parentSortId, 2, '0', STR_PAD_LEFT)
             . str_pad($subId, 2, '0', STR_PAD_LEFT);
-    $newSku = $prefix . str_pad($counts[$catId], 3, '0', STR_PAD_LEFT);
+    $seq = $counts[$catId];
+    // 防止重复：检查 SKU 是否已存在，递增直到唯一
+    while (true) {
+        $newSku = $prefix . str_pad($seq, 3, '0', STR_PAD_LEFT);
+        $check = $db->prepare("SELECT id FROM products WHERE sku = ? AND id != ?");
+        $check->execute([$newSku, (int)$r['id']]);
+        if (!$check->fetch()) break;
+        $seq++;
+    }
+    $counts[$catId] = $seq; // 更新计数器
     
     if ($r['sku'] !== $newSku) {
         $db->prepare("UPDATE products SET sku = ? WHERE id = ?")
