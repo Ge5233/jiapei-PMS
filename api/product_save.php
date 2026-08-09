@@ -86,21 +86,22 @@ try {
             logAction('update', 'product', $id, "产品[{$name}]分类变更，SKU 从[{$sku}]重新生成为[{$newSku}]");
         }
         
+        if ($id > 0) {
+        // 更新
         Product::update($id, $data);
         logAction('update', 'product', $id, "更新产品：{$name}（SKU: {$data['sku']}）");
-        flash('success', '保存成功');
+        // 直接跳转回编辑页（横幅提示已足够，不重复 flash）
+        header('Location: /product_edit.php?id=' . $id . '&saved=1');
+        exit;
     } else {
+        // 创建
         $data['created_by'] = $_SESSION['user_id'] ?? null;
         $newId = Product::create($data);
         logAction('create', 'product', $newId, "创建产品：{$name}（SKU: {$sku}）");
-        flash('success', '创建成功');
-        // 跳到编辑页
+        // 跳到编辑页（顶部横幅提示已足够，不重复 flash）
         header('Location: /product_edit.php?id=' . $newId . '&created=1');
         exit;
     }
 } catch (Throwable $e) {
     jsonResponse(['ok' => false, 'message' => '保存失败：' . $e->getMessage()]);
 }
-
-header('Location: /product_edit.php?id=' . $id . '&saved=1');
-exit;
