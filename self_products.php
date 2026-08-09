@@ -49,6 +49,8 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 </div>
 
+<input type="hidden" name="_csrf" value="<?= h(csrfToken()) ?>">
+
 <!-- 筛选 -->
 <div class="card p-4 mb-4">
     <form method="get" class="flex flex-wrap gap-3 items-end">
