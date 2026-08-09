@@ -71,6 +71,7 @@ require __DIR__ . '/includes/views/header.php';
             <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='module' }" @click="view='module'">按模块</button>
             <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='summary' }" @click="view='summary'">物料汇总</button>
             <button class="btn btn-primary text-sm" @click="save" x-show="editMode">保存</button>
+            <a :href="'/export_system.php?id='+activeId" class="btn btn-secondary text-sm" x-show="activeId && activeId !== 'new'">导出Excel</a>
             <button class="btn btn-ghost text-sm text-red-500" @click="doDelete" x-show="editMode">删除</button>
         </div>
     </div>
