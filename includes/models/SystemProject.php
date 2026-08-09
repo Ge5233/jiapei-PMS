@@ -44,7 +44,9 @@ class SystemProject
         $db = Database::getInstance();
         $modules = $db->prepare(
             "SELECT * FROM system_modules WHERE project_id = ? ORDER BY sort_order, id"
-        )->execute([$projectId])->fetchAll();
+        );
+        $modules->execute([$projectId]);
+        $modules = $modules->fetchAll();
 
         foreach ($modules as &$mod) {
             $items = $db->prepare(
@@ -54,7 +56,9 @@ class SystemProject
                  LEFT JOIN products p ON p.id = i.product_id
                  LEFT JOIN self_products sp ON sp.id = i.self_product_id
                  WHERE i.module_id = ? ORDER BY i.sort_order, i.id"
-            )->execute([$mod['id']])->fetchAll();
+            );
+            $items->execute([$mod['id']]);
+            $items = $items->fetchAll();
 
             foreach ($items as &$it) {
                 $subs = $db->prepare(
@@ -64,7 +68,9 @@ class SystemProject
                      LEFT JOIN products p ON p.id = s.product_id
                      LEFT JOIN self_products sp ON sp.id = s.self_product_id
                      WHERE s.item_id = ? ORDER BY s.sort_order, s.id"
-                )->execute([$it['id']])->fetchAll();
+                );
+                $subs->execute([$it['id']]);
+                $subs = $subs->fetchAll();
                 $it['sub_items'] = $subs;
             }
             $mod['items'] = $items;
