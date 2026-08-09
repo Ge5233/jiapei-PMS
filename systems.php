@@ -152,13 +152,13 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-slate-50">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200" style="padding-left:44px">
+                                        <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1 text-xs bg-slate-50/60 border-b border-slate-200">
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
 
                                             <!-- 外采 -->
-                                            <div x-show="s.src==='p'" class="relative max-w-[200px] justify-self-start">
+                                            <div x-show="s.src==='p'" class="relative">
                                                 <input type="text" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
                                                        @click.away="s._prodOpen=false"
                                                        x-model="s._prodShow" :readonly="!editMode"
@@ -174,7 +174,7 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
 
                                             <!-- 自产 -->
-                                            <div x-show="s.src==='s'" class="relative max-w-[200px] justify-self-start">
+                                            <div x-show="s.src==='s'" class="relative">
                                                 <input type="text" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
                                                        @click.away="s._spOpen=false"
                                                        x-model="s._spShow" :readonly="!editMode"
@@ -186,7 +186,7 @@ require __DIR__ . '/includes/views/header.php';
                                                 </div>
                                             </div>
 
-                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 max-w-[200px] justify-self-start w-full" placeholder="名称">
+                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="名称">
                                             <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="规格">
                                             <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-center">
                                             <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
