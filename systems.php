@@ -152,7 +152,8 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-slate-50">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200" style="padding-left:44px">
+                                        <div class="grid grid-cols-[36px_56px_180px_110px_48px_60px_78px_78px_24px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200">
+                                            <span></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
