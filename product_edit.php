@@ -117,7 +117,7 @@ require __DIR__ . '/includes/views/header.php';
                         生成
                     </button>
                 </div>
-                <p class="form-help">格式：父分类ID(2位) + 子分类ID(2位) + 序号(3位)，选择分类后自动生成</p>
+                <p class="form-help">格式：父分类ID(2位) + 子分类ID(2位) + 序号(3位)，选择分类后自动生成。当前 SKU 是否符合规则？<span id="skuStatus" class="text-xs text-slate-400">检查中...</span></p>
             </div>
             <div>
                 <label class="form-label">供应商</label>
@@ -703,6 +703,12 @@ if (_actualMarginInputEl) {
 }
 calcMarginLive();
 
+// 分类 prefix 索引（用于 SKU 合规检查）
+const catPrefixMap = <?= json_encode(array_reduce($allCategories, function($m, $c) {
+    $m[(string)$c['id']] = ['parent_sort_id' => (int)$c['parent_sort_id'], 'sub_id' => (int)$c['sub_id']];
+    return $m;
+}, [])) ?>;
+
 // SKU 自动生成：监听手动编辑 + 生成按钮
 const skuInput = document.getElementById('sku');
 const generateSkuBtn = document.getElementById('generateSkuBtn');
@@ -750,6 +756,27 @@ if (generateSkuBtn) {
         }
     });
 }
+
+// SKU 合规检查
+function checkSkuFormat() {
+    const skuVal = skuInput?.value;
+    const catOpt = document.querySelector('input[name="category_id"]');
+    const statusEl = document.getElementById('skuStatus');
+    if (!skuVal || !catOpt?.value || !statusEl) return;
+    const prefixData = catPrefixMap[catOpt.value];
+    if (prefixData) {
+        const expectedPrefix = String(prefixData.parent_sort_id).padStart(2,'0') 
+            + String(prefixData.sub_id).padStart(2,'0');
+        if (skuVal.length === 7 && skuVal.startsWith(expectedPrefix)) {
+            statusEl.innerHTML = '<span class="text-emerald-500">✅ 合规</span>';
+        } else {
+            statusEl.innerHTML = '<span class="text-red-500">⚠️ 不符合规则（期望前缀：'+expectedPrefix+'XX），请点"生成"</span>';
+        }
+    }
+}
+document.querySelector('input[name="category_id"]')?.addEventListener('change', checkSkuFormat);
+skuInput?.addEventListener('input', checkSkuFormat);
+checkSkuFormat();
 
 // 文件上传：必须等 app.js 加载完（app.js 在 footer.php 的 <script src> 引入）
 // 所以包装在 DOMContentLoaded 里，等同步脚本执行完

@@ -155,9 +155,18 @@ require __DIR__ . '/includes/views/header.php';
                         $mm = (float)($p['min_margin_rate'] ?? 15.00);
                         $minPrice = $gm < 100 ? $totalCost / (1 - $mm / 100) : 0;
                         $maxDisc = $gm < 100 && $mm < 100 ? round((1-$gm/100)/(1-$mm/100)*100) : 0;
+                        // SKU 合规检查
+                        $skuBadge = '';
+                        if ($p['category_id'] && $p['sku'] && isset($p['parent_sort_id'], $p['sub_id'])) {
+                            $expectedPrefix = str_pad((int)$p['parent_sort_id'], 2, '0', STR_PAD_LEFT)
+                                           . str_pad((int)$p['sub_id'], 2, '0', STR_PAD_LEFT);
+                            if (strlen($p['sku']) !== 7 || !str_starts_with($p['sku'], $expectedPrefix)) {
+                                $skuBadge = ' <span class="inline-block px-1.5 py-0.5 text-xs bg-red-50 text-red-600 rounded" title="SKU不规范，期望前缀：'.$expectedPrefix.'">⚠️</span>';
+                            }
+                        }
                     ?>
                         <tr>
-                            <td class="tabular-nums text-slate-500"><?= h($p['sku']) ?></td>
+                            <td class="tabular-nums text-slate-500"><?= h($p['sku']) ?><?= $skuBadge ?></td>
                             <td>
                                 <?php if (canViewCost()): ?>
                                 <a href="/product_edit.php?id=<?= $p['id'] ?>" class="text-blue-600 hover:underline font-medium">

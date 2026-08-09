@@ -84,7 +84,8 @@ class Product
         $total = (int)$stmt->fetchColumn();
 
         // 列表
-        $sql = "SELECT p.*, c.name AS category_name, s.name AS supplier_name
+        $sql = "SELECT p.*, c.name AS category_name, s.name AS supplier_name,
+                       c.parent_sort_id, c.sub_id
                 FROM products p
                 LEFT JOIN categories c ON c.id = p.category_id
                 LEFT JOIN suppliers s ON s.id = p.supplier_id
