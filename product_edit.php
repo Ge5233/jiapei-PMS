@@ -271,6 +271,7 @@ require __DIR__ . '/includes/views/header.php';
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">¥</span>
                         <input type="text" id="guide_price" class="form-input pl-7 bg-slate-50 tabular-nums font-medium" readonly value="<?= h($product['guide_price'] ?? '0.00') ?>">
+                        <input type="hidden" name="guide_price" id="guide_price_input" value="<?= h($product['guide_price'] ?? '0') ?>">
                     </div>
                     <p class="form-help text-slate-400">= 综合进价 / (1 - 毛利率)</p>
                 </div>
@@ -549,6 +550,8 @@ function calcPrices() {
     // 指导售价 = 综合进价 / (1-毛利率)
     const gp = gm < 100 ? totalCost / (1 - gm / 100) : totalCost;
     document.getElementById('guide_price').value = gp.toFixed(2);
+    const guideInput = document.getElementById('guide_price_input');
+    if (guideInput) guideInput.value = gp.toFixed(2);
     // 最低售价 = 综合进价 / (1-最低毛利率)
     const mp = mm < 100 ? totalCost / (1 - mm / 100) : totalCost;
     document.getElementById('min_price_display').value = mp.toFixed(2);
