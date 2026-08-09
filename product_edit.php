@@ -92,7 +92,7 @@ require __DIR__ . '/includes/views/header.php';
 ?>
 
 <div class="mb-4">
-    <a href="/products.php" class="text-sm text-slate-500 hover:text-slate-700 flex items-center w-fit">
+    <a href="/products.php" class="text-sm text-slate-500 hover:text-slate-700 flex items-center w-fit" onclick="return confirmLeave()">
         <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>返回列表
     </a>
     <?php if (isset($_GET['created'])): ?>
@@ -767,6 +767,22 @@ checkSkuFormat();
 // 文件上传：必须等 app.js 加载完（app.js 在 footer.php 的 <script src> 引入）
 // 所以包装在 DOMContentLoaded 里，等同步脚本执行完
 document.addEventListener('DOMContentLoaded', function() {
+    // 未保存警告
+    let formDirty = false;
+    const form = document.getElementById('productForm');
+    if (form) {
+        form.addEventListener('input', () => { formDirty = true; });
+        form.addEventListener('change', () => { formDirty = true; });
+        form.addEventListener('submit', () => { formDirty = false; });
+    }
+    window.confirmLeave = function() {
+        if (formDirty) return confirm('有未保存的修改，确定离开吗？');
+        return true;
+    };
+    window.addEventListener('beforeunload', (e) => {
+        if (formDirty) e.preventDefault(); // shows browser default dialog
+    });
+
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const productId = <?= $id ?>;
