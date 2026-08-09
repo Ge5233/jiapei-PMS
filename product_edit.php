@@ -434,52 +434,52 @@ require __DIR__ . '/includes/views/header.php';
 <?php endif; ?>
 
 <script>
-// ===== 未保存警告 — 最先执行 =====
-let _formDirty = false;
-window.markDirty = function() { _formDirty = true; };
-
-// 委托拦截所有页面内跳转
-document.addEventListener('click', function(e) {
-    if (!_formDirty) return;
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
-    if (a.hostname && a.hostname !== location.hostname) return;
-    if (a.closest && a.closest('#productForm')) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var overlay = document.createElement('div');
-    overlay.id = '_leaveOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-    overlay.innerHTML = '<div style="background:#fff;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,.15);padding:24px;max-width:340px;width:90%;text-align:center"><p style="font-size:14px;color:#334155;margin-bottom:16px">有未保存的修改</p><div style="display:flex;gap:12px;justify-content:center"><button id="_saveGo" class="btn btn-primary" style="font-size:14px;padding:6px 16px">保存并离开</button><button id="_noSave" class="btn btn-secondary" style="font-size:14px;padding:6px 16px">不保存</button></div></div>';
-    document.body.appendChild(overlay);
-    document.getElementById('_saveGo').onclick = function() {
-        document.body.removeChild(overlay);
-        document.getElementById('productForm').requestSubmit();
-    };
-    document.getElementById('_noSave').onclick = function() {
-        document.body.removeChild(overlay);
-        _formDirty = false;
-        location.href = href;
-    };
-    overlay.addEventListener('click', function(ev) {
-        if (ev.target === overlay) document.body.removeChild(overlay);
-    });
-});
-
-window.addEventListener('beforeunload', function(e) {
-    if (_formDirty) { e.preventDefault(); e.returnValue = ''; }
-});
-
-// 表单原生输入 → 标脏
+// ===== 未保存拦截 — 纯原生，零依赖 =====
 (function() {
+    var dirty = false, saving = false;
     var f = document.getElementById('productForm');
-    if (f) {
-        f.addEventListener('input', function() { _formDirty = true; });
-        f.addEventListener('change', function() { _formDirty = true; });
-        f.addEventListener('submit', function() { _formDirty = false; });
-    }
+    if (!f) return;
+
+    // 任何 input/select/textarea 改动 → 标脏
+    f.addEventListener('input', function() { dirty = true; });
+    f.addEventListener('change', function() { dirty = true; });
+    f.addEventListener('submit', function() { saving = true; dirty = false; });
+
+    // markDirty 暴露给 combo box
+    window.markDirty = function() { dirty = true; };
+
+    // 拦截所有内部链接跳转
+    document.addEventListener('click', function(e) {
+        if (!dirty || saving) return;
+        var a = e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href');
+        // 跳过空/外部/js链接
+        if (!href || href.charAt(0) === '#' || href.startsWith('javascript:')) return;
+        if (a.hostname && a.hostname !== location.hostname) return;
+        // 跳过本表单内链接
+        if (a.closest('#productForm')) return;
+        // 跳过返回列表（不会丢失）
+        if (callbackToList && a === backToList) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var dlg = document.createElement('div');
+        dlg.style.cssText = 'position:fixed;z-index:99999;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+        dlg.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px 32px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.2)"><p style="margin:0 0 20px;font-size:14px;color:#334155">有未保存的修改</p><div style="display:flex;gap:12px;justify-content:center"><button id="_btnSave" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:14px;cursor:pointer">保存并离开</button><button id="_btnDiscard" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:8px 20px;font-size:14px;cursor:pointer">不保存</button></div></div>';
+        document.body.appendChild(dlg);
+        document.getElementById('_btnSave').onclick = function() {
+            dlg.remove(); saving = true; f.requestSubmit();
+        };
+        document.getElementById('_btnDiscard').onclick = function() {
+            dlg.remove(); dirty = false; window.location.href = href;
+        };
+        dlg.addEventListener('click', function(ev) { if (ev.target === dlg) dlg.remove(); });
+    }, true);
+
+    // 关闭/刷新保护
+    window.addEventListener('beforeunload', function(e) {
+        if (dirty && !saving) { e.preventDefault(); e.returnValue = ''; }
+    });
 })();
 
 // 供应商 combobox（平铺）
