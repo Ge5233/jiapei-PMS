@@ -113,7 +113,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <input type="text" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
                                            @click.away="it._prodOpen=false"
                                            x-model="it._prodShow" :readonly="!editMode"
-                                           class="text-sm border rounded px-1 w-full" placeholder="输入关键词搜索..." autocomplete="off">
+                                           class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
                                     <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="search-drop">
                                         <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
                                             <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
@@ -129,7 +129,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <input type="text" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
                                            @click.away="it._spOpen=false"
                                            x-model="it._spShow" :readonly="!editMode"
-                                           class="text-sm border rounded px-1 w-full" placeholder="输入关键词搜索..." autocomplete="off">
+                                           class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
                                     <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="search-drop">
                                         <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
                                             <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
@@ -138,9 +138,9 @@ require __DIR__ . '/includes/views/header.php';
                                 </div>
 
                                 <!-- 临时 -->
-                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full" placeholder="名称">
+                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="名称">
 
-                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-full" placeholder="规格">
+                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="规格">
                                 <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-center" placeholder="单位">
                                 <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right" placeholder="数量">
                                 <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right" placeholder="单价">
