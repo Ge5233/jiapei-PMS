@@ -103,7 +103,7 @@ require __DIR__ . '/includes/views/header.php';
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1.5 text-sm bg-blue-50 border-t border-blue-200">
+                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1.5 text-sm bg-amber-50 border-t border-amber-200">
                                 <select x-model="it.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
