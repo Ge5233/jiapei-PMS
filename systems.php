@@ -145,7 +145,7 @@ require __DIR__ . '/includes/views/header.php';
                                 <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="数量">
                                 <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="单价">
                                 <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
-                                <div class="flex items-center gap-0.5 justify-end">
+                                <div class="flex items-center gap-1.5 justify-end">
                                     <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
                                     <button class="text-xs text-slate-400" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
