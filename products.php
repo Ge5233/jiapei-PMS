@@ -17,8 +17,8 @@ $supplierId = $_GET['supplier_id'] ?? '';
 $status = $_GET['status'] ?? '';
 $page = max(1, (int)($_GET['page'] ?? 1));
 $pageSize = 20;
-$sort = $_GET['sort'] ?? 'updated_at';
-$dir = strtolower($_GET['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+$sort = $_GET['sort'] ?? 'sku';
+$dir = strtolower($_GET['dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
 $sortWhitelist = [
     'sku' => 'p.sku', 'name' => 'p.name', 'category' => 'c.name',
     'supplier' => 's.name', 'cost' => 'p.cost_price', 'guide' => 'p.guide_price',
@@ -30,8 +30,8 @@ function sortUrl(string $field, string $curSort, string $curDir): string {
     return '?' . http_build_query(array_merge($_GET, ['sort' => $field, 'dir' => $newDir, 'page' => 1]));
 }
 function sortIcon(string $field, string $curSort, string $curDir): string {
-    if ($curSort !== $field) return '';
-    return $curDir === 'asc' ? ' ↑' : ' ↓';
+    if ($curSort !== $field) return ' <span class="text-slate-300">↕</span>';
+    return $curDir === 'asc' ? ' ▲' : ' ▼';
 }
 
 $result = Product::list([
