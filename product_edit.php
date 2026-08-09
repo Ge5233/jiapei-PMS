@@ -95,6 +95,17 @@ require __DIR__ . '/includes/views/header.php';
     <a href="/products.php" class="text-sm text-slate-500 hover:text-slate-700 flex items-center w-fit">
         <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>返回列表
     </a>
+    <?php if (isset($_GET['created'])): ?>
+    <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between">
+        <span class="text-sm text-emerald-700">✅ 产品创建成功！</span>
+        <a href="/product_edit.php" class="btn btn-primary px-3 py-1 text-sm">继续新增产品</a>
+    </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['saved'])): ?>
+    <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded">
+        <span class="text-sm text-emerald-700">✅ 保存成功</span>
+    </div>
+    <?php endif; ?>
 </div>
 
 <form method="post" action="/api/product_save.php" id="productForm" class="max-w-3xl">
