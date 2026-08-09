@@ -232,7 +232,7 @@ document.addEventListener('alpine:init',()=>{
 
             select(id){this.activeId=id;const p=this.projects.find(x=>x.id===id);if(!p)return;Object.assign(this.form,{name:p.name,desc:p.description||'',status:parseInt(p.status)});this.load(id)},
             async load(id){const r=await fetch('/api/system_bom.php?project_id='+id);const d=await r.json();this.normModules(d.modules||[])},
-            normModules(arr){this.modules=arr.map(m=>({name:m.name||'',_open:true,items:(m.items||[]).map(it=>({src:it.self_product_id?'s':(it.product_id?'p':(it.item_name?'a':'p')),pid:it.product_id||'',sid:it.self_product_id||'',name:it.item_name||'',spec:it.spec||'',unit:it.unit||'',qty:parseFloat(it.quantity)||0,price:parseFloat(it.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:it.product_id?(PL.find(x=>x.id==it.product_id)?.label||''):'',_spOpen:false,_spFilter:'',_spShow:it.self_product_id?(SL.find(x=>x.id==it.self_product_id)?.label||''):'',subs:(it.sub_items||[]).map(s=>({src:s.self_product_id?'s':(s.product_id?'p':(s.item_name?'a':'a')),pid:s.product_id||'',sid:s.self_product_id||'',name:s.item_name||'',spec:s.spec||'',unit:s.unit||'',qty:parseFloat(s.quantity)||0,price:parseFloat(s.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:''}))}))}));if(!this.modules.length)this.addMod()},
+            normModules(arr){this.modules=arr.map(m=>({name:m.name||'',_open:true,items:(m.items||[]).map(it=>({src:it.self_product_id?'s':(it.product_id?'p':(it.item_name?'a':'p')),pid:it.product_id||'',sid:it.self_product_id||'',name:it.item_name||'',spec:it.spec||'',unit:it.unit||'',qty:parseFloat(it.quantity)||0,price:parseFloat(it.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:it.product_id?(PL.find(x=>x.id==it.product_id)?.label||''):(it.item_name||''),_spOpen:false,_spFilter:'',_spShow:it.self_product_id?(SL.find(x=>x.id==it.self_product_id)?.label||''):'',subs:(it.sub_items||[]).map(s=>({src:s.self_product_id?'s':(s.product_id?'p':(s.item_name?'a':'a')),pid:s.product_id||'',sid:s.self_product_id||'',name:s.item_name||'',spec:s.spec||'',unit:s.unit||'',qty:parseFloat(s.quantity)||0,price:parseFloat(s.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:(!s.product_id&&!s.self_product_id&&s.item_name)?s.item_name:'',_spOpen:false,_spFilter:'',_spShow:''}))}))}));if(!this.modules.length)this.addMod()},
             newProject(){this.activeId='new';this.form={name:'新系统项目',desc:'',status:1};this.modules=[];this.addMod()},
             addMod(){this.modules.push({name:'',_open:true,items:[]})},
             moveMod(i,d){const t=i+d;if(t<0||t>=this.modules.length)return;[this.modules[i],this.modules[t]]=[this.modules[t],this.modules[i]]},
@@ -247,7 +247,25 @@ document.addEventListener('alpine:init',()=>{
             srcChanged(it){['pid','sid','name','price','_prodShow','_spShow'].forEach(k=>it[k]='')},
 
             async save(){
-                const ser=it=>({source_type:it.src==='p'?'product':(it.src==='s'?'self_product':'adhoc'),product_id:it.src==='p'&&it.pid?it.pid:null,self_product_id:it.src==='s'&&it.sid?it.sid:null,item_name:it.src==='a'&&it.name?it.name:null,spec:it.spec||'',unit:it.unit||'',quantity:it.qty||0,unit_price:it.price||0,sub_items:(it.subs||[]).map(ser)});
+                const ser=it=>{
+                    // 决定来源：选中产品/自产 → 对应来源；否则若有名字 → 临时
+                    let source='adhoc';
+                    if(it.src==='p' && it.pid) source='product';
+                    else if(it.src==='s' && it.sid) source='self_product';
+                    return {
+                        source_type:source,
+                        product_id:source==='product'?parseInt(it.pid):null,
+                        self_product_id:source==='self_product'?parseInt(it.sid):null,
+                        item_name:source==='product'?null
+                            :(source==='self_product'?null
+                            :((it.name||it._prodShow||'').trim()||null)),
+                        spec:it.spec||'',
+                        unit:it.unit||'',
+                        quantity:parseFloat(it.qty)||0,
+                        unit_price:parseFloat(it.price)||0,
+                        sub_items:(it.subs||[]).map(ser)
+                    };
+                };
                 const fd=new FormData();
                 if(this.activeId&&this.activeId!=='new')fd.append('id',this.activeId);
                 fd.append('name',this.form.name);fd.append('description',this.form.desc||'');fd.append('status',this.form.status);
