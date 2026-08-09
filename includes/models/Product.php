@@ -234,10 +234,10 @@ class Product
     public static function allForSelect(): array
     {
         $fields = canViewCost()
-            ? "id, sku, name, cost_price, other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate"
-            : "id, sku, name, 0 AS cost_price, 0 AS other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate";
+            ? "id, sku, name, spec, unit, cost_price, other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate"
+            : "id, sku, name, spec, unit, 0 AS cost_price, 0 AS other_cost, guide_price, min_discount, guide_margin_rate, min_margin_rate";
         return Database::getInstance()->query(
-            "SELECT $fields FROM products WHERE status = 1 ORDER BY name ASC"
+            "SELECT $fields FROM products WHERE status = 1 ORDER BY sku, name ASC"
         )->fetchAll();
     }
 }

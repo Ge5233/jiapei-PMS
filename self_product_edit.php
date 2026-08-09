@@ -309,7 +309,10 @@ require __DIR__ . '/includes/views/header.php';
                                                    x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
                                             <div x-show="item._prodOpen && filteredBomProducts(item._prodFilter||'').length>0" class="search-drop-bom">
                                                 <template x-for="p in filteredBomProducts(item._prodFilter||'')" :key="p.id">
-                                                    <div @mousedown.prevent="bomPickProduct(idx, p)" x-text="p.sku + ' ' + p.name"></div>
+                                                    <div @mousedown.prevent="bomPickProduct(idx, p)" :class="{sel:item.product_id==p.id}">
+                                                    <span x-text="p.sku + ' ' + p.name"></span>
+                                                    <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                </div>
                                                 </template>
                                             </div>
                                         </div>

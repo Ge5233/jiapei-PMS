@@ -16,6 +16,7 @@ $allSelfProducts = class_exists('SelfProduct') ? SelfProduct::allForSelect() : [
 $prodJson = json_encode(array_map(fn($p) => [
     'id' => $p['id'],
     'label' => $p['sku'] . ' ' . $p['name'],
+    'spec' => $p['spec'] ?? '',
     'price' => (float)($p['cost_price'] ?? 0),
     'unit' => $p['unit'] ?? '',
 ], $allProducts), JSON_UNESCAPED_UNICODE);
@@ -105,7 +106,10 @@ require __DIR__ . '/includes/views/header.php';
                                            class="text-sm border rounded px-1 w-full" placeholder="输入关键词搜索..." autocomplete="off">
                                     <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="search-drop">
                                         <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
-                                            <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}" x-text="p.label"></div>
+                                            <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
+                                                            <span x-text="p.label"></span>
+                                                            <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                        </div>
                                         </template>
                                     </div>
                                 </div>
@@ -151,7 +155,10 @@ require __DIR__ . '/includes/views/header.php';
                                                        class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                 <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="search-drop">
                                                     <template x-for="p in filteredProducts(s._prodFilter||'')" :key="p.id">
-                                                        <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}" x-text="p.label"></div>
+                                                        <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}">
+                                                            <span x-text="p.label"></span>
+                                                            <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                        </div>
                                                     </template>
                                                 </div>
                                             </div>
