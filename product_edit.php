@@ -92,7 +92,7 @@ require __DIR__ . '/includes/views/header.php';
 ?>
 
 <div class="mb-4">
-    <a href="/products.php" class="text-sm text-slate-500 hover:text-slate-700 flex items-center w-fit" onclick="return confirmLeave()">
+    <a href="/products.php" class="text-sm text-slate-500 hover:text-slate-700 flex items-center w-fit" id="backToList">
         <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>返回列表
     </a>
     <?php if (isset($_GET['created'])): ?>
@@ -766,38 +766,59 @@ checkSkuFormat();
 
 // 文件上传：必须等 app.js 加载完（app.js 在 footer.php 的 <script src> 引入）
 // 所以包装在 DOMContentLoaded 里，等同步脚本执行完
-document.addEventListener('DOMContentLoaded', function() {
-    // 未保存警告
-    let formDirty = false;
-    const form = document.getElementById('productForm');
-    if (form) {
-        form.addEventListener('input', () => { formDirty = true; });
-        form.addEventListener('change', () => { formDirty = true; });
-        form.addEventListener('submit', () => { formDirty = false; });
-    }
-    window.confirmLeave = function() {
-        if (!formDirty) return true;
+// 未保存警告
+let formDirty = false;
+const form = document.getElementById('productForm');
+if (form) {
+    form.addEventListener('input', () => { formDirty = true; });
+    form.addEventListener('change', () => { formDirty = true; });
+    form.addEventListener('submit', () => { formDirty = false; });
+}
+
+// 拦截返回列表
+const backBtn = document.getElementById('backToList');
+if (backBtn) {
+    backBtn.addEventListener('click', function(e) {
+        if (!formDirty) return; // clean, allow
+        e.preventDefault();
         const overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-        overlay.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center">
-            <p class="text-sm text-slate-700 mb-4">有未保存的修改</p>
-            <div class="flex gap-3 justify-center">
-                <button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button>
-                <button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button>
-            </div>
-        </div>`;
+        overlay.innerHTML = '<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button><button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button></div></div>';
         document.body.appendChild(overlay);
-        return new Promise(resolve => {
-            overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); resolve(false); };
-            overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = '/products.php'; resolve(false); };
-            overlay.onclick = (e) => { if (e.target === overlay) { document.body.removeChild(overlay); resolve(false); } };
-        });
-    };
-    window.addEventListener('beforeunload', (e) => {
-        if (formDirty) e.preventDefault(); // shows browser default dialog
+        overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
+        overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = '/products.php'; };
+        overlay.onclick = (ev) => { if (ev.target === overlay) { document.body.removeChild(overlay); } };
     });
+}
 
-    const uploadArea = document.getElementById('uploadArea');
+// 拦截所有侧栏/导航跳转
+window.addEventListener('beforeunload', function(e) {
+    if (formDirty) {
+        e.preventDefault();
+        e.returnValue = '有未保存的修改，确定离开吗？';
+        return e.returnValue;
+    }
+});
+
+// 也拦截 .nav-link 的点击（左侧菜单）
+document.querySelectorAll('a[href]:not([target]):not([download])').forEach(a => {
+    a.addEventListener('click', function(e) {
+        if (!formDirty) return;
+        const href = this.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('javascript:') || href.startsWith('#') || this === backBtn) return;
+        e.preventDefault();
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+        overlay.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button><button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button></div></div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
+        overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = href; };
+        overlay.onclick = (ev) => { if (ev.target === overlay) { document.body.removeChild(overlay); } };
+    });
+});
+
+// 文件上传
+document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('fileInput');
     const productId = <?= $id ?>;
 
