@@ -269,9 +269,13 @@ document.addEventListener('alpine:init', () => {
         },
 
         newProject() {
-            this.selectedId = 0;
+            this.selectedId = 'new';
             this.form = { name: '新系统项目', description: '', status: 1 };
             this.modules = [];
+            this.$nextTick(() => {
+                const el = document.querySelector('input[x-model="form.name"]');
+                if (el) { el.focus(); el.select(); }
+            });
         },
 
         async save() {
