@@ -155,7 +155,7 @@ require __DIR__ . '/includes/views/header.php';
                             </div>
                             <!-- 配件 -->
                             <template x-if="(it.subs||[]).length>0">
-                                <div class="bg-white">
+                                <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
                                         <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
