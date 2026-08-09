@@ -85,7 +85,9 @@ require __DIR__ . '/includes/views/header.php';
                 <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b cursor-pointer" @click="mod._open=!mod._open">
                     <i data-lucide="chevron-right" class="w-3.5 h-3.5 collapse-icon" :class="{open:mod._open}"></i>
                     <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1" placeholder="模块名称" @click.stop="">
-                    <span class="text-xs text-slate-500" x-text="'¥'+fmt(moduleSum(mi))"></span>
+                    <span class="text-xs text-slate-500" x-show="moduleItemSum(mi)>0">主材 <span x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
+                    <span class="text-xs text-slate-500" x-show="moduleSubSum(mi)>0">配件 <span x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
+                    <span class="font-medium text-sm" x-text="'¥'+fmt(moduleSum(mi))"></span>
                     <button class="text-blue-500 text-xs" @click.stop="addItem(mi)" x-show="editMode">+主材</button>
                     <button class="text-xs" @click.stop="moveMod(mi,-1)" x-show="editMode">↑</button>
                     <button class="text-xs" @click.stop="moveMod(mi,1)" x-show="editMode">↓</button>
@@ -101,7 +103,7 @@ require __DIR__ . '/includes/views/header.php';
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1.5 text-sm bg-white">
+                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1.5 text-sm bg-white border-t border-slate-200">
                                 <select x-model="it.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
@@ -145,12 +147,15 @@ require __DIR__ . '/includes/views/header.php';
                                 <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                 <div class="flex items-center gap-0.5 justify-end">
                                     <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
+                                    <button class="text-xs text-slate-400" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
+                                        <span x-text="it._collapsed?'▶':'▼'"></span>
+                                    </button>
                                     <button class="text-xs text-red-400" @click="mod.items.splice(ii,1)" x-show="editMode">×</button>
                                 </div>
                             </div>
                             <!-- 配件 -->
                             <template x-if="(it.subs||[]).length>0">
-                                <div class="bg-slate-100">
+                                <div class="bg-slate-100" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
                                         <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1 text-xs text-slate-600 border-b border-slate-200">
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
@@ -205,7 +210,10 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </template>
         <div class="text-right font-medium text-sm mt-3 pr-2" x-show="modules.length>0">
-            系统总价：<span class="text-blue-600 text-lg" x-text="'¥'+fmt(totalAll)"></span>
+            系统总价：
+            <span class="text-xs text-slate-500 mr-2" x-show="totalItems>0">主材 <span x-text="'¥'+fmt(totalItems)"></span></span>
+            <span class="text-xs text-slate-500 mr-2" x-show="totalSubs>0">配件 <span x-text="'¥'+fmt(totalSubs)"></span></span>
+            <span class="text-blue-600 text-lg" x-text="'¥'+fmt(totalAll)"></span>
         </div>
         <button class="btn btn-secondary text-sm w-full" @click="addMod" x-show="editMode">+ 添加模块</button>
     </div>
@@ -242,13 +250,15 @@ document.addEventListener('alpine:init',()=>{
 
             select(id){this.activeId=id;const p=this.projects.find(x=>x.id===id);if(!p)return;Object.assign(this.form,{name:p.name,desc:p.description||'',status:parseInt(p.status)});this.load(id)},
             async load(id){const r=await fetch('/api/system_bom.php?project_id='+id);const d=await r.json();this.normModules(d.modules||[])},
-            normModules(arr){this.modules=arr.map(m=>({name:m.name||'',_open:true,items:(m.items||[]).map(it=>({src:it.self_product_id?'s':(it.product_id?'p':(it.item_name?'a':'p')),pid:it.product_id||'',sid:it.self_product_id||'',name:it.item_name||'',spec:it.spec||'',unit:it.unit||'',qty:parseFloat(it.quantity)||0,price:parseFloat(it.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:it.product_id?(PL.find(x=>x.id==it.product_id)?.label||''):(it.item_name||''),_spOpen:false,_spFilter:'',_spShow:it.self_product_id?(SL.find(x=>x.id==it.self_product_id)?.label||''):'',subs:(it.sub_items||[]).map(s=>({src:s.self_product_id?'s':(s.product_id?'p':(s.item_name?'a':'a')),pid:s.product_id||'',sid:s.self_product_id||'',name:s.item_name||'',spec:s.spec||'',unit:s.unit||'',qty:parseFloat(s.quantity)||0,price:parseFloat(s.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:s.product_id?(PL.find(x=>x.id==s.product_id)?.label||''):(s.item_name||''),_spOpen:false,_spFilter:'',_spShow:s.self_product_id?(SL.find(x=>x.id==s.self_product_id)?.label||''):''}))}))}));if(!this.modules.length)this.addMod()},
+            normModules(arr){this.modules=arr.map(m=>({name:m.name||'',_open:true,items:(m.items||[]).map(it=>({src:it.self_product_id?'s':(it.product_id?'p':(it.item_name?'a':'p')),pid:it.product_id||'',sid:it.self_product_id||'',name:it.item_name||'',spec:it.spec||'',unit:it.unit||'',qty:parseFloat(it.quantity)||0,price:parseFloat(it.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:it.product_id?(PL.find(x=>x.id==it.product_id)?.label||''):(it.item_name||''),_spOpen:false,_spFilter:'',_spShow:it.self_product_id?(SL.find(x=>x.id==it.self_product_id)?.label||''):'',_collapsed:false,subs:(it.sub_items||[]).map(s=>({src:s.self_product_id?'s':(s.product_id?'p':(s.item_name?'a':'a')),pid:s.product_id||'',sid:s.self_product_id||'',name:s.item_name||'',spec:s.spec||'',unit:s.unit||'',qty:parseFloat(s.quantity)||0,price:parseFloat(s.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:s.product_id?(PL.find(x=>x.id==s.product_id)?.label||''):(s.item_name||''),_spOpen:false,_spFilter:'',_spShow:s.self_product_id?(SL.find(x=>x.id==s.self_product_id)?.label||''):''}))}))}));if(!this.modules.length)this.addMod()},
             newProject(){this.activeId='new';this.form={name:'新系统项目',desc:'',status:1};this.modules=[];this.addMod()},
             addMod(){this.modules.push({name:'',_open:true,items:[]})},
             moveMod(i,d){const t=i+d;if(t<0||t>=this.modules.length)return;[this.modules[i],this.modules[t]]=[this.modules[t],this.modules[i]]},
-            addItem(mi){this.modules[mi].items=[...this.modules[mi].items,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:'',subs:[]}];this.modules[mi]._open=true},
-            addSub(it){it.subs=[...it.subs,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:''}]},
+            addItem(mi){this.modules[mi].items=[...this.modules[mi].items,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:'',_collapsed:true,subs:[]}];this.modules[mi]._open=true},
+            addSub(it){it.subs=[...it.subs,{src:'p',pid:'',sid:'',name:'',spec:'',unit:'',qty:0,price:0,_prodOpen:false,_prodFilter:'',_prodShow:'',_spOpen:false,_spFilter:'',_spShow:''}];it._collapsed=false},
             moduleSum(i){const mod=this.modules[i];let t=0;(mod.items||[]).forEach(it=>{t+=(it.qty||0)*(it.price||0);(it.subs||[]).forEach(s=>t+=(s.qty||0)*(s.price||0))});return t},
+            moduleItemSum(i){const mod=this.modules[i];let t=0;(mod.items||[]).forEach(it=>{t+=(it.qty||0)*(it.price||0)});return t},
+            moduleSubSum(i){const mod=this.modules[i];let t=0;(mod.items||[]).forEach(it=>{(it.subs||[]).forEach(s=>{t+=(s.qty||0)*(s.price||0)})});return t},
 
             filteredProducts(q){q=(q||'').toLowerCase();return q?PL.filter(p=>p.label.toLowerCase().includes(q)):PL},
             filteredSp(q){q=(q||'').toLowerCase();return q?SL.filter(s=>s.label.toLowerCase().includes(q)):SL},
@@ -287,6 +297,8 @@ document.addEventListener('alpine:init',()=>{
             get summary(){const m={};const add=(k,n,spec,u,q,p,src)=>{if(!m[k])m[k]={k,n,spec,u,q:0,p,t:0,srcs:new Set};m[k].q=+(m[k].q+parseFloat(q)).toFixed(2);m[k].t=+(m[k].t+parseFloat(q)*parseFloat(p)).toFixed(2);m[k].srcs.add(src)};this.modules.forEach(mod=>{(mod.items||[]).forEach(it=>{const nm=it.src==='a'?it.name:(it.pid?(PL.find(x=>String(x.id)==String(it.pid))?.label):SL.find(x=>String(x.id)==String(it.sid))?.label);add(nm||'?',nm||'?',it.spec,it.unit,it.qty||0,it.price||0,mod.name);(it.subs||[]).forEach(s=>{const sn=s.src==='a'?s.name:(s.pid?(PL.find(x=>String(x.id)==String(s.pid))?.label):SL.find(x=>String(x.id)==String(s.sid))?.label);add(sn||'?',sn||'?',s.spec,s.unit,s.qty||0,s.price||0,mod.name)})})});return Object.values(m).map(r=>({...r,srcs:[...r.srcs].join(', ')}))},
             get summaryTotal(){return this.summary.reduce((t,r)=>t+r.t,0)},
             get totalAll(){let t=0;this.modules.forEach((m,i)=>t+=this.moduleSum(i));return t},
+            get totalItems(){let t=0;this.modules.forEach((m,i)=>t+=this.moduleItemSum(i));return t},
+            get totalSubs(){let t=0;this.modules.forEach((m,i)=>t+=this.moduleSubSum(i));return t},
             fmt(v){return(parseFloat(v)||0).toFixed(2)},
         }
     })
