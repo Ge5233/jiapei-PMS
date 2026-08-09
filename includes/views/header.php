@@ -61,6 +61,7 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="cpu" class="w-4 h-4 mr-2"></i>大型系统
                         </a>
                     </li>
+                    <?php endif; ?>
                     <?php if (canViewCost()): ?>
                     <li>
                         <a href="/categories.php" class="nav-link <?= $activeMenu === 'categories' ? 'active' : '' ?>">
