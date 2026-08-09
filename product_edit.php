@@ -776,8 +776,22 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', () => { formDirty = false; });
     }
     window.confirmLeave = function() {
-        if (formDirty) return confirm('有未保存的修改，确定离开吗？');
-        return true;
+        if (!formDirty) return true;
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+        overlay.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center">
+            <p class="text-sm text-slate-700 mb-4">有未保存的修改</p>
+            <div class="flex gap-3 justify-center">
+                <button id="leaveSave" class="btn btn-primary text-sm px-4">保存并离开</button>
+                <button id="leaveDiscard" class="btn btn-secondary text-sm px-4">不保存</button>
+            </div>
+        </div>`;
+        document.body.appendChild(overlay);
+        return new Promise(resolve => {
+            overlay.querySelector('#leaveSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); resolve(false); };
+            overlay.querySelector('#leaveDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = '/products.php'; resolve(false); };
+            overlay.onclick = (e) => { if (e.target === overlay) { document.body.removeChild(overlay); resolve(false); } };
+        });
     };
     window.addEventListener('beforeunload', (e) => {
         if (formDirty) e.preventDefault(); // shows browser default dialog
