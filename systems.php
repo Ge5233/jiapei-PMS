@@ -150,7 +150,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <button class="text-xs text-slate-400" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
                                     </button>
-                                    <button class="text-xs text-red-400" @click="mod.items.splice(ii,1)" x-show="editMode">×</button>
+                                    <button class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)" x-show="editMode">×</button>
                                 </div>
                             </div>
                             <!-- 配件 -->
@@ -198,7 +198,7 @@ require __DIR__ . '/includes/views/header.php';
                                             <input x-model="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
                                             <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
                                             <div class="flex justify-end">
-                                                <button class="text-xs text-red-400" @click="it.subs.splice(si,1)" x-show="editMode">×</button>
+                                                <button class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)" x-show="editMode">×</button>
                                             </div>
                                         </div>
                                     </template>
