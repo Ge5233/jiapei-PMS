@@ -434,6 +434,54 @@ require __DIR__ . '/includes/views/header.php';
 <?php endif; ?>
 
 <script>
+// ===== 未保存警告 — 最先执行 =====
+let _formDirty = false;
+window.markDirty = function() { _formDirty = true; };
+
+// 委托拦截所有页面内跳转
+document.addEventListener('click', function(e) {
+    if (!_formDirty) return;
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+    if (a.hostname && a.hostname !== location.hostname) return;
+    if (a.closest && a.closest('#productForm')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var overlay = document.createElement('div');
+    overlay.id = '_leaveOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+    overlay.innerHTML = '<div style="background:#fff;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,.15);padding:24px;max-width:340px;width:90%;text-align:center"><p style="font-size:14px;color:#334155;margin-bottom:16px">有未保存的修改</p><div style="display:flex;gap:12px;justify-content:center"><button id="_saveGo" class="btn btn-primary" style="font-size:14px;padding:6px 16px">保存并离开</button><button id="_noSave" class="btn btn-secondary" style="font-size:14px;padding:6px 16px">不保存</button></div></div>';
+    document.body.appendChild(overlay);
+    document.getElementById('_saveGo').onclick = function() {
+        document.body.removeChild(overlay);
+        document.getElementById('productForm').requestSubmit();
+    };
+    document.getElementById('_noSave').onclick = function() {
+        document.body.removeChild(overlay);
+        _formDirty = false;
+        location.href = href;
+    };
+    overlay.addEventListener('click', function(ev) {
+        if (ev.target === overlay) document.body.removeChild(overlay);
+    });
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (_formDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// 表单原生输入 → 标脏
+(function() {
+    var f = document.getElementById('productForm');
+    if (f) {
+        f.addEventListener('input', function() { _formDirty = true; });
+        f.addEventListener('change', function() { _formDirty = true; });
+        f.addEventListener('submit', function() { _formDirty = false; });
+    }
+})();
+
 // 供应商 combobox（平铺）
 function supplierCombobox() {
     return {
@@ -767,46 +815,6 @@ checkSkuFormat();
 
 // 文件上传：必须等 app.js 加载完（app.js 在 footer.php 的 <script src> 引入）
 // 所以包装在 DOMContentLoaded 里，等同步脚本执行完
-// 未保存警告 — 标脏
-let formDirty = false;
-window.markDirty = function() { formDirty = true; };
-const form = document.getElementById('productForm');
-if (form) {
-    form.addEventListener('input', () => { formDirty = true; });
-    form.addEventListener('change', () => { formDirty = true; });
-    form.addEventListener('submit', () => { formDirty = false; });
-}
-
-// 拦截所有链接跳转（委托模式，页面加载时就生效）
-document.addEventListener('click', function(e) {
-    if (!formDirty) return;
-    const a = e.target.closest('a[href]');
-    if (!a) return;
-    const href = a.getAttribute('href');
-    if (!href || href === '#' || href === 'javascript:;' || href === 'javascript:void(0)') return;
-    if (a.hostname && a.hostname !== location.hostname) return; // external
-    if (a.closest('#productForm')) return;
-    e.preventDefault();
-    showLeaveModal(href);
-});
-
-function showLeaveModal(targetHref) {
-    const el = document.getElementById('leaveModal');
-    if (el) { document.body.removeChild(el); }
-    const overlay = document.createElement('div');
-    overlay.id = 'leaveModal';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-    overlay.innerHTML = '<div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center"><p class="text-sm text-slate-700 mb-4">有未保存的修改</p><div class="flex gap-3 justify-center"><button class="btn btn-primary text-sm px-4" id="modalSave">保存并离开</button><button class="btn btn-secondary text-sm px-4" id="modalDiscard">不保存</button></div></div>';
-    document.body.appendChild(overlay);
-    overlay.querySelector('#modalSave').onclick = () => { document.body.removeChild(overlay); form.requestSubmit(); };
-    overlay.querySelector('#modalDiscard').onclick = () => { document.body.removeChild(overlay); formDirty = false; location.href = targetHref; };
-    overlay.addEventListener('click', function(ev) { if (ev.target === overlay) document.body.removeChild(overlay); });
-}
-
-// 刷新/关闭页面的保护
-window.addEventListener('beforeunload', function(e) {
-    if (formDirty) { e.preventDefault(); e.returnValue = ''; }
-});
 
 // 文件上传
 document.addEventListener('DOMContentLoaded', () => {
