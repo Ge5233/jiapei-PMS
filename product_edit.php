@@ -459,8 +459,6 @@ require __DIR__ . '/includes/views/header.php';
         if (a.hostname && a.hostname !== location.hostname) return;
         // 跳过本表单内链接
         if (a.closest('#productForm')) return;
-        // 跳过返回列表（不会丢失）
-        if (callbackToList && a === backToList) return;
         e.preventDefault();
         e.stopImmediatePropagation();
         var dlg = document.createElement('div');
