@@ -130,7 +130,7 @@ require __DIR__ . '/includes/views/header.php';
                                 <!-- 临时 名称输入 -->
                                 <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 flex-1 min-w-0" placeholder="名称">
 
-                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-20" placeholder="规格">
+                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-40" placeholder="规格">
                                 <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-12 text-center" placeholder="单位">
                                 <input x-model.number="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-16 text-right" placeholder="数量">
                                 <input x-model.number="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-20 text-right" placeholder="单价">
@@ -177,7 +177,7 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
 
                                             <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 flex-1 min-w-0" placeholder="名称">
-                                            <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-16" placeholder="规格">
+                                            <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-32" placeholder="规格">
                                             <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-10 text-center">
                                             <input x-model.number="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-14 text-right">
                                             <input x-model.number="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-16 text-right">
@@ -237,7 +237,7 @@ document.addEventListener('alpine:init',()=>{
 
             filteredProducts(q){q=(q||'').toLowerCase();return q?PL.filter(p=>p.label.toLowerCase().includes(q)):PL},
             filteredSp(q){q=(q||'').toLowerCase();return q?SL.filter(s=>s.label.toLowerCase().includes(q)):SL},
-            pickProduct(it,p){it.pid=p.id;it._prodShow=p.label;it._prodFilter='';it._prodOpen=false;it.price=p.price;it.unit=p.unit;it.name=''},
+            pickProduct(it,p){it.pid=p.id;it._prodShow=p.label;it._prodFilter='';it._prodOpen=false;it.price=p.price;it.unit=p.unit;it.spec=p.spec||'';it.name=''},
             pickSp(it,s){it.sid=s.id;it._spShow=s.label;it._spFilter='';it._spOpen=false;it.price=s.price;it.unit=s.unit;it.name=''},
             srcChanged(it){['pid','sid','name','price','_prodShow','_spShow'].forEach(k=>it[k]='')},
 

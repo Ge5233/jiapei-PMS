@@ -475,6 +475,7 @@ document.addEventListener('alpine:init', () => {
                 item._prodFilter = '';
                 item._prodOpen = false;
                 item.unit = p.unit || '';
+                item.spec = p.spec || '';
                 item._product_cost = parseFloat(p.cost_price) || 0;
                 this.calcTotal();
             },

@@ -276,7 +276,7 @@ Alpine.data('quoteForm',(init)=>{
         allSelfProducts: init.allSelfProducts||[],
         filteredQProducts(q){ q=(q||'').toLowerCase(); return q?this.allProducts.filter(p=>(p.sku+' '+p.name).toLowerCase().includes(q)):this.allProducts; },
         filteredQSp(q){ q=(q||'').toLowerCase(); return q?this.allSelfProducts.filter(p=>p.name.toLowerCase().includes(q)):this.allSelfProducts; },
-        qPickProduct(idx,p){ const it=this.items[idx]; it.product_id=String(p.id); it._prodShow=p.sku+' '+p.name; it._prodFilter=''; it._prodOpen=false; it.unit=p.unit||''; this.productChanged(idx,String(p.id)); },
+        qPickProduct(idx,p){ const it=this.items[idx]; it.product_id=String(p.id); it._prodShow=p.sku+' '+p.name; it._prodFilter=''; it._prodOpen=false; it.unit=p.unit||''; it.spec=p.spec||''; this.productChanged(idx,String(p.id)); },
         qPickSp(idx,p){ const it=this.items[idx]; it.self_product_id=String(p.id); it._spShow=p.name; it._spFilter=''; it._spOpen=false; it.unit=p.unit||''; this.selfProductChanged(idx,String(p.id)); },
         submitted: false,
 
