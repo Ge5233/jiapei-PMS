@@ -60,7 +60,7 @@ require __DIR__ . '/includes/views/header.php';
                 <div class="card-header flex items-center justify-between bg-slate-50 cursor-pointer select-none"
                      onclick="toggleCollapse(this)">
                     <div class="flex items-center gap-2 min-w-0" onclick="event.stopPropagation()">
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 collapse-icon transition-transform"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
                         <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
                         <span class="font-medium truncate"><?= h($c['name']) ?></span>
                         <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $c['parent_sort_id'] ?>)</span>
@@ -95,7 +95,7 @@ require __DIR__ . '/includes/views/header.php';
                 </div>
 
                 <!-- 二级分类列表（可折叠） -->
-                <div class="card-body p-0 level2-body" data-parent="<?= $c['id'] ?>">
+                <div class="card-body p-0 level2-body hidden" data-parent="<?= $c['id'] ?>">
                     <?php if (empty($c['children'])): ?>
                         <div class="px-5 py-4 text-sm text-slate-400 text-center">暂无二级分类</div>
                     <?php else: ?>
@@ -232,7 +232,6 @@ function toggleCollapse(header) {
     const icon = header.querySelector('.collapse-icon');
     if (!body || !icon) return;
     body.classList.toggle('hidden');
-    icon.classList.toggle('rotate-0');
     icon.classList.toggle('-rotate-90');
 }
 
