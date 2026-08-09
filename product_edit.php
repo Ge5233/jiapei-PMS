@@ -458,7 +458,7 @@ function supplierCombobox() {
             this.selectedId = id;
             this.selectedLabel = label;
             this.open = false;
-            // 供应商改变不触发 SKU 生成（SKU 只与分类相关）
+            window.markDirty?.();
         },
         filter() {
             const kw = this.keyword.trim().toLowerCase();
@@ -503,6 +503,7 @@ function categoryCombobox() {
             this.selectedId = id;
             this.selectedLabel = label;
             this.open = false;
+            window.markDirty?.();
             // 选择分类后自动生成 SKU
             this.$nextTick(() => generateSkuFromCategory(id));
         },
@@ -766,8 +767,9 @@ checkSkuFormat();
 
 // 文件上传：必须等 app.js 加载完（app.js 在 footer.php 的 <script src> 引入）
 // 所以包装在 DOMContentLoaded 里，等同步脚本执行完
-// 未保存警告
+// 未保存警告 — 标脏
 let formDirty = false;
+window.markDirty = function() { formDirty = true; };
 const form = document.getElementById('productForm');
 if (form) {
     form.addEventListener('input', () => { formDirty = true; });
