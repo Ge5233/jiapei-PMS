@@ -51,7 +51,7 @@ require __DIR__ . '/includes/views/header.php';
         </a>
     </div>
 
-    <form @submit.prevent="save">
+    <form @submit.prevent="save" id="selfProductForm">
     <?= csrfField() ?>
 
     <!-- 基本信息 -->
@@ -401,7 +401,7 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex gap-3">
             <a href="/self_products.php" class="btn btn-secondary">返回</a>
             <?php if (canViewCost()): ?>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" id="btnSaveSp">
                 <i data-lucide="save" class="w-4 h-4 mr-1.5"></i>
                 <span x-text="isEdit ? '保存修改' : '创建产品'"></span>
             </button>
@@ -415,6 +415,41 @@ require __DIR__ . '/includes/views/header.php';
 </div>
 
 <script>
+// ===== 未保存拦截 =====
+(function() {
+    var dirty = false, saving = false;
+    var f = document.getElementById('selfProductForm');
+    if (!f) return;
+    f.addEventListener('input', function() { dirty = true; });
+    f.addEventListener('change', function() { dirty = true; });
+    f.addEventListener('submit', function() { saving = true; dirty = false; });
+    window.markDirty = function() { dirty = true; };
+    document.addEventListener('click', function(e) {
+        if (!dirty || saving) return;
+        var a = e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href');
+        if (!href || href.charAt(0) === '#' || href.startsWith('javascript:')) return;
+        if (a.hostname && a.hostname !== location.hostname) return;
+        if (a.closest('#selfProductForm')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var dlg = document.createElement('div');
+        dlg.style.cssText = 'position:fixed;z-index:99999;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+        dlg.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px 32px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.2)"><p style="margin:0 0 20px;font-size:14px;color:#334155">有未保存的修改</p><div style="display:flex;gap:12px;justify-content:center"><button id="_btnSave" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:14px;cursor:pointer">保存并离开</button><button id="_btnDiscard" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:8px 20px;font-size:14px;cursor:pointer">不保存</button></div></div>';
+        document.body.appendChild(dlg);
+        document.getElementById('_btnSave').onclick = function() {
+            dlg.remove(); saving = true;
+            document.getElementById('btnSaveSp').click();
+        };
+        document.getElementById('_btnDiscard').onclick = function() { dlg.remove(); dirty = false; window.location.href = href; };
+        dlg.addEventListener('click', function(ev) { if (ev.target === dlg) dlg.remove(); });
+    }, true);
+    window.addEventListener('beforeunload', function(e) {
+        if (dirty && !saving) { e.preventDefault(); e.returnValue = ''; }
+    });
+})();
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('selfProductForm', (init) => {
         // 构建外采产品索引（id → 对象）
