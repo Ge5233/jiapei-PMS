@@ -98,7 +98,10 @@ require __DIR__ . '/includes/views/header.php';
     <?php if (isset($_GET['created'])): ?>
     <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between">
         <span class="text-sm text-emerald-700">✅ 产品创建成功！</span>
-        <a href="/product_edit.php" class="btn btn-primary px-3 py-1 text-sm">继续新增产品</a>
+        <div class="flex gap-2">
+            <a href="/product_edit.php" class="btn btn-primary px-3 py-1 text-sm">继续新增</a>
+            <a href="/products.php" class="btn btn-secondary px-3 py-1 text-sm">返回列表</a>
+        </div>
     </div>
     <?php endif; ?>
     <?php if (isset($_GET['saved'])): ?>
