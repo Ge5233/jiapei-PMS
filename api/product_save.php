@@ -63,45 +63,32 @@ $data = [
 
 try {
     if ($id > 0) {
-        // 检查分类是否变化，决定是否需要重新生成 SKU
+        // 更新模式：检查分类变化，可能重新生成 SKU
         $oldProduct = Product::find($id);
         $oldCategoryId = $oldProduct['category_id'] ? (int)$oldProduct['category_id'] : null;
         $newCategoryId = $categoryId !== '' ? (int)$categoryId : null;
         $uncategorizedId = Category::getUncategorizedId();
-        
-        // 判断是否需要重新生成 SKU
-        $needRegenerateSku = false;
-        if ($oldCategoryId !== $newCategoryId) {
-            // 分类变化了
-            if ($newCategoryId !== null && $newCategoryId !== $uncategorizedId) {
-                // 新分类不是"未分类"，需要重新生成 SKU
-                $needRegenerateSku = true;
-            }
-        }
-        
-        if ($needRegenerateSku) {
-            // 重新生成 SKU
+
+        if ($oldCategoryId !== $newCategoryId
+            && $newCategoryId !== null
+            && $newCategoryId !== $uncategorizedId) {
             $newSku = generateSku($newCategoryId);
             $data['sku'] = $newSku;
             logAction('update', 'product', $id, "产品[{$name}]分类变更，SKU 从[{$sku}]重新生成为[{$newSku}]");
         }
-        
-        if ($id > 0) {
-        // 更新
+
         Product::update($id, $data);
         logAction('update', 'product', $id, "更新产品：{$name}（SKU: {$data['sku']}）");
-        // 直接跳转回编辑页（横幅提示已足够，不重复 flash）
         header('Location: /product_edit.php?id=' . $id . '&saved=1');
         exit;
-    } else {
-        // 创建
-        $data['created_by'] = $_SESSION['user_id'] ?? null;
-        $newId = Product::create($data);
-        logAction('create', 'product', $newId, "创建产品：{$name}（SKU: {$sku}）");
-        // 跳到编辑页（顶部横幅提示已足够，不重复 flash）
-        header('Location: /product_edit.php?id=' . $newId . '&created=1');
-        exit;
     }
+
+    // 创建模式
+    $data['created_by'] = $_SESSION['user_id'] ?? null;
+    $newId = Product::create($data);
+    logAction('create', 'product', $newId, "创建产品：{$name}（SKU: {$sku}）");
+    header('Location: /product_edit.php?id=' . $newId . '&created=1');
+    exit;
 } catch (Throwable $e) {
     jsonResponse(['ok' => false, 'message' => '保存失败：' . $e->getMessage()]);
 }
