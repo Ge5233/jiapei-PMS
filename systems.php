@@ -93,15 +93,21 @@ require __DIR__ . '/includes/views/header.php';
                 </div>
                 <div x-show="mod._open!==false">
                     <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
+                    <!-- 列头 -->
+                    <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
+                         x-show="(mod.items||[]).length>0">
+                        <span>类型</span><span>物料名称</span><span>规格</span><span>单位</span><span>数量</span><span>单价</span><span>小计</span><span></span>
+                    </div>
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
-                        <div>
-                            <div class="flex items-center gap-1 px-3 py-1.5 text-sm border-b border-slate-50">
-                                <select x-model="it.src" class="text-xs border rounded py-0.5 w-14" @change="srcChanged(it)" :disabled="!editMode">
+                        <div class="border-b border-slate-100">
+                            <!-- 主材行 -->
+                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1.5 text-sm bg-white">
+                                <select x-model="it.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
 
-                                <!-- 外采搜索框 -->
-                                <div x-show="it.src==='p'" class="flex-1 relative">
+                                <!-- 外采搜索 -->
+                                <div x-show="it.src==='p'" class="relative">
                                     <input type="text" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
                                            @click.away="it._prodOpen=false"
                                            x-model="it._prodShow" :readonly="!editMode"
@@ -109,19 +115,19 @@ require __DIR__ . '/includes/views/header.php';
                                     <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="search-drop">
                                         <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
                                             <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
-                                                            <span x-text="p.label"></span>
-                                                            <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
-                                                        </div>
+                                                <span x-text="p.label"></span>
+                                                <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                            </div>
                                         </template>
                                     </div>
                                 </div>
 
-                                <!-- 自产搜索框 -->
-                                <div x-show="it.src==='s'" class="flex-1 relative">
+                                <!-- 自产搜索 -->
+                                <div x-show="it.src==='s'" class="relative">
                                     <input type="text" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
                                            @click.away="it._spOpen=false"
                                            x-model="it._spShow" :readonly="!editMode"
-                                           class="text-sm border rounded px-1 w-full" placeholder="输关键词搜索..." autocomplete="off">
+                                           class="text-sm border rounded px-1 w-full" placeholder="输入关键词搜索..." autocomplete="off">
                                     <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="search-drop">
                                         <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
                                             <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
@@ -129,28 +135,30 @@ require __DIR__ . '/includes/views/header.php';
                                     </div>
                                 </div>
 
-                                <!-- 临时 名称输入 -->
-                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 flex-1 min-w-0" placeholder="名称">
+                                <!-- 临时 -->
+                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full" placeholder="名称">
 
-                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-40" placeholder="规格">
-                                <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-12 text-center" placeholder="单位">
-                                <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-16 text-right" placeholder="数量">
-                                <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-20 text-right" placeholder="单价">
-                                <span class="w-20 text-right text-xs" x-text="'¥'+fmt(it.qty*it.price)"></span>
-                                <button class="text-xs text-blue-400" @click="addSub(it)" x-show="editMode">+配件</button>
-                                <button class="text-xs text-red-400" @click="mod.items.splice(ii,1)" x-show="editMode">×</button>
+                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-full" placeholder="规格">
+                                <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-center" placeholder="单位">
+                                <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right" placeholder="数量">
+                                <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right" placeholder="单价">
+                                <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
+                                <div class="flex items-center gap-0.5 justify-end">
+                                    <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
+                                    <button class="text-xs text-red-400" @click="mod.items.splice(ii,1)" x-show="editMode">×</button>
+                                </div>
                             </div>
                             <!-- 配件 -->
                             <template x-if="(it.subs||[]).length>0">
-                                <div class="bg-slate-50/50 pl-8 border-l-2 border-blue-200">
+                                <div class="bg-slate-50">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="flex items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
-                                            <select x-model="s.src" class="text-xs border rounded py-0.5 w-12" @change="srcChanged(s)" :disabled="!editMode">
+                                        <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_auto] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200" style="padding-left:44px">
+                                            <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
 
                                             <!-- 外采 -->
-                                            <div x-show="s.src==='p'" class="flex-1 relative">
+                                            <div x-show="s.src==='p'" class="relative">
                                                 <input type="text" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
                                                        @click.away="s._prodOpen=false"
                                                        x-model="s._prodShow" :readonly="!editMode"
@@ -166,7 +174,7 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
 
                                             <!-- 自产 -->
-                                            <div x-show="s.src==='s'" class="flex-1 relative">
+                                            <div x-show="s.src==='s'" class="relative">
                                                 <input type="text" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
                                                        @click.away="s._spOpen=false"
                                                        x-model="s._spShow" :readonly="!editMode"
@@ -178,13 +186,15 @@ require __DIR__ . '/includes/views/header.php';
                                                 </div>
                                             </div>
 
-                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 flex-1 min-w-0" placeholder="名称">
-                                            <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-32" placeholder="规格">
-                                            <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-10 text-center">
-                                            <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-14 text-right">
-                                            <input x-model="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-16 text-right">
-                                            <span class="w-16 text-right" x-text="'¥'+fmt(s.qty*s.price)"></span>
-                                            <button class="text-xs text-red-400" @click="it.subs.splice(si,1)" x-show="editMode">×</button>
+                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="名称">
+                                            <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="规格">
+                                            <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-center">
+                                            <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
+                                            <input x-model="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
+                                            <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
+                                            <div class="flex justify-end">
+                                                <button class="text-xs text-red-400" @click="it.subs.splice(si,1)" x-show="editMode">×</button>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
