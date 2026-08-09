@@ -149,19 +149,18 @@ require __DIR__ . '/includes/views/header.php';
                 <thead>
                     <tr>
                         <th><a href="<?= h(sortUrl('sku', $sort, $dir)) ?>" class="hover:text-blue-600">SKU<?= sortIcon('sku', $sort, $dir) ?></a></th>
-                        <th><a href="<?= h(sortUrl('name', $sort, $dir)) ?>" class="hover:text-blue-600">名称 / 规格<?= sortIcon('name', $sort, $dir) ?></a></th>
-                        <th><a href="<?= h(sortUrl('category', $sort, $dir)) ?>" class="hover:text-blue-600">分类<?= sortIcon('category', $sort, $dir) ?></a></th>
-                        <th><a href="<?= h(sortUrl('supplier', $sort, $dir)) ?>" class="hover:text-blue-600">供应商<?= sortIcon('supplier', $sort, $dir) ?></a></th>
+                        <th>名称 / 规格</th>
+                        <th>分类</th>
+                        <th>供应商</th>
                         <th>单位</th>
                         <?php if (canViewCost()): ?>
-                        <th class="text-right"><a href="<?= h(sortUrl('cost', $sort, $dir)) ?>" class="hover:text-blue-600">综合进价<?= sortIcon('cost', $sort, $dir) ?></a></th>
-                        <th class="text-right"><a href="<?= h(sortUrl('guide', $sort, $dir)) ?>" class="hover:text-blue-600">指导售价<?= sortIcon('guide', $sort, $dir) ?></a></th>
-                        <?php else: ?>
-                        <th class="text-right"><a href="<?= h(sortUrl('guide', $sort, $dir)) ?>" class="hover:text-blue-600">指导售价<?= sortIcon('guide', $sort, $dir) ?></a></th>
+                        <th class="text-right">综合进价</th>
                         <?php endif; ?>
+                        <th class="text-right">指导售价</th>
                         <th class="text-right">最低售价</th>
                         <th class="text-right">最高折扣</th>
                         <th class="text-center">状态</th>
+                        <th><a href="<?= h(sortUrl('created_at', $sort, $dir)) ?>" class="hover:text-blue-600">时间<?= sortIcon('created_at', $sort, $dir) ?></a></th>
                         <?php if (canViewCost()): ?>
                         <th class="text-right">操作</th>
                         <?php endif; ?>
@@ -213,6 +212,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <?= (int)$p['status'] === 1 ? '上架' : '下架' ?>
                                 </span>
                             </td>
+                            <td class="text-xs text-slate-400 whitespace-nowrap"><?= date('m-d H:i', strtotime($p['created_at'])) ?></td>
                             <?php if (canViewCost()): ?>
                             <td class="text-right whitespace-nowrap">
                                 <a href="/product_edit.php?id=<?= $p['id'] ?>" class="btn btn-ghost btn-sm">
