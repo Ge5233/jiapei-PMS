@@ -100,14 +100,14 @@ require __DIR__ . '/includes/views/header.php';
                 <div x-show="mod._open!==false">
                     <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
                     <!-- 列头 -->
-                    <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
+                    <div class="grid grid-cols-[56px_200px_1fr_56px_72px_96px_120px_60px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
                          x-show="(mod.items||[]).length>0">
                         <span>类型</span><span>物料名称</span><span>规格</span><span>单位</span><span>数量</span><span>单价</span><span>小计</span><span></span>
                     </div>
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
+                            <div class="grid grid-cols-[56px_200px_1fr_56px_72px_96px_120px_60px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
                                 <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-sky-50" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
@@ -161,7 +161,7 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[56px_1fr_110px_48px_60px_78px_78px_60px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
+                                        <div class="grid grid-cols-[56px_200px_1fr_56px_72px_96px_120px_60px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
