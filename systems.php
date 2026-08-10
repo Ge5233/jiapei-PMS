@@ -43,7 +43,7 @@ require __DIR__ . '/includes/views/header.php';
 <div class="flex gap-4" style="height:calc(100vh - 150px)" x-data="pmsSystem()">
 
 <!-- 左侧 -->
-<div class="w-56 flex-shrink-0 flex flex-col">
+<div x-show="sidebarOpen" class="w-56 flex-shrink-0 flex flex-col">
     <div class="flex items-center justify-between mb-2">
         <span class="text-sm font-medium text-slate-600">系统项目</span>
         <button class="text-blue-600 hover:text-blue-800 text-sm" @click="newProject">
@@ -57,6 +57,11 @@ require __DIR__ . '/includes/views/header.php';
                  @click="select(p.id)" x-text="p.name"></div>
         </template>
     </div>
+</div>
+<!-- 折叠后的小条 -->
+<div x-show="!sidebarOpen && activeId" class="flex-shrink-0 flex flex-col items-center py-2 cursor-pointer hover:bg-slate-50 rounded" @click="sidebarOpen=true" title="展开项目列表">
+    <i data-lucide="menu" class="w-4 h-4 text-slate-400 mb-1"></i>
+    <span class="text-xs text-slate-500" style="writing-mode:vertical-rl" x-text="form.name"></span>
 </div>
 
 <!-- 右侧 -->
@@ -245,10 +250,10 @@ document.addEventListener('alpine:init',()=>{
         const SL=<?= $spJson ?>;
         return {
             projects:<?= json_encode($projects,JSON_UNESCAPED_UNICODE) ?>,
-            activeId:null,form:{name:'',desc:'',status:1},modules:[],view:'module',editMode:true,
+            activeId:null,sidebarOpen:true,form:{name:'',desc:'',status:1},modules:[],view:'module',editMode:true,
             CSRF:'<?= csrfToken() ?>',
 
-            select(id){this.activeId=id;const p=this.projects.find(x=>x.id===id);if(!p)return;Object.assign(this.form,{name:p.name,desc:p.description||'',status:parseInt(p.status)});this.load(id)},
+            select(id){this.activeId=id;this.sidebarOpen=false;const p=this.projects.find(x=>x.id===id);if(!p)return;Object.assign(this.form,{name:p.name,desc:p.description||'',status:parseInt(p.status)});this.load(id)},
             async load(id){const r=await fetch('/api/system_bom.php?project_id='+id);const d=await r.json();this.normModules(d.modules||[])},
             normModules(arr){this.modules=arr.map(m=>({name:m.name||'',_open:true,items:(m.items||[]).map(it=>({src:it.self_product_id?'s':(it.product_id?'p':(it.item_name?'a':'p')),pid:it.product_id||'',sid:it.self_product_id||'',name:it.item_name||'',spec:it.spec||'',unit:it.unit||'',qty:parseFloat(it.quantity)||0,price:parseFloat(it.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:it.product_id?(PL.find(x=>x.id==it.product_id)?.label||''):(it.item_name||''),_spOpen:false,_spFilter:'',_spShow:it.self_product_id?(SL.find(x=>x.id==it.self_product_id)?.label||''):'',_collapsed:false,subs:(it.sub_items||[]).map(s=>({src:s.self_product_id?'s':(s.product_id?'p':(s.item_name?'a':'a')),pid:s.product_id||'',sid:s.self_product_id||'',name:s.item_name||'',spec:s.spec||'',unit:s.unit||'',qty:parseFloat(s.quantity)||0,price:parseFloat(s.unit_price)||0,_prodOpen:false,_prodFilter:'',_prodShow:s.product_id?(PL.find(x=>x.id==s.product_id)?.label||''):(s.item_name||''),_spOpen:false,_spFilter:'',_spShow:s.self_product_id?(SL.find(x=>x.id==s.self_product_id)?.label||''):''}))}))}));if(!this.modules.length)this.addMod()},
             newProject(){this.activeId='new';this.form={name:'新系统项目',desc:'',status:1};this.modules=[];this.addMod()},
