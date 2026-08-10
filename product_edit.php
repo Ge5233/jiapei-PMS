@@ -440,30 +440,26 @@ require __DIR__ . '/includes/views/header.php';
     var inp = document.getElementById('productName');
     var hints = document.getElementById('nameHints');
     if (!inp || !hints) return;
-    inp.addEventListener('blur', function() {
+    var timer;
+    inp.addEventListener('input', function() {
         var v = this.value.trim();
         if (v.length < 1) { hints.classList.add('hidden'); return; }
-        fetch('/api/product_search.php?q=' + encodeURIComponent(v))
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                if (d.ok && d.matches.length > 0) {
-                    var sameNames = d.matches.filter(function(m) { return m.name === v; });
-                    var otherNames = d.matches.filter(function(m) { return m.name !== v; });
-                    var parts = [];
-                    if (sameNames.length > 0) {
-                        var list = sameNames.map(function(m) { return m.sku + (m.spec ? ' [' + m.spec + ']' : ''); }).join('、');
-                        parts.push('<span style="color:#d97706">⚠ 库里已有同名：</span>' + list + ' (' + sameNames.length + '条)');
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+            fetch('/api/product_search.php?q=' + encodeURIComponent(v))
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.ok && d.matches.length > 0) {
+                        var items = d.matches.map(function(m) {
+                            return m.name + (m.spec ? ' ' + m.spec : '') + ' (' + m.sku + ')';
+                        });
+                        hints.innerHTML = items.join('<br>');
+                        hints.classList.remove('hidden');
+                    } else {
+                        hints.classList.add('hidden');
                     }
-                    if (otherNames.length > 0) {
-                        var list = otherNames.map(function(m) { return m.name + '(' + m.sku + (m.spec ? ' ' + m.spec : '') + ')'; }).join('；');
-                        parts.push('<span style="color:#f59e0b">类似：</span>' + list);
-                    }
-                    hints.innerHTML = parts.join('<br>');
-                    hints.classList.remove('hidden');
-                } else {
-                    hints.classList.add('hidden');
-                }
-            });
+                });
+        }, 200);
     });
 })();
 
