@@ -162,7 +162,7 @@ require __DIR__ . '/includes/views/header.php';
                             </div>
                         </div>
                     </div>
-                    <button onclick="openAndRefresh('/supplier.php?action=edit', refreshSuppliers)" class="btn btn-secondary px-2.5" title="新增供应商">
+                    <button onclick="openAndRefresh('/supplier.php?action=edit','sup')" class="btn btn-secondary px-2.5" title="新增供应商">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -208,7 +208,7 @@ require __DIR__ . '/includes/views/header.php';
                         </div>
                     </div>
                 </div>
-                <button onclick="openAndRefresh('/categories.php?action=edit', refreshCategories)" class="btn btn-secondary px-2.5" title="新增分类">
+                <button onclick="openAndRefresh('/categories.php?action=edit','cat')" class="btn btn-secondary px-2.5" title="新增分类">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -438,14 +438,22 @@ require __DIR__ . '/includes/views/header.php';
 <?php endif; ?>
 
 <script>
-// ===== 弹窗+自动刷新 =====
-function openAndRefresh(url, callback) {
-    var w = window.open(url, '_blank');
-    if (!w) { callback(); return; }
-    var timer = setInterval(function() {
-        if (w.closed) { clearInterval(timer); callback(); }
-    }, 500);
+// ===== 切标签页自动刷新 =====
+var _needRefreshCat = false, _needRefreshSup = false;
+
+function openAndRefresh(url, type) {
+    // 标记需要刷新
+    if (type === 'cat') _needRefreshCat = true;
+    if (type === 'sup') _needRefreshSup = true;
+    window.open(url, '_blank');
 }
+
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) return;
+    if (_needRefreshCat) { _needRefreshCat = false; refreshCategories(); }
+    if (_needRefreshSup) { _needRefreshSup = false; refreshSuppliers(); }
+});
+
 async function refreshCategories() {
     var r = await fetch('/api/category_list.php'); var d = await r.json();
     if (d.ok && window._catRefresh) window._catRefresh(d.categories);
