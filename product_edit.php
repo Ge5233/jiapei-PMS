@@ -208,6 +208,9 @@ require __DIR__ . '/includes/views/header.php';
                         </div>
                     </div>
                 </div>
+                <a href="/categories.php?action=edit" target="_blank" class="btn btn-secondary px-2.5" title="新增分类">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                </a>
             </div>
             <div>
                 <label class="form-label">规格</label>
