@@ -812,10 +812,22 @@ if (generateSkuBtn) {
             alert('请先选择分类');
             return;
         }
-        // 强制生成（允许覆盖手动输入）
         const skuIn = document.getElementById('sku');
+        const skuVal = (skuIn?.value || '').trim();
+        const catId = categoryIdInput.value;
+        const prefixData = catPrefixMap[catId];
+        const expectedPrefix = prefixData
+            ? String(prefixData.parent_sort_id).padStart(2,'0') + String(prefixData.sub_id).padStart(2,'0')
+            : null;
+
+        // 有SKU且前缀匹配 → 不动
+        if (skuVal && expectedPrefix && skuVal.length === 7 && skuVal.startsWith(expectedPrefix)) {
+            alert('SKU 符合分类规则，无需重新生成');
+            return;
+        }
+        // 否则强制生成
         if (skuIn) skuIn.dataset.manualEdit = 'false';
-        generateSkuFromCategory(parseInt(categoryIdInput.value));
+        generateSkuFromCategory(parseInt(catId));
     });
 }
 
