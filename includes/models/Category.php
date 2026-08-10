@@ -53,7 +53,7 @@ class Category
         return $stmt->fetchAll();
     }
 
-    public static function create(string $name, int $parentId, int $sortOrder = 0, float $gm = 30.00, float $mm = 15.00): int
+    public static function create(string $name, int $parentId, int $sortOrder = 0, float $gm = 30.00, float $mm = 15.00, string $desc = ''): int
     {
         $subId = 0;
         $parentSortId = 0;
@@ -75,18 +75,18 @@ class Category
         }
         
         $stmt = Database::getInstance()->prepare(
-            "INSERT INTO categories (name, parent_id, parent_sort_id, sub_id, sort_order, guide_margin_rate, min_margin_rate) VALUES (?, ?, ?, ?, ?, ?, ?)"
+            "INSERT INTO categories (name, parent_id, parent_sort_id, sub_id, sort_order, guide_margin_rate, min_margin_rate, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->execute([$name, $parentId, $parentSortId, $subId, $sortOrder, $gm, $mm]);
+        $stmt->execute([$name, $parentId, $parentSortId, $subId, $sortOrder, $gm, $mm, $desc]);
         return (int)Database::getInstance()->lastInsertId();
     }
 
-    public static function update(int $id, string $name, int $parentId, int $sortOrder, float $gm = 30.00, float $mm = 15.00): void
+    public static function update(int $id, string $name, int $parentId, int $sortOrder, float $gm = 30.00, float $mm = 15.00, string $desc = ''): void
     {
         $stmt = Database::getInstance()->prepare(
-            "UPDATE categories SET name = ?, parent_id = ?, sort_order = ?, guide_margin_rate = ?, min_margin_rate = ? WHERE id = ?"
+            "UPDATE categories SET name = ?, parent_id = ?, sort_order = ?, guide_margin_rate = ?, min_margin_rate = ?, description = ? WHERE id = ?"
         );
-        $stmt->execute([$name, $parentId, $sortOrder, $gm, $mm, $id]);
+        $stmt->execute([$name, $parentId, $sortOrder, $gm, $mm, $desc, $id]);
     }
 
     /**

@@ -18,6 +18,7 @@ $parentId = (int)($_POST['parent_id'] ?? 0);
 $name = trim($_POST['name'] ?? '');
 $gm = (float)($_POST['guide_margin_rate'] ?? 30.00);
 $mm = (float)($_POST['min_margin_rate'] ?? 15.00);
+$desc = trim($_POST['description'] ?? '');
 
 if ($name === '') {
     flash('error', '分类名称必填');
@@ -54,7 +55,7 @@ if ($id > 0) {
 
 try {
     if ($id > 0) {
-        Category::update($id, $name, $parentId, (int)($existing['sort_order'] ?? 0), $gm, $mm);
+        Category::update($id, $name, $parentId, (int)($existing['sort_order'] ?? 0), $gm, $mm, $desc);
         logAction('update', 'category', $id, "更新分类：{$name}");
     } else {
         // 排序到末尾
@@ -65,7 +66,7 @@ try {
             $rows = Category::childrenOf($parentId);
         }
         $sort = count($rows);
-        $newId = Category::create($name, $parentId, $sort, $gm, $mm);
+        $newId = Category::create($name, $parentId, $sort, $gm, $mm, $desc);
         logAction('create', 'category', $newId, "创建分类：{$name}（parent=" . ($parentId ?: '无') . "）");
     }
     flash('success', '保存成功');

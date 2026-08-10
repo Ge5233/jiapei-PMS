@@ -63,6 +63,7 @@ require __DIR__ . '/includes/views/header.php';
                         <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
                         <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
                         <span class="font-medium truncate"><?= h($c['name']) ?></span>
+                        <span class="text-xs text-slate-400 truncate max-w-[200px]"><?= h($c['description'] ?? '') ?></span>
                         <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $c['parent_sort_id'] ?>)</span>
                         <span class="badge badge-slate text-xs flex-shrink-0">一级分类</span>
                         <!-- 定价系数 -->
@@ -85,7 +86,7 @@ require __DIR__ . '/includes/views/header.php';
                         <button class="btn-ghost-xs" onclick="event.stopPropagation();openLevel2Modal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>')" title="新增子类">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                         </button>
-                        <button class="btn-ghost-xs" onclick="event.stopPropagation();openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0, <?= $gm ?>, <?= $mm ?>)" title="编辑">
+                        <button class="btn-ghost-xs" onclick="event.stopPropagation();openEditModal(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', 0, <?= $gm ?>, <?= $mm ?>, '<?= h(addslashes($c['description'] ?? '')) ?>')" title="编辑">
                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                         </button>
                         <button class="btn-ghost-xs" onclick="event.stopPropagation();deleteCategory(<?= $c['id'] ?>, '<?= h(addslashes($c['name'])) ?>', true)" title="删除">
@@ -106,6 +107,7 @@ require __DIR__ . '/includes/views/header.php';
                                     <div class="flex items-center gap-2 flex-1 min-w-0">
                                         <i data-lucide="file" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
                                         <span class="text-sm truncate"><?= h($sub['name']) ?></span>
+                                        <span class="text-xs text-slate-400 truncate max-w-[200px]"><?= h($sub['description'] ?? '') ?></span>
                                         <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $sub['sub_id'] ?>)</span>
                                         <span class="text-xs text-slate-400 flex-shrink-0">· <?= getCount($sub['id'], $productCounts) ?> 个产品</span>
                                     </div>
@@ -118,7 +120,7 @@ require __DIR__ . '/includes/views/header.php';
                                             <i data-lucide="arrow-down" class="w-3 h-3"></i>
                                         </button>
                                         <?php endif; ?>
-                                        <button class="btn btn-ghost btn-sm" onclick="openEditModal(<?= $sub['id'] ?>, '<?= h(addslashes($sub['name'])) ?>', <?= $c['id'] ?>)">
+                                        <button class="btn btn-ghost btn-sm" onclick="openEditModal(<?= $sub['id'] ?>, '<?= h(addslashes($sub['name'])) ?>', <?= $c['id'] ?>, null, null, '<?= h(addslashes($sub['description'] ?? '')) ?>')">
                                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                         </button>
                                         <button class="btn btn-ghost btn-sm" onclick="deleteCategory(<?= $sub['id'] ?>, '<?= h(addslashes($sub['name'])) ?>', false)">
@@ -147,6 +149,10 @@ require __DIR__ . '/includes/views/header.php';
                 <div class="mb-4">
                     <label class="form-label">分类名称 <span class="text-red-500">*</span></label>
                     <input type="text" name="name" id="cat_name" class="form-input" required maxlength="50">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">说明</label>
+                    <input type="text" name="description" id="cat_desc" class="form-input" maxlength="200" placeholder="例：型材方管、钢板不锈钢板">
                 </div>
                 <div id="level1Fields" class="hidden">
                     <div class="grid grid-cols-2 gap-3 mb-4">
@@ -185,6 +191,7 @@ function openLevel1Modal() {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_parent_id').value = '0';
     document.getElementById('cat_name').value = '';
+    document.getElementById('cat_desc').value = '';
     document.getElementById('cat_gm_rate').value = '30.00';
     document.getElementById('cat_mm_rate').value = '15.00';
     document.getElementById('level1Fields').classList.remove('hidden');
@@ -195,14 +202,16 @@ function openLevel2Modal(parentId, parentName) {
     document.getElementById('cat_id').value = '';
     document.getElementById('cat_parent_id').value = parentId;
     document.getElementById('cat_name').value = '';
+    document.getElementById('cat_desc').value = '';
     document.getElementById('level1Fields').classList.add('hidden');
     showModal();
 }
-function openEditModal(id, name, parentId, gpCoef, mpCoef) {
+function openEditModal(id, name, parentId, gpCoef, mpCoef, desc) {
     document.getElementById('modalTitle').textContent = parentId === 0 ? '编辑一级分类' : '编辑二级分类';
     document.getElementById('cat_id').value = id;
     document.getElementById('cat_parent_id').value = parentId;
     document.getElementById('cat_name').value = name;
+    document.getElementById('cat_desc').value = desc || '';
     if (parentId === 0) {
         document.getElementById('cat_gm_rate').value = gpCoef || 30.00;
         document.getElementById('cat_mm_rate').value = mpCoef || 15.00;
