@@ -108,7 +108,7 @@ require __DIR__ . '/includes/views/header.php';
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
                             <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
-                                <span class="text-xs text-slate-400" x-text="ii+1"></span>
+                                <span class="text-sm" x-text="ii+1"></span>
                                 <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-sky-50" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
@@ -163,7 +163,7 @@ require __DIR__ . '/includes/views/header.php';
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
                                         <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
-                                            <span class="text-xs text-slate-400" x-text="ii+1+'.'+(si+1)"></span>
+                                            <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
