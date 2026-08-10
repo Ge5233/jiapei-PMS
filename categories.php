@@ -59,7 +59,7 @@ require __DIR__ . '/includes/views/header.php';
                 <!-- 一级分类标题栏 -->
                 <div class="card-header flex items-center justify-between bg-slate-50 cursor-pointer select-none"
                      onclick="toggleCollapse(this)">
-                    <div class="flex flex-col min-w-0 flex-1" onclick="event.stopPropagation()">
+                    <div class="flex flex-col min-w-0 flex-1">
                         <div class="flex items-center gap-2 min-w-0">
                             <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
                             <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
