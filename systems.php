@@ -60,8 +60,7 @@ require __DIR__ . '/includes/views/header.php';
 </div>
 <!-- 折叠后的小条 -->
 <div x-show="!sidebarOpen && activeId" class="flex-shrink-0 flex flex-col items-center py-2 cursor-pointer hover:bg-slate-50 rounded" @click="sidebarOpen=true" title="展开项目列表">
-    <i data-lucide="menu" class="w-4 h-4 text-slate-400 mb-1"></i>
-    <span class="text-xs text-slate-500" style="writing-mode:vertical-rl" x-text="form.name"></span>
+    <i data-lucide="menu" class="w-4 h-4 text-slate-400"></i>
 </div>
 
 <!-- 右侧 -->
