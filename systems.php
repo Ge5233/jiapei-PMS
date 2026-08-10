@@ -115,7 +115,7 @@ require __DIR__ . '/includes/views/header.php';
 
                                 <!-- 外采搜索 -->
                                 <div x-show="it.src==='p'" class="relative">
-                                    <input type="text" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
+                                    <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
                                            @click.away="it._prodOpen=false"
                                            x-model="it._prodShow" :readonly="!editMode"
                                            class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
@@ -131,7 +131,7 @@ require __DIR__ . '/includes/views/header.php';
 
                                 <!-- 自产搜索 -->
                                 <div x-show="it.src==='s'" class="relative">
-                                    <input type="text" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
+                                    <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
                                            @click.away="it._spOpen=false"
                                            x-model="it._spShow" :readonly="!editMode"
                                            class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
@@ -170,7 +170,7 @@ require __DIR__ . '/includes/views/header.php';
 
                                             <!-- 外采 -->
                                             <div x-show="s.src==='p'" class="relative">
-                                                <input type="text" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
+                                                <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
                                                        @click.away="s._prodOpen=false"
                                                        x-model="s._prodShow" :readonly="!editMode"
                                                        class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
@@ -186,7 +186,7 @@ require __DIR__ . '/includes/views/header.php';
 
                                             <!-- 自产 -->
                                             <div x-show="s.src==='s'" class="relative">
-                                                <input type="text" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
+                                                <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
                                                        @click.away="s._spOpen=false"
                                                        x-model="s._spShow" :readonly="!editMode"
                                                        class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
