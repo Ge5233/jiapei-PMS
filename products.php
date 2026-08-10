@@ -17,8 +17,8 @@ $supplierId = $_GET['supplier_id'] ?? '';
 $status = $_GET['status'] ?? '';
 $page = max(1, (int)($_GET['page'] ?? 1));
 $pageSize = 20;
-$sort = $_GET['sort'] ?? 'sku';
-$dir = strtolower($_GET['dir'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+$sort = $_GET['sort'] ?? 'created_at';
+$dir = strtolower($_GET['dir'] ?? 'desc') === 'desc' ? 'desc' : 'asc';
 $sortWhitelist = [
     'sku' => 'p.sku', 'name' => 'p.name', 'category' => 'c.name',
     'supplier' => 's.name', 'cost' => 'p.cost_price', 'guide' => 'p.guide_price',
