@@ -120,7 +120,8 @@ require __DIR__ . '/includes/views/header.php';
         <div class="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="md:col-span-2">
                 <label class="form-label">产品名称 <span class="text-red-500">*</span></label>
-                <input type="text" name="name" class="form-input" required value="<?= h($product['name'] ?? '') ?>">
+                <input type="text" name="name" id="productName" class="form-input" required value="<?= h($product['name'] ?? '') ?>">
+                <div id="nameHints" class="mt-1 text-xs text-amber-600 hidden"></div>
             </div>
             <div>
                 <label class="form-label">产品编码 / SKU <span class="text-red-500">*</span></label>
@@ -434,6 +435,38 @@ require __DIR__ . '/includes/views/header.php';
 <?php endif; ?>
 
 <script>
+// ===== 产品名相似提示 =====
+(function() {
+    var inp = document.getElementById('productName');
+    var hints = document.getElementById('nameHints');
+    if (!inp || !hints) return;
+    inp.addEventListener('blur', function() {
+        var v = this.value.trim();
+        if (v.length < 1) { hints.classList.add('hidden'); return; }
+        fetch('/api/product_search.php?q=' + encodeURIComponent(v))
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.ok && d.matches.length > 0) {
+                    var sameNames = d.matches.filter(function(m) { return m.name === v; });
+                    var otherNames = d.matches.filter(function(m) { return m.name !== v; });
+                    var parts = [];
+                    if (sameNames.length > 0) {
+                        var list = sameNames.map(function(m) { return m.sku + (m.spec ? ' [' + m.spec + ']' : ''); }).join('、');
+                        parts.push('<span style="color:#d97706">⚠ 库里已有同名：</span>' + list + ' (' + sameNames.length + '条)');
+                    }
+                    if (otherNames.length > 0) {
+                        var list = otherNames.map(function(m) { return m.name + '(' + m.sku + (m.spec ? ' ' + m.spec : '') + ')'; }).join('；');
+                        parts.push('<span style="color:#f59e0b">类似：</span>' + list);
+                    }
+                    hints.innerHTML = parts.join('<br>');
+                    hints.classList.remove('hidden');
+                } else {
+                    hints.classList.add('hidden');
+                }
+            });
+    });
+})();
+
 // ===== 未保存拦截 — 纯原生，零依赖 =====
 (function() {
     var dirty = false, saving = false;
