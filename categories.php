@@ -59,22 +59,22 @@ require __DIR__ . '/includes/views/header.php';
                 <!-- 一级分类标题栏 -->
                 <div class="card-header flex items-center justify-between bg-slate-50 cursor-pointer select-none"
                      onclick="toggleCollapse(this)">
-                    <div class="flex items-center gap-2 min-w-0" onclick="event.stopPropagation()">
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
-                        <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
-                        <div class="flex flex-col min-w-0">
+                    <div class="flex flex-col min-w-0 flex-1" onclick="event.stopPropagation()">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
+                            <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
                             <span class="font-medium truncate"><?= h($c['name']) ?></span>
-                            <?php if (!empty($c['description'])): ?>
-                            <span class="text-xs text-slate-400 truncate"><?= h($c['description']) ?></span>
-                            <?php endif; ?>
+                            <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $c['parent_sort_id'] ?>)</span>
+                            <span class="badge badge-slate text-xs flex-shrink-0">一级分类</span>
+                            <!-- 定价系数 -->
+                            <span class="text-xs text-slate-400 hidden sm:inline flex-shrink-0">
+                                售价毛利率 <b class="text-slate-600"><?= number_format($gm, 1) ?>%</b>
+                                最低毛利率 <b class="text-slate-600"><?= number_format($mm, 1) ?>%</b>
+                            </span>
                         </div>
-                        <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $c['parent_sort_id'] ?>)</span>
-                        <span class="badge badge-slate text-xs flex-shrink-0">一级分类</span>
-                        <!-- 定价系数 -->
-                        <span class="text-xs text-slate-400 hidden sm:inline flex-shrink-0">
-                            售价毛利率 <b class="text-slate-600"><?= number_format($gm, 1) ?>%</b>
-                            最低毛利率 <b class="text-slate-600"><?= number_format($mm, 1) ?>%</b>
-                        </span>
+                        <?php if (!empty($c['description'])): ?>
+                        <div class="ml-6 mt-1 text-xs text-slate-500"><?= h($c['description']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="flex items-center gap-1 flex-shrink-0">
@@ -108,16 +108,16 @@ require __DIR__ . '/includes/views/header.php';
                             <?php foreach ($c['children'] as $sub): ?>
                                 <li class="px-5 py-3 flex items-center justify-between hover:bg-slate-50 cat-item"
                                     data-id="<?= $sub['id'] ?>" data-level="2" data-parent="<?= $c['id'] ?>">
-                                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                                        <i data-lucide="file" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                                        <div class="flex flex-col min-w-0">
+                                    <div class="flex flex-col flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <i data-lucide="file" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
                                             <span class="text-sm truncate"><?= h($sub['name']) ?></span>
-                                            <?php if (!empty($sub['description'])): ?>
-                                            <span class="text-xs text-slate-400 truncate"><?= h($sub['description']) ?></span>
-                                            <?php endif; ?>
+                                            <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $sub['sub_id'] ?>)</span>
+                                            <span class="text-xs text-slate-400 flex-shrink-0">· <?= getCount($sub['id'], $productCounts) ?> 个产品</span>
                                         </div>
-                                        <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $sub['sub_id'] ?>)</span>
-                                        <span class="text-xs text-slate-400 flex-shrink-0">· <?= getCount($sub['id'], $productCounts) ?> 个产品</span>
+                                        <?php if (!empty($sub['description'])): ?>
+                                        <div class="ml-5 mt-0.5 text-xs text-slate-500"><?= h($sub['description']) ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="flex items-center gap-1 flex-shrink-0">
                                         <?php if ($canManage): ?>
