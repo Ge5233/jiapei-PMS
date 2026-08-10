@@ -62,8 +62,12 @@ require __DIR__ . '/includes/views/header.php';
                     <div class="flex items-center gap-2 min-w-0" onclick="event.stopPropagation()">
                         <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 collapse-icon -rotate-90 inline-block transition-transform"></i>
                         <i data-lucide="folder" class="w-4 h-4 text-blue-500 flex-shrink-0"></i>
-                        <span class="font-medium truncate"><?= h($c['name']) ?></span>
-                        <span class="text-xs text-slate-400 truncate max-w-[200px]"><?= h($c['description'] ?? '') ?></span>
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-medium truncate"><?= h($c['name']) ?></span>
+                            <?php if (!empty($c['description'])): ?>
+                            <span class="text-xs text-slate-400 truncate"><?= h($c['description']) ?></span>
+                            <?php endif; ?>
+                        </div>
                         <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $c['parent_sort_id'] ?>)</span>
                         <span class="badge badge-slate text-xs flex-shrink-0">一级分类</span>
                         <!-- 定价系数 -->
@@ -106,8 +110,12 @@ require __DIR__ . '/includes/views/header.php';
                                     data-id="<?= $sub['id'] ?>" data-level="2" data-parent="<?= $c['id'] ?>">
                                     <div class="flex items-center gap-2 flex-1 min-w-0">
                                         <i data-lucide="file" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-                                        <span class="text-sm truncate"><?= h($sub['name']) ?></span>
-                                        <span class="text-xs text-slate-400 truncate max-w-[200px]"><?= h($sub['description'] ?? '') ?></span>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm truncate"><?= h($sub['name']) ?></span>
+                                            <?php if (!empty($sub['description'])): ?>
+                                            <span class="text-xs text-slate-400 truncate"><?= h($sub['description']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
                                         <span class="text-xs text-slate-400 flex-shrink-0">(编号: <?= $sub['sub_id'] ?>)</span>
                                         <span class="text-xs text-slate-400 flex-shrink-0">· <?= getCount($sub['id'], $productCounts) ?> 个产品</span>
                                     </div>
