@@ -162,9 +162,9 @@ require __DIR__ . '/includes/views/header.php';
                             </div>
                         </div>
                     </div>
-                    <a href="/supplier.php?action=edit" target="_blank" class="btn btn-secondary px-2.5" title="新增供应商">
+                    <button onclick="openAndRefresh('/supplier.php?action=edit', refreshSuppliers)" class="btn btn-secondary px-2.5" title="新增供应商">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
             <div>
@@ -208,9 +208,9 @@ require __DIR__ . '/includes/views/header.php';
                         </div>
                     </div>
                 </div>
-                <a href="/categories.php?action=edit" target="_blank" class="btn btn-secondary px-2.5" title="新增分类">
+                <button onclick="openAndRefresh('/categories.php?action=edit', refreshCategories)" class="btn btn-secondary px-2.5" title="新增分类">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                </a>
+                </button>
             </div>
             <div>
                 <label class="form-label">规格</label>
@@ -438,6 +438,23 @@ require __DIR__ . '/includes/views/header.php';
 <?php endif; ?>
 
 <script>
+// ===== 弹窗+自动刷新 =====
+function openAndRefresh(url, callback) {
+    var w = window.open(url, '_blank');
+    if (!w) { callback(); return; }
+    var timer = setInterval(function() {
+        if (w.closed) { clearInterval(timer); callback(); }
+    }, 500);
+}
+async function refreshCategories() {
+    var r = await fetch('/api/category_list.php'); var d = await r.json();
+    if (d.ok && window._catRefresh) window._catRefresh(d.categories);
+}
+async function refreshSuppliers() {
+    var r = await fetch('/api/supplier_list.php'); var d = await r.json();
+    if (d.ok && window._supRefresh) window._supRefresh(d.suppliers);
+}
+
 // ===== 产品名相似提示 =====
 (function() {
     var inp = document.getElementById('productName');
@@ -522,6 +539,7 @@ function supplierCombobox() {
         selectedLabel: <?= json_encode($currentSupplierLabel, JSON_UNESCAPED_UNICODE) ?>,
         filteredSuppliers: [],
         init() {
+            window._supRefresh = (list) => { this.allSuppliers = list; this.keyword = ''; this.filter(); };
             this.filter();
             this.$watch('open', (v) => {
                 if (v) {
@@ -561,6 +579,7 @@ function categoryCombobox() {
         selectedLabel: <?= json_encode($currentCategoryLabel, JSON_UNESCAPED_UNICODE) ?>,
         originalCategoryId: <?= $currentCategoryId ?>, // 保存原始分类ID
         init() {
+            window._catRefresh = (cats) => { this.allGroups = cats; this.filter(); };
             this.filter();
             this.$watch('open', (v) => {
                 if (v) {
