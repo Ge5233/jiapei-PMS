@@ -250,7 +250,7 @@ require __DIR__ . '/includes/views/header.php';
 
     <?php if (canViewCost()): ?>
     <!-- BOM 物料清单 -->
-    <div class="card p-6 mb-4 flex flex-col" style="overflow:visible;min-height:360px">
+    <div class="card p-6 mb-4" style="overflow:visible;min-height:360px;display:flex;flex-direction:column">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
@@ -395,10 +395,11 @@ require __DIR__ . '/includes/views/header.php';
                     </tbody>
                 </table>
             </div>
-            <!-- 合计行 -->
-            <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 mt-auto font-medium">
-                <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
-                <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
+            <div class="mt-auto pt-2">
+                <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 font-medium">
+                    <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
+                    <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
+                </div>
             </div>
         </template>
     </div>
