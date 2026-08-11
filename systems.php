@@ -90,7 +90,7 @@ require __DIR__ . '/includes/views/header.php';
                     <!-- 模块名称 -->
                     <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1 max-w-[200px]" placeholder="模块名称" @click.stop="">
                     <!-- 金额区 -->
-                    <div class="flex items-center gap-3 flex-1 min-w-0 text-xs text-slate-500">
+                    <div class="flex items-center gap-6 flex-1 min-w-0 text-xs text-slate-500">
                         <span x-show="moduleItemSum(mi)>0">主材 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
                         <span x-show="moduleSubSum(mi)>0">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
                         <span class="font-medium text-sm text-slate-800" x-text="'¥'+fmt(moduleSum(mi))"></span>
