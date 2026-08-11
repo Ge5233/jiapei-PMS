@@ -84,8 +84,8 @@ require __DIR__ . '/includes/views/header.php';
             <div class="mb-3 border rounded">
                 <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
                     <!-- 折叠按钮 -->
-                    <button class="flex-shrink-0 text-slate-400 hover:text-slate-600" @click="mod._open=!mod._open">
-                        <i data-lucide="chevron-right" class="w-4 h-4 collapse-icon" :class="{open:mod._open}"></i>
+                    <button class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open" :title="mod._open===false?'展开':'折叠'">
+                        <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
                     </button>
                     <!-- 模块名称 -->
                     <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1 max-w-[200px]" placeholder="模块名称" @click.stop="">
