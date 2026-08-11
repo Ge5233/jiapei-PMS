@@ -237,16 +237,16 @@
    ============================================================ */
 .ss-dropdown {
     position: absolute;
-    z-index: 50;
+    z-index: 100;
     left: 0;
-    right: 0;
+    right: auto;
+    min-width: 240px;
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 0.375rem;
     box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-    max-height: 12rem;
+    max-height: 16rem;
     overflow-y: auto;
-    min-width: max-content;
 }
 .ss-dropdown > div {
     padding: 0.25rem 0.5rem;

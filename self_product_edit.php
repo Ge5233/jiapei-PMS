@@ -273,8 +273,8 @@ require __DIR__ . '/includes/views/header.php';
         </template>
 
         <template x-if="bomItems.length > 0">
-            <div class="overflow-x-auto">
-                <table class="w-full">
+            <div class="overflow-x-auto" style="overflow-x:auto;overflow-y:visible">
+                <table class="w-full" style="overflow:visible">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50">
                             <th class="text-left px-3 py-2 text-xs font-medium text-slate-500 w-8">#</th>
