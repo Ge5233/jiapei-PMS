@@ -137,38 +137,29 @@ require __DIR__ . '/includes/views/header.php';
             <div>
                 <label class="form-label">供应商</label>
                 <div class="flex gap-1.5">
-                    <div x-data="pmsSearchSelect({
-                        mode:'pick',
-                        items: <?= json_encode(array_map(fn($s) => ['id' => $s['id'], 'label' => $s['name']], $allSuppliers), JSON_UNESCAPED_UNICODE) ?>,
-                        selectedId: <?= $currentSupplierId ?>,
-                        selectedLabel: <?= json_encode($currentSupplierLabel, JSON_UNESCAPED_UNICODE) ?>,
-                        placeholder: '搜索供应商...',
-                        refreshKey: 'sup',
-                        onselect(item) { window.markDirty?.(); },
-                        onclear() { window.markDirty?.(); }
-                    })" @click.outside="open = false" class="relative flex-1">
+                    <div x-data="supplierCombobox()" x-init="init()" @click.outside="open = false" class="relative flex-1">
                         <input type="hidden" name="supplier_id" :value="selectedId">
-                        <!-- 未选中：搜索输入框 -->
-                        <div x-show="!selectedId" style="display:block" class="relative w-full">
-                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
-                            <input type="text" x-model="keyword" x-ref="ssInput"
-                                   @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
-                                   class="form-input pl-7 py-1.5 text-sm w-full" :placeholder="placeholder" autocomplete="off">
-                        </div>
-                        <!-- 选中：标签 -->
-                        <div x-show="selectedId" class="ss-tag cursor-pointer w-full" @click="openDropdown()">
-                            <span x-text="selectedLabel"></span>
-                            <span class="ss-tag-x" @click.stop="clear()">&times;</span>
-                        </div>
-                        <!-- 下拉 -->
-                        <div x-show="open" x-cloak class="ss-dropdown">
-                            <template x-for="(it, idx) in filtered" :key="it.id">
-                                <div @click="pick(it)" :class="{sel: selectedId === it.id, nav: _navIdx === idx}"
-                                     @mouseenter="_navIdx = idx">
-                                    <span x-text="it.label"></span>
+                        <button type="button" @click="open = !open" class="form-select w-full text-left flex items-center justify-between">
+                            <span :class="selectedId ? 'text-slate-800' : 'text-slate-400'" x-text="selectedLabel || '未选择'"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+                        </button>
+                        <div x-show="open" x-cloak x-transition.opacity class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-80 overflow-hidden flex flex-col">
+                            <div class="p-2 border-b border-slate-100">
+                                <div class="relative">
+                                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" x-model="keyword" x-ref="kwInput" @input="filter()" placeholder="输入关键字筛选" class="form-input pl-7 py-1 text-sm">
                                 </div>
-                            </template>
-                            <div x-show="filtered.length === 0" class="empty">没有匹配的供应商</div>
+                            </div>
+                            <div class="overflow-y-auto flex-1" @click.stop>
+                                <template x-for="s in filteredSuppliers" :key="s.id">
+                                    <div @click="pick(s.id, s.name)" class="px-3 py-1.5 text-sm hover:bg-blue-50 cursor-pointer" :class="selectedId === s.id ? 'bg-blue-50 text-blue-700' : ''">
+                                        <span x-text="s.name"></span>
+                                    </div>
+                                </template>
+                                <div x-show="filteredSuppliers.length === 0" class="px-3 py-6 text-center text-sm text-slate-400">
+                                    没有匹配的供应商
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <button onclick="openAndRefresh('/supplier.php?action=edit','sup')" class="btn btn-secondary px-2.5" title="新增供应商">
@@ -179,50 +170,43 @@ require __DIR__ . '/includes/views/header.php';
             <div>
                 <label class="form-label">分类</label>
                 <div class="flex gap-1.5">
-                    <div x-data="pmsCategorySelect({
-                        groups: <?= json_encode($categories, JSON_UNESCAPED_UNICODE) ?>,
-                        selectedId: <?= $currentCategoryId ?>,
-                        selectedLabel: <?= json_encode($currentCategoryLabel, JSON_UNESCAPED_UNICODE) ?>,
-                        originalCategoryId: <?= $currentCategoryId ?>
-                    })" @click.outside="open = false" class="relative flex-1">
+                    <div x-data="categoryCombobox()" x-init="init()" @click.outside="open = false" class="relative flex-1">
                         <input type="hidden" name="category_id" :value="selectedId">
-                        <!-- 未选中 -->
-                        <div x-show="!selectedId" style="display:block" class="relative w-full">
-                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
-                            <input type="text" x-model="keyword" x-ref="ssInput"
-                                   @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
-                                   class="form-input pl-7 py-1.5 text-sm w-full" placeholder="搜索分类..." autocomplete="off">
-                        </div>
-                        <!-- 选中标签 -->
-                        <div x-show="selectedId" class="ss-tag cursor-pointer w-full" @click="openDropdown()">
-                            <span x-text="selectedLabel"></span>
-                            <span class="ss-tag-x" @click.stop="clear()">&times;</span>
-                        </div>
-                        <!-- 下拉（分组） -->
-                        <div x-show="open" x-cloak class="ss-dropdown">
-                            <template x-for="group in filtered" :key="'g'+group.id">
-                                <div>
-                                    <div x-show="group.children && group.children.length > 0"
-                                         class="px-2 py-1 text-xs font-semibold text-slate-400 bg-slate-50"
-                                         x-text="group.name"></div>
-                                    <template x-if="group.children && group.children.length > 0">
-                                        <template x-for="(sub, sidx) in group.children" :key="sub.id">
-                                            <div @click="pick(sub)" :class="{sel: selectedId === sub.id, nav: _flatIdx(group, sidx) === _navIdx}"
-                                                 @mouseenter="_navIdx = _flatIdx(group, sidx)"
-                                                 class="pl-6">
-                                                <span x-text="sub.name"></span>
+                        <button type="button" @click="open = !open" class="form-select w-full text-left flex items-center justify-between">
+                            <span :class="selectedId ? 'text-slate-800' : 'text-slate-400'" x-text="selectedLabel || '未选择'"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+                        </button>
+                        <div x-show="open" x-cloak x-transition.opacity class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-80 overflow-hidden flex flex-col">
+                            <div class="p-2 border-b border-slate-100">
+                                <div class="relative">
+                                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" x-model="keyword" x-ref="kwInput" @input="filter()" placeholder="输入关键字筛选（跨级匹配）" class="form-input pl-7 py-1 text-sm">
+                                </div>
+                            </div>
+                            <div class="overflow-y-auto flex-1" @click.stop>
+                                <template x-for="group in filteredGroups" :key="group.id">
+                                    <div>
+                                        <template x-if="group.children.length > 0">
+                                            <div>
+                                                <div class="px-3 py-1.5 text-xs font-semibold text-slate-500 bg-slate-50" x-text="group.name"></div>
+                                                <template x-for="sub in group.children" :key="sub.id">
+                                                    <div @click="pick(sub.id, group.name + ' / ' + sub.name)" class="px-3 py-1.5 pl-7 text-sm hover:bg-blue-50 cursor-pointer" :class="selectedId === sub.id ? 'bg-blue-50 text-blue-700' : ''">
+                                                        <span x-text="sub.name"></span>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </template>
-                                    </template>
-                                    <template x-if="!group.children || group.children.length === 0">
-                                        <div @click="pick(group)" :class="{sel: selectedId === group.id, nav: _flatIdx(group, -1) === _navIdx}"
-                                             @mouseenter="_navIdx = _flatIdx(group, -1)">
-                                            <span x-text="group.name"></span>
-                                        </div>
-                                    </template>
+                                        <template x-if="group.children.length === 0 && matchesParent(group)">
+                                            <div @click="pick(group.id, group.name)" class="px-3 py-1.5 text-sm hover:bg-blue-50 cursor-pointer" :class="selectedId === group.id ? 'bg-blue-50 text-blue-700' : ''">
+                                                <span x-text="group.name"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div x-show="filteredGroups.length === 0" class="px-3 py-6 text-center text-sm text-slate-400">
+                                    没有匹配的分类
                                 </div>
-                            </template>
-                            <div x-show="filtered.length === 0" class="empty">没有匹配的分类</div>
+                            </div>
                         </div>
                     </div>
                     <button onclick="openAndRefresh('/categories.php?action=edit','cat')" class="btn btn-secondary px-2.5" title="新增分类">
@@ -560,125 +544,111 @@ async function refreshSuppliers() {
     });
 })();
 
-// 分类选择组件（带分组，复用 search-select 样式）
-document.addEventListener('alpine:init', () => {
-    Alpine.data('pmsCategorySelect', (cfg) => ({
+// 供应商 combobox（平铺）
+function supplierCombobox() {
+    return {
+        allSuppliers: <?= json_encode($allSuppliers, JSON_UNESCAPED_UNICODE) ?>,
         open: false,
         keyword: '',
-        selectedId: cfg.selectedId || '',
-        selectedLabel: cfg.selectedLabel || '',
-        originalCategoryId: cfg.originalCategoryId || 0,
-        allGroups: cfg.groups || [],
-        filtered: [],
-
+        selectedId: <?= $currentSupplierId ?>,
+        selectedLabel: <?= json_encode($currentSupplierLabel, JSON_UNESCAPED_UNICODE) ?>,
+        filteredSuppliers: [],
         init() {
-            window._catRefresh = (cats) => { this.allGroups = cats; this.filter(); };
+            window._supRefresh = (list) => { this.allSuppliers = list; this.keyword = ''; this.filter(); };
             this.filter();
             this.$watch('open', (v) => {
                 if (v) {
-                    this.$nextTick(() => this.$refs.ssInput?.focus());
+                    this.$nextTick(() => this.$refs.kwInput?.focus());
                 } else {
                     this.keyword = '';
                     this.filter();
                 }
             });
         },
-
-        pick(item) {
-            const id = item.id;
-            // 检查分类是否发生变化
-            if (this.originalCategoryId > 0 && id !== this.originalCategoryId) {
-                if (!confirm('修改分类会重新生成产品 SKU，确定继续吗？')) return;
-            }
+        pick(id, label) {
             this.selectedId = id;
-            this.selectedLabel = item.label;
+            this.selectedLabel = label;
             this.open = false;
             window.markDirty?.();
-            this.$nextTick(() => generateSkuFromCategory(id));
         },
-
-        clear() {
-            this.selectedId = '';
-            this.selectedLabel = '';
-            window.markDirty?.();
-        },
-
         filter() {
             const kw = this.keyword.trim().toLowerCase();
-            if (!kw) {
-                this.filtered = JSON.parse(JSON.stringify(this.allGroups));
+            if (kw === '') {
+                this.filteredSuppliers = this.allSuppliers.slice();
                 return;
             }
-            this.filtered = this.allGroups
+            this.filteredSuppliers = this.allSuppliers.filter(s =>
+                s.name.toLowerCase().includes(kw)
+            );
+        }
+    };
+}
+
+// 分类树形 combobox
+function categoryCombobox() {
+    return {
+        allGroups: <?= json_encode($categories, JSON_UNESCAPED_UNICODE) ?>,
+        open: false,
+        keyword: '',
+        selectedId: <?= $currentCategoryId ?>,
+        selectedLabel: <?= json_encode($currentCategoryLabel, JSON_UNESCAPED_UNICODE) ?>,
+        originalCategoryId: <?= $currentCategoryId ?>, // 保存原始分类ID
+        init() {
+            window._catRefresh = (cats) => { this.allGroups = cats; this.filter(); };
+            this.filter();
+            this.$watch('open', (v) => {
+                if (v) {
+                    this.$nextTick(() => this.$refs.kwInput?.focus());
+                } else {
+                    this.keyword = '';
+                    this.filter();
+                }
+            });
+        },
+        pick(id, label) {
+            // 检查分类是否发生变化
+            if (this.originalCategoryId > 0 && id !== this.originalCategoryId) {
+                if (!confirm('修改分类会重新生成产品 SKU，确定继续吗？')) {
+                    return;
+                }
+            }
+            this.selectedId = id;
+            this.selectedLabel = label;
+            this.open = false;
+            window.markDirty?.();
+            // 选择分类后自动生成 SKU
+            this.$nextTick(() => generateSkuFromCategory(id));
+        },
+        filteredGroups: [],
+        filter() {
+            const kw = this.keyword.trim().toLowerCase();
+            if (kw === '') {
+                this.filteredGroups = JSON.parse(JSON.stringify(this.allGroups));
+                return;
+            }
+            // 关键字匹配：一级或二级任一命中即显示
+            this.filteredGroups = this.allGroups
                 .map(g => {
                     const parentHit = g.name.toLowerCase().includes(kw);
                     const childHits = (g.children || []).filter(c => c.name.toLowerCase().includes(kw));
-                    if (parentHit) return JSON.parse(JSON.stringify(g));
-                    if (childHits.length > 0) return { ...g, children: childHits };
+                    if (parentHit) {
+                        return JSON.parse(JSON.stringify(g));
+                    }
+                    if (childHits.length > 0) {
+                        return { ...g, children: childHits };
+                    }
                     return null;
                 })
                 .filter(g => g !== null);
         },
-
-        _navIdx: -1,
-        _flatIdx(group, childIdx) {
-            // 计算平铺索引，用于键盘导航
-            let idx = 0;
-            for (const g of this.filtered) {
-                if (g.id === group.id) {
-                    if (childIdx < 0) return idx; // 一级分类
-                    return idx + childIdx + 1;    // 子分类
-                }
-                if (g.children && g.children.length > 0) idx += g.children.length + 1;
-                else idx += 1;
-            }
-            return -1;
-        },
-
-        onKeydown(e) {
-            if (e.key === 'ArrowDown') { e.preventDefault(); this._navIdx = Math.min(this._navIdx + 1, this._totalFlat() - 1); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); this._navIdx = Math.max(this._navIdx - 1, 0); }
-            else if (e.key === 'Enter' && this._navIdx >= 0) {
-                e.preventDefault();
-                const item = this._getByFlatIdx(this._navIdx);
-                if (item) this.pick(item);
-            }
-            else if (e.key === 'Escape') this.open = false;
-        },
-
-        _totalFlat() {
-            let n = 0;
-            for (const g of this.filtered) {
-                if (g.children && g.children.length > 0) n += g.children.length + 1;
-                else n += 1;
-            }
-            return n;
-        },
-
-        _getByFlatIdx(target) {
-            let idx = 0;
-            for (const g of this.filtered) {
-                if (g.children && g.children.length > 0) {
-                    if (idx === target) return { id: g.id, label: g.name }; // 一级
-                    idx++;
-                    for (const c of g.children) {
-                        if (idx === target) return { id: c.id, label: g.name + ' / ' + c.name };
-                        idx++;
-                    }
-                } else {
-                    if (idx === target) return { id: g.id, label: g.name };
-                    idx++;
-                }
-            }
-            return null;
-        },
-
-        openDropdown() {
-            this.open = true;
-            this._navIdx = -1;
+        matchesParent(g) {
+            const kw = this.keyword.trim().toLowerCase();
+            return kw === '' || g.name.toLowerCase().includes(kw);
         }
-    }));
-});
+    };
+}
+window.categoryCombobox = categoryCombobox;
+window.supplierCombobox = supplierCombobox;
 
 // 实时毛利 + 实际售价 + 实际毛利率（双向计算）
 // 价格自动计算（毛利率模式）
