@@ -82,16 +82,26 @@ require __DIR__ . '/includes/views/header.php';
     <div class="flex-1 overflow-y-auto" x-show="view==='module'">
         <template x-for="(mod,mi) in modules" :key="mi">
             <div class="mb-3 border rounded">
-                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b cursor-pointer" @click="mod._open=!mod._open">
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 collapse-icon" :class="{open:mod._open}"></i>
-                    <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1" placeholder="模块名称" @click.stop="">
-                    <span class="text-xs text-slate-500" x-show="moduleItemSum(mi)>0">主材 <span x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
-                    <span class="text-xs text-slate-500" x-show="moduleSubSum(mi)>0">配件 <span x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
-                    <span class="font-medium text-sm" x-text="'¥'+fmt(moduleSum(mi))"></span>
-                    <button class="text-blue-500 text-xs" @click.stop="addItem(mi)" x-show="editMode">+主材</button>
-                    <button class="text-xs" @click.stop="moveMod(mi,-1)" x-show="editMode">↑</button>
-                    <button class="text-xs" @click.stop="moveMod(mi,1)" x-show="editMode">↓</button>
-                    <button class="text-xs text-red-400" @click.stop="modules.splice(mi,1)" x-show="editMode">×</button>
+                <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
+                    <!-- 折叠按钮 -->
+                    <button class="flex-shrink-0 text-slate-400 hover:text-slate-600" @click="mod._open=!mod._open">
+                        <i data-lucide="chevron-right" class="w-4 h-4 collapse-icon" :class="{open:mod._open}"></i>
+                    </button>
+                    <!-- 模块名称 -->
+                    <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1 max-w-[200px]" placeholder="模块名称" @click.stop="">
+                    <!-- 金额区 -->
+                    <div class="flex items-center gap-3 flex-1 min-w-0 text-xs text-slate-500">
+                        <span x-show="moduleItemSum(mi)>0">主材 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
+                        <span x-show="moduleSubSum(mi)>0">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
+                        <span class="font-medium text-sm text-slate-800" x-text="'¥'+fmt(moduleSum(mi))"></span>
+                    </div>
+                    <!-- 操作按钮 -->
+                    <div class="flex items-center gap-1.5 flex-shrink-0 border-l border-slate-200 pl-3">
+                        <button class="text-blue-500 text-xs" @click.stop="addItem(mi)" x-show="editMode">+主材</button>
+                        <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,-1)" x-show="editMode">↑</button>
+                        <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,1)" x-show="editMode">↓</button>
+                        <button class="text-xs text-red-400" @click.stop="modules.splice(mi,1)" x-show="editMode">×</button>
+                    </div>
                 </div>
                 <div x-show="mod._open!==false">
                     <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
