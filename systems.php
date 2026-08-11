@@ -88,19 +88,18 @@ require __DIR__ . '/includes/views/header.php';
                         <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
                     </button>
                     <!-- 模块名称 -->
-                    <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none flex-1 max-w-[200px]" placeholder="模块名称" @click.stop="">
-                    <!-- 金额区 -->
-                    <div class="flex items-center gap-6 flex-1 min-w-0 text-xs text-slate-500">
-                        <span x-show="moduleItemSum(mi)>0">主材 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
-                        <span x-show="moduleSubSum(mi)>0">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
+                    <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none" style="min-width:80px;max-width:200px" placeholder="模块名称" @click.stop="">
+                    <!-- 右侧区域：金额 + 按钮 -->
+                    <div class="flex items-center gap-6 ml-auto">
+                        <span x-show="moduleItemSum(mi)>0" class="text-xs text-slate-500">主材 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
+                        <span x-show="moduleSubSum(mi)>0" class="text-xs text-slate-500">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
                         <span class="font-medium text-sm text-slate-800" x-text="'¥'+fmt(moduleSum(mi))"></span>
-                    </div>
-                    <!-- 操作按钮 -->
-                    <div class="flex items-center gap-1.5 flex-shrink-0 border-l border-slate-200 pl-3">
-                        <button class="text-blue-500 text-xs" @click.stop="addItem(mi)" x-show="editMode">+主材</button>
-                        <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,-1)" x-show="editMode">↑</button>
-                        <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,1)" x-show="editMode">↓</button>
-                        <button class="text-xs text-red-400" @click.stop="modules.splice(mi,1)" x-show="editMode">×</button>
+                        <div class="flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                            <button class="text-blue-500 text-xs" @click.stop="addItem(mi)" x-show="editMode">+主材</button>
+                            <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,-1)" x-show="editMode">↑</button>
+                            <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,1)" x-show="editMode">↓</button>
+                            <button class="text-xs text-red-400" @click.stop="modules.splice(mi,1)" x-show="editMode">×</button>
+                        </div>
                     </div>
                 </div>
                 <div x-show="mod._open!==false">
