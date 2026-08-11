@@ -24,7 +24,7 @@ $bodyClass = $bodyClass ?? '';
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/app.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="/assets/search-select.js"></script>
+    <script defer src="/assets/search-select.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased <?= h($bodyClass) ?>">
