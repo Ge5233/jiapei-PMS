@@ -34,10 +34,6 @@ require __DIR__ . '/includes/views/header.php';
 <style>
 .collapse-icon{transition:transform 0.2s}
 .collapse-icon.open{transform:rotate(90deg)}
-.search-drop{position:absolute;z-index:50;width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:0.375rem;box-shadow:0 10px 25px rgba(0,0,0,.1);max-height:200px;overflow-y:auto}
-.search-drop>div{padding:4px 8px;font-size:13px;cursor:pointer}
-.search-drop>div:hover{background:#eff6ff}
-.search-drop>div.sel{background:#dbeafe}
 </style>
 
 <div class="flex gap-4" style="height:calc(100vh - 150px)" x-data="pmsSystem()">
@@ -115,11 +111,19 @@ require __DIR__ . '/includes/views/header.php';
 
                                 <!-- 外采搜索 -->
                                 <div x-show="it.src==='p'" class="relative">
-                                    <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
-                                           @click.away="it._prodOpen=false"
-                                           x-model="it._prodShow" :readonly="!editMode"
-                                           class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
-                                    <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="search-drop">
+                                    <template x-if="!it.pid">
+                                        <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
+                                               @click.away="it._prodOpen=false"
+                                               x-model="it._prodShow" :readonly="!editMode"
+                                               class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
+                                    </template>
+                                    <template x-if="it.pid">
+                                        <div class="ss-tag cursor-pointer" @click="it._prodOpen=true">
+                                            <span x-text="it._prodShow"></span>
+                                            <span class="ss-tag-x" @click.stop="clearSystemItem(it,'p')">&times;</span>
+                                        </div>
+                                    </template>
+                                    <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="ss-dropdown">
                                         <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
                                             <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
                                                 <span x-text="p.label"></span>
@@ -131,11 +135,19 @@ require __DIR__ . '/includes/views/header.php';
 
                                 <!-- 自产搜索 -->
                                 <div x-show="it.src==='s'" class="relative">
-                                    <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
-                                           @click.away="it._spOpen=false"
-                                           x-model="it._spShow" :readonly="!editMode"
-                                           class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
-                                    <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="search-drop">
+                                    <template x-if="!it.sid">
+                                        <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
+                                               @click.away="it._spOpen=false"
+                                               x-model="it._spShow" :readonly="!editMode"
+                                               class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
+                                    </template>
+                                    <template x-if="it.sid">
+                                        <div class="ss-tag cursor-pointer" @click="it._spOpen=true">
+                                            <span x-text="it._spShow"></span>
+                                            <span class="ss-tag-x" @click.stop="clearSystemItem(it,'s')">&times;</span>
+                                        </div>
+                                    </template>
+                                    <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="ss-dropdown">
                                         <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
                                             <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
                                         </template>
@@ -145,10 +157,10 @@ require __DIR__ . '/includes/views/header.php';
                                 <!-- 临时 -->
                                 <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="名称">
 
-                                <input x-model="it.spec" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="规格">
-                                <input x-model="it.unit" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-center bg-sky-50" placeholder="单位">
+                                <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="规格">
+                                <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-sky-50" placeholder="单位">
                                 <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="数量">
-                                <input x-model="it.price" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="单价">
+                                <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="单价">
                                 <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                 <div class="flex items-center gap-1.5 justify-end">
                                     <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
@@ -170,11 +182,19 @@ require __DIR__ . '/includes/views/header.php';
 
                                             <!-- 外采 -->
                                             <div x-show="s.src==='p'" class="relative">
-                                                <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
-                                                       @click.away="s._prodOpen=false"
-                                                       x-model="s._prodShow" :readonly="!editMode"
-                                                       class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
-                                                <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="search-drop">
+                                                <template x-if="!s.pid">
+                                                    <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
+                                                           @click.away="s._prodOpen=false"
+                                                           x-model="s._prodShow" :readonly="!editMode"
+                                                           class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                </template>
+                                                <template x-if="s.pid">
+                                                    <div class="ss-tag cursor-pointer" @click="s._prodOpen=true">
+                                                        <span x-text="s._prodShow"></span>
+                                                        <span class="ss-tag-x" @click.stop="clearSystemItem(s,'p')">&times;</span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="ss-dropdown">
                                                     <template x-for="p in filteredProducts(s._prodFilter||'')" :key="p.id">
                                                         <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}">
                                                             <span x-text="p.label"></span>
@@ -186,11 +206,19 @@ require __DIR__ . '/includes/views/header.php';
 
                                             <!-- 自产 -->
                                             <div x-show="s.src==='s'" class="relative">
-                                                <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
-                                                       @click.away="s._spOpen=false"
-                                                       x-model="s._spShow" :readonly="!editMode"
-                                                       class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
-                                                <div x-show="s._spOpen && filteredSp(s._spFilter||'').length>0" class="search-drop">
+                                                <template x-if="!s.sid">
+                                                    <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
+                                                           @click.away="s._spOpen=false"
+                                                           x-model="s._spShow" :readonly="!editMode"
+                                                           class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                </template>
+                                                <template x-if="s.sid">
+                                                    <div class="ss-tag cursor-pointer" @click="s._spOpen=true">
+                                                        <span x-text="s._spShow"></span>
+                                                        <span class="ss-tag-x" @click.stop="clearSystemItem(s,'s')">&times;</span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="s._spOpen && filteredSp(s._spFilter||'').length>0" class="ss-dropdown">
                                                     <template x-for="sp in filteredSp(s._spFilter||'')" :key="sp.id">
                                                         <div @mousedown.prevent="pickSp(s,sp)" :class="{sel:s.sid==sp.id}" x-text="sp.label"></div>
                                                     </template>
@@ -198,10 +226,10 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
 
                                             <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="名称">
-                                            <input x-model="s.spec" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="规格">
-                                            <input x-model="s.unit" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-center">
+                                            <input x-model="s.spec" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full" placeholder="规格">
+                                            <input x-model="s.unit" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-center">
                                             <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
-                                            <input x-model="s.price" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
+                                            <input x-model="s.price" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-right">
                                             <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
                                             <div class="flex justify-end">
                                                 <button class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)" x-show="editMode">×</button>
@@ -270,7 +298,8 @@ document.addEventListener('alpine:init',()=>{
             filteredSp(q){q=(q||'').toLowerCase();return q?SL.filter(s=>s.label.toLowerCase().includes(q)):SL},
             pickProduct(it,p){it.pid=p.id;it._prodShow=p.label;it._prodFilter='';it._prodOpen=false;it.price=p.price;it.unit=p.unit;it.spec=p.spec||'';it.name=''},
             pickSp(it,s){it.sid=s.id;it._spShow=s.label;it._spFilter='';it._spOpen=false;it.price=s.price;it.unit=s.unit;it.name=''},
-            srcChanged(it){['pid','sid','name','price','_prodShow','_spShow'].forEach(k=>it[k]='')},
+            clearSystemItem(it,src){if(src==='p'){it.pid='';it._prodShow='';it.price=0;it.spec='';it.unit=''}else{it.sid='';it._spShow='';it.price=0;it.unit=''}},
+            srcChanged(it){['pid','sid','name','price','_prodShow','_spShow','spec','unit'].forEach(k=>it[k]='')},
 
             async save(){
                 const ser=it=>{

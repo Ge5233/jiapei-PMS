@@ -132,10 +132,18 @@ require __DIR__ . '/includes/views/header.php';
                                 <!-- 外采: 搜索 -->
                                 <template x-if="item.source_type==='product'">
                                     <div class="relative">
-                                        <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
-                                               @click.away="item._prodOpen=false"
-                                               x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
-                                        <div x-show="item._prodOpen && filteredQProducts(item._prodFilter||'').length>0" class="search-drop">
+                                        <template x-if="!item.product_id">
+                                            <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
+                                                   @click.away="item._prodOpen=false"
+                                                   x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
+                                        </template>
+                                        <template x-if="item.product_id">
+                                            <div class="ss-tag cursor-pointer" @click="item._prodOpen=true">
+                                                <span x-text="item._prodShow"></span>
+                                                <span class="ss-tag-x" @click.stop="qClearProduct(idx)">&times;</span>
+                                            </div>
+                                        </template>
+                                        <div x-show="item._prodOpen && filteredQProducts(item._prodFilter||'').length>0" class="ss-dropdown">
                                             <template x-for="p in filteredQProducts(item._prodFilter||'')" :key="p.id">
                                                 <div @mousedown.prevent="qPickProduct(idx, p)" :class="{sel:item.product_id==p.id}">
                                             <span x-text="p.sku+' '+p.name"></span>
@@ -148,10 +156,18 @@ require __DIR__ . '/includes/views/header.php';
                                 <!-- 自产: 搜索 -->
                                 <template x-if="item.source_type==='self_product'">
                                     <div class="relative">
-                                        <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
-                                               @click.away="item._spOpen=false"
-                                               x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产..." autocomplete="off">
-                                        <div x-show="item._spOpen && filteredQSp(item._spFilter||'').length>0" class="search-drop">
+                                        <template x-if="!item.self_product_id">
+                                            <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
+                                                   @click.away="item._spOpen=false"
+                                                   x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产..." autocomplete="off">
+                                        </template>
+                                        <template x-if="item.self_product_id">
+                                            <div class="ss-tag cursor-pointer" @click="item._spOpen=true">
+                                                <span x-text="item._spShow"></span>
+                                                <span class="ss-tag-x" @click.stop="qClearSp(idx)">&times;</span>
+                                            </div>
+                                        </template>
+                                        <div x-show="item._spOpen && filteredQSp(item._spFilter||'').length>0" class="ss-dropdown">
                                             <template x-for="p in filteredQSp(item._spFilter||'')" :key="p.id">
                                                 <div @mousedown.prevent="qPickSp(idx, p)" x-text="p.name"></div>
                                             </template>
@@ -164,8 +180,8 @@ require __DIR__ . '/includes/views/header.php';
                                 </template>
                             </td>
                             <td class="px-2 py-2"><input type="number" x-model="item.quantity" step="0.01" min="0" class="form-input text-sm text-right w-full" @input="calc"></td>
-                            <td class="px-2 py-2"><input type="text" x-model="item.unit" class="form-input text-sm w-full" placeholder="套"></td>
-                            <td class="px-2 py-2"><input type="number" x-model="item.unit_price" step="0.01" min="0" class="form-input text-sm text-right w-full" @input="calc"></td>
+                            <td class="px-2 py-2"><input type="text" x-model="item.unit" class="form-input text-sm w-full" :readonly="item.source_type!=='adhoc'" placeholder="套"></td>
+                            <td class="px-2 py-2"><input type="number" x-model="item.unit_price" step="0.01" min="0" class="form-input text-sm text-right w-full" :readonly="item.source_type!=='adhoc'" @input="calc"></td>
                             <td class="px-2 py-2"><input type="number" x-model="item.discount" step="0.01" min="0.01" max="1" class="form-input text-sm text-right w-full" @input="calc"></td>
                             <td class="px-2 py-2 text-right text-sm tabular-nums font-medium">¥<span x-text="item._subtotal?.toFixed(2)"></span></td>
                             <td class="px-2 py-2 text-center"><button type="button" class="text-red-400 hover:text-red-600" @click="items.splice(idx,1);calc()">&times;</button></td>
@@ -310,6 +326,8 @@ Alpine.data('quoteForm',(init)=>{
         filteredQSp(q){ q=(q||'').toLowerCase(); return q?this.allSelfProducts.filter(p=>p.name.toLowerCase().includes(q)):this.allSelfProducts; },
         qPickProduct(idx,p){ const it=this.items[idx]; it.product_id=String(p.id); it._prodShow=p.sku+' '+p.name; it._prodFilter=''; it._prodOpen=false; it.unit=p.unit||''; it.spec=p.spec||''; this.productChanged(idx,String(p.id)); },
         qPickSp(idx,p){ const it=this.items[idx]; it.self_product_id=String(p.id); it._spShow=p.name; it._spFilter=''; it._spOpen=false; it.unit=p.unit||''; this.selfProductChanged(idx,String(p.id)); },
+        qClearProduct(idx){ const it=this.items[idx]; it.product_id=''; it._prodShow=''; it._prodOpen=false; it.spec=''; it.unit=''; it.unit_price=0; this.calc(); },
+        qClearSp(idx){ const it=this.items[idx]; it.self_product_id=''; it._spShow=''; it._spOpen=false; it.spec=''; it.unit=''; it.unit_price=0; this.calc(); },
         submitted: false,
 
         addItem(type){
@@ -319,7 +337,8 @@ Alpine.data('quoteForm',(init)=>{
         switchType(idx,type){
             const item=this.items[idx];
             item.source_type=type; item.product_id=''; item.self_product_id=''; item.item_name='';
-            item.unit_price=0; item._subtotal=0;
+            item.unit_price=0; item._subtotal=0; item.spec=''; item.unit='';
+            item._prodShow=''; item._spShow='';
             if(type==='adhoc') item.item_name=''; else item.item_name='';
             this.calc();
         },

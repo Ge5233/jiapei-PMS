@@ -301,13 +301,23 @@ require __DIR__ . '/includes/views/header.php';
                                     </select>
                                 </td>
 <td class="px-3 py-2">
-                                    <!-- 外采产品 : 搜索输入框 -->
+                                    <!-- 外采产品 -->
                                     <template x-if="bomTypeOf(item)==='product'">
                                         <div class="relative">
-                                            <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
-                                                   @click.away="item._prodOpen=false"
-                                                   x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
-                                            <div x-show="item._prodOpen && filteredBomProducts(item._prodFilter||'').length>0" class="search-drop-bom">
+                                            <!-- 未选中：搜索框 -->
+                                            <template x-if="!item.product_id">
+                                                <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
+                                                       @click.away="item._prodOpen=false"
+                                                       x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
+                                            </template>
+                                            <!-- 已选中：只读标签 -->
+                                            <template x-if="item.product_id">
+                                                <div class="ss-tag cursor-pointer" @click="item._prodOpen=true">
+                                                    <span x-text="item._prodShow"></span>
+                                                    <span class="ss-tag-x" @click.stop="bomClearProduct(idx)">&times;</span>
+                                                </div>
+                                            </template>
+                                            <div x-show="item._prodOpen && filteredBomProducts(item._prodFilter||'').length>0" class="ss-dropdown">
                                                 <template x-for="p in filteredBomProducts(item._prodFilter||'')" :key="p.id">
                                                     <div @mousedown.prevent="bomPickProduct(idx, p)" :class="{sel:item.product_id==p.id}">
                                                     <span x-text="p.sku + ' ' + p.name"></span>
@@ -317,13 +327,21 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
                                         </div>
                                     </template>
-                                    <!-- 自产产品 : 搜索输入框 -->
+                                    <!-- 自产产品 -->
                                     <template x-if="bomTypeOf(item)==='self_product'">
                                         <div class="relative">
-                                            <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
-                                                   @click.away="item._spOpen=false"
-                                                   x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产产品..." autocomplete="off">
-                                            <div x-show="item._spOpen && filteredBomSpProducts(item._spFilter||'').length>0" class="search-drop-bom">
+                                            <template x-if="!item.bom_self_product_id">
+                                                <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
+                                                       @click.away="item._spOpen=false"
+                                                       x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产产品..." autocomplete="off">
+                                            </template>
+                                            <template x-if="item.bom_self_product_id">
+                                                <div class="ss-tag cursor-pointer" @click="item._spOpen=true">
+                                                    <span x-text="item._spShow"></span>
+                                                    <span class="ss-tag-x" @click.stop="bomClearSp(idx)">&times;</span>
+                                                </div>
+                                            </template>
+                                            <div x-show="item._spOpen && filteredBomSpProducts(item._spFilter||'').length>0" class="ss-dropdown">
                                                 <template x-for="p in filteredBomSpProducts(item._spFilter||'')" :key="p.id">
                                                     <div @mousedown.prevent="bomPickSp(idx, p)" x-text="p.name"></div>
                                                 </template>
@@ -524,6 +542,22 @@ document.addEventListener('alpine:init', () => {
                 item._sp_cost = parseFloat(p.total_cost) || 0;
                 this.calcTotal();
             },
+            bomClearProduct(idx) {
+                const item = this.bomItems[idx];
+                item.product_id = '';
+                item._prodShow = '';
+                item._prodOpen = false;
+                item._product_cost = 0;
+                this.calcTotal();
+            },
+            bomClearSp(idx) {
+                const item = this.bomItems[idx];
+                item.bom_self_product_id = '';
+                item._spShow = '';
+                item._spOpen = false;
+                item._sp_cost = 0;
+                this.calcTotal();
+            },
             filterBomProducts() { /* getter 处理 */ },
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
             imageFile: null,           // File 对象
@@ -587,6 +621,8 @@ document.addEventListener('alpine:init', () => {
                 item._product_cost = 0;
                 item._sp_cost = 0;
                 item.unit_cost = 0;
+                item._prodShow = '';
+                item._spShow = '';
                 if (type === 'product') {
                     item.product_id = '';
                 } else if (type === 'self_product') {
