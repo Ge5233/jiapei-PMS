@@ -149,21 +149,17 @@ require __DIR__ . '/includes/views/header.php';
                     })" @click.outside="open = false" class="relative flex-1">
                         <input type="hidden" name="supplier_id" :value="selectedId">
                         <!-- 未选中：搜索输入框 -->
-                        <template x-if="!selectedId">
-                            <div class="relative w-full">
-                                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
-                                <input type="text" x-model="keyword" x-ref="ssInput"
-                                       @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
-                                       class="form-input pl-7 py-1.5 text-sm w-full" :placeholder="placeholder" autocomplete="off">
-                            </div>
-                        </template>
+                        <div x-show="!selectedId" style="display:block" class="relative w-full">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
+                            <input type="text" x-model="keyword" x-ref="ssInput"
+                                   @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
+                                   class="form-input pl-7 py-1.5 text-sm w-full" :placeholder="placeholder" autocomplete="off">
+                        </div>
                         <!-- 选中：标签 -->
-                        <template x-if="selectedId">
-                            <div class="ss-tag cursor-pointer w-full" @click="openDropdown()">
-                                <span x-text="selectedLabel"></span>
-                                <span class="ss-tag-x" @click.stop="clear()">&times;</span>
-                            </div>
-                        </template>
+                        <div x-show="selectedId" class="ss-tag cursor-pointer w-full" @click="openDropdown()">
+                            <span x-text="selectedLabel"></span>
+                            <span class="ss-tag-x" @click.stop="clear()">&times;</span>
+                        </div>
                         <!-- 下拉 -->
                         <div x-show="open" x-cloak class="ss-dropdown">
                             <template x-for="(it, idx) in filtered" :key="it.id">
@@ -191,21 +187,17 @@ require __DIR__ . '/includes/views/header.php';
                     })" @click.outside="open = false" class="relative flex-1">
                         <input type="hidden" name="category_id" :value="selectedId">
                         <!-- 未选中 -->
-                        <template x-if="!selectedId">
-                            <div class="relative w-full">
-                                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
-                                <input type="text" x-model="keyword" x-ref="ssInput"
-                                       @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
-                                       class="form-input pl-7 py-1.5 text-sm w-full" placeholder="搜索分类..." autocomplete="off">
-                            </div>
-                        </template>
+                        <div x-show="!selectedId" style="display:block" class="relative w-full">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"></i>
+                            <input type="text" x-model="keyword" x-ref="ssInput"
+                                   @focus="openDropdown()" @input="filter()" @keydown="onKeydown($event)"
+                                   class="form-input pl-7 py-1.5 text-sm w-full" placeholder="搜索分类..." autocomplete="off">
+                        </div>
                         <!-- 选中标签 -->
-                        <template x-if="selectedId">
-                            <div class="ss-tag cursor-pointer w-full" @click="openDropdown()">
-                                <span x-text="selectedLabel"></span>
-                                <span class="ss-tag-x" @click.stop="clear()">&times;</span>
-                            </div>
-                        </template>
+                        <div x-show="selectedId" class="ss-tag cursor-pointer w-full" @click="openDropdown()">
+                            <span x-text="selectedLabel"></span>
+                            <span class="ss-tag-x" @click.stop="clear()">&times;</span>
+                        </div>
                         <!-- 下拉（分组） -->
                         <div x-show="open" x-cloak class="ss-dropdown">
                             <template x-for="group in filtered" :key="'g'+group.id">
