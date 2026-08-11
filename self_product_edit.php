@@ -393,14 +393,12 @@ require __DIR__ . '/includes/views/header.php';
                             </tr>
                         </template>
                     </tbody>
-                    <tfoot>
-                        <tr class="bg-slate-50 font-medium">
-                            <td colspan="6" class="px-3 py-2 text-right text-sm text-slate-600">材料成本合计</td>
-                            <td class="px-3 py-2 text-right text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
                 </table>
+            </div>
+            <!-- 合计行 -->
+            <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 mt-auto font-medium">
+                <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
+                <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
             </div>
         </template>
     </div>
