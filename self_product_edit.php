@@ -265,17 +265,16 @@ require __DIR__ . '/includes/views/header.php';
             </div>
         </div>
 
-        <template x-if="bomItems.length === 0">
-            <div class="text-center py-8 text-slate-400 text-sm">
-                <i data-lucide="clipboard-list" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                暂无物料，点击「添加物料」开始
-            </div>
-        </template>
+        <!-- 空状态 -->
+        <div x-show="bomItems.length === 0" class="text-center py-8 text-slate-400 text-sm flex-1">
+            <i data-lucide="clipboard-list" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+            暂无物料，点击「添加物料」开始
+        </div>
 
-        <template x-if="bomItems.length > 0">
-            <div class="overflow-x-auto flex-1" style="overflow-x:auto;overflow-y:visible">
-                <table class="w-full" style="overflow:visible;height:100%">
-                    <thead>
+        <!-- 物料表格 -->
+        <div x-show="bomItems.length > 0" class="overflow-x-auto flex-1" style="overflow-x:auto;overflow-y:visible">
+            <table class="w-full" style="overflow:visible">
+                <thead>
                         <tr class="border-b border-slate-200 bg-slate-50">
                             <th class="text-left px-3 py-2 text-xs font-medium text-slate-500 w-8">#</th>
                             <th class="text-left px-3 py-2 text-xs font-medium text-slate-500">类型</th>
@@ -395,13 +394,13 @@ require __DIR__ . '/includes/views/header.php';
                     </tbody>
                 </table>
             </div>
-            <div class="mt-auto pt-2">
-                <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 font-medium">
-                    <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
-                    <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
-                </div>
+        <!-- 合计行 -->
+        <div x-show="bomItems.length > 0" class="pt-2">
+            <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 font-medium">
+                <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
+                <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
             </div>
-        </template>
+        </div>
     </div>
     <?php endif; ?>
 
