@@ -250,7 +250,7 @@ require __DIR__ . '/includes/views/header.php';
 
     <?php if (canViewCost()): ?>
     <!-- BOM 物料清单 -->
-    <div class="card p-6 mb-4" style="overflow:visible;min-height:360px">
+    <div class="card p-6 mb-4 flex flex-col" style="overflow:visible;min-height:360px">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
@@ -273,8 +273,8 @@ require __DIR__ . '/includes/views/header.php';
         </template>
 
         <template x-if="bomItems.length > 0">
-            <div class="overflow-x-auto" style="overflow-x:auto;overflow-y:visible">
-                <table class="w-full" style="overflow:visible">
+            <div class="overflow-x-auto flex-1" style="overflow-x:auto;overflow-y:visible">
+                <table class="w-full" style="overflow:visible;height:100%">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50">
                             <th class="text-left px-3 py-2 text-xs font-medium text-slate-500 w-8">#</th>
