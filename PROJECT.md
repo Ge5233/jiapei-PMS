@@ -12,26 +12,27 @@
 |---|---|
 | 项目代号 | 佳培产品管理网页应用 / PMS |
 | 用户规模 | 3-4 人（内部使用） |
-| 当前版本 | **v4.0**（2026-08-08 报价系统上线） |
+| 当前版本 | **v4.5**（2026-08-11，统一搜索下拉组件） |
 | 技术栈 | PHP 8.2 + MySQL 5.7 + 原生 PHP（无框架）+ Tailwind CDN + Alpine.js CDN |
 | 部署位置 | 腾讯云轻量服务器 101.43.8.128 + 宝塔面板 |
 | 访问地址 | http://101.43.8.128:8081 |
 | 部署路径 | /www/wwwroot/pms |
+| 本地工作区 | `c:\Users\MR NO.1\CodeBuddy\jiapei-pms\src` |
 | 端口 | 8081（绕过 80，避开扣子应用）|
 
-## 二、当前服务器状态（2026-08-07 验证）
+## 二、当前服务器状态（2026-08-11 验证）
 
 | 检查项 | 结果 | 验证方式 |
 |---|---|---|
 | 网站在跑 | ✅ 运行中 | 宝塔「网站」列表 |
 | nginx 监听 8081 | ✅ 正常 | 显示登录页 |
-| Git 关联 | ✅ `Ge5233/jiapei-PMS` main | `git remote -v` |
-| 应用代码 | ✅ v3.9 | 已部署（commit `206cf61`） |
+| Git 关联 | ✅ `jiapeicode/jiapei-PMS` main（从 Gitee 拉取） | `git remote -v` |
+| 应用代码 | ⚠️ v4.4 commit `b699951`（落后本地 1 个 commit） | `git log --oneline -5` |
+| 本地代码 | ✅ v4.4 commit `3cfbead`（最新） | 本地 `git log --oneline -10` |
 | `.env` 密码 | ✅ 保留 | `.gitignore` 排除 |
-| `uploads/` 产品图片 | ✅ 保留（3 张） | `.gitignore` 排除 |
-| 新表 `self_products` | ✅ 已建 | v3.9 新增 |
-| 新表 `self_product_items` | ✅ 已建 | BOM 物料清单 |
+| `uploads/` 产品图片 | ✅ 保留 | `.gitignore` 排除 |
 | SSH 密钥 | ✅ 可用 | 从本地可直接进服务器 |
+| 数据库 | ✅ pms_db，11 张表 | 含 quotes/quote_items |
 
 ### v3.8 关键验证
 
@@ -89,7 +90,7 @@ addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); 
 部署命令（小落执行）：
 ```bash
 # 1. 推送
-cd C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\src && git add -A && git commit -m "描述" && git push
+cd "C:\Users\MR NO.1\CodeBuddy\jiapei-pms\src" && git add -A && git commit -m "描述" && git push
 
 # 2. SSH 进服务器拉代码
 ssh root@101.43.8.128 "cd /www/wwwroot/pms && git pull"
@@ -163,7 +164,7 @@ ssh root@101.43.8.128 "mysql -u pms_user -p'密码' pms_db < /www/wwwroot/pms/sq
 ## 六、目录结构（精简版）
 
 ```
-C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\
+C:\Users\MR NO.1\CodeBuddy\jiapei-pms\
 ├── PROJECT.md               ← 本文件（项目中央记忆）
 ├── SPEC.md                  ← v3.9 自产产品模块方案
 ├── pms-v3.8-handover.tar.gz ← 原始交付包
@@ -245,6 +246,21 @@ C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\
 
 ## 十一、版本历史
 
+### v4.5 — 统一搜索下拉 + 布局优化 (2026-08-11)
+- 统一搜索下拉组件 `assets/search-select.js`，支持两种模式：
+  - `pick`：纯单选（供应商、分类），选中后只读标签，可×清除
+  - `source`：三态（外采/自产/临时），选中后只读标签，切换来源清空
+- 统一 CSS 样式（`.ss-dropdown`、`.ss-tag`），替换旧的 `.search-drop` / `.search-drop-bom`
+- 四个页面搜索替换：
+  - `product_edit.php`：供应商 + 分类（最终保持原按钮+面板模式）
+  - `self_product_edit.php`：BOM 物料搜索
+  - `quote_edit.php`：产品搜索（单价/规格选中后只读，折扣可调）
+  - `systems.php`：大型系统主材/配件搜索
+- 选中后不可编辑，只能×清除；临时模式仍可自由输入
+- 标签统一最小宽度 160px（`.ss-tag`）
+- BOM 优化：卡片 min-height 360px、合计沉底（flex 布局）、删除二次确认、下拉高度 16rem
+- 大型系统优化：模块头重新布局（折叠按钮独立、名称不占满行、金额+操作按钮靠右）、物料名称列加宽 260px
+
 ### v4.3 — 大型系统 BOM + 可搜索下拉框 + Gitee 部署 (2026-08-09)
 - 新建大型系统页面：四级表（项目→模块→主材→紧固件），三级物料兼容三来源（外采/自产/临时）
 - 双视图：按模块（报价用）、物料汇总（采购用）
@@ -259,18 +275,6 @@ C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\
 - 分类管理：默认折叠大类
 - 新建成功后横幅：继续新增 / 返回列表
 - 编辑页未保存拦截：产品 / 自产 / 报价 三页（纯原生 IIFE + 捕获阶段 delegate）
-- 大型系统主材/配件 CSS Grid 竖对齐 + 表头（类型/名称/规格/单位/数量/单价/小计/操作）
-- 主材：天蓝底 `bg-sky-100` + 输入框 `bg-sky-50` + `border-t border-sky-300`
-- 配件：白底，无缩进（与主材同网格对齐），靠背景色+v分隔线区分主次
-  - ⚠️ **待优化**：主材/配件视觉区分迭代多次（青/琥珀/蓝/白），走完确认流程，后续可再调
-- 配件默认折叠：`_collapsed:true`，主材行 ▶/▼ 按钮切换，`addSub` 自动展开
-- 模块顶部 + 系统底部：三数字——主材合计 / 配件合计 / 总额
-- 大型系统主材默认外采、配件默认外采
-- 配件名称选择后刷新不丢失修复（`_prodShow` 反查产品表）
-- 报价/自产 列表页加 CSRF token 修复删不掉问题
-- 指导售价 readonly 框加 hidden 字段修复保存为 0
-
- 🔴 **待办：重启后** `git checkout systems.php && git pull` 同步锁住的本地仓库
 
 ### v4.2 — 毛利率定价模型 (2026-08-08)
 - 定价从「系数」改为「毛利率」：指导售价 = 成本/(1-毛利率)
@@ -345,29 +349,11 @@ C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\
 ## 十三、版本控制
 
 已配置 GitHub 部署（见第四节）。本地开发目录：
-- `C:\Users\MR NO.1\WorkBuddy\佳培产品管理网页应用\extracted\` — v3.8 源码（本地 git 仓库）
+- `C:\Users\MR NO.1\CodeBuddy\jiapei-pms\src\` — 当前开发目录（git 仓库）
 - 每次改动：本地 `git commit` → `git push` → 服务器 `git pull`
-
-### v4.4 — 大型系统侧栏折叠 + 列宽 + 序号 + 删除确认 + 产品提示 + 分类说明 (2026-08-10)
-- 大型系统：选中项目后自动折叠侧栏（只留 ☰ 图标），编辑区最大化
-- 大型系统表头+行加序号 #列（40px），主材 1/2/3，配件 1.1/1.2
-- 列宽重新分配：名称固定 200px（不进吃空间），规格 1fr（接管剩余），小计 120→100px，操作 60→80px
-- 删除主材/配件加 confirm 弹窗确认
-- 主材配件按钮间距加大（gap-0.5→gap-1.5）防误点
-- 配件折叠 x-show 修复（之前漏掉导致 ▶/▼ 无效）
-- 搜索框 @click 双触发（防 focus 在新 DOM 上失效）
-- 大型系统 editMode 默认 true
-- 产品编辑页：名称输入框失焦→输入提示已有同类产品（名称+规格+SKU），边打边出
-- 产品编辑页 SKU 生成按钮：空或不合规→生成，合规→提示无需生成
-- 分类/供应商 +按钮：点开新标签页，切回原标签页自动刷新下拉列表
-- 分类：一级+二级加「说明」字段（VARCHAR 200），列表独占一行小字显示
-  - 数据库迁移：`ALTER TABLE categories ADD COLUMN description VARCHAR(200) DEFAULT '';`
-  - Model + API + 表单 + 列表全链路打通
-- 外采产品列表默认按时间倒序（最近优先）
-- PROJECT.md 全补 v4.3 + v4.4
 
 ---
 
 **记录人**：小落
-**最后更新**：2026-08-10 (v4.4 大型系统+分类说明完成)
+**最后更新**：2026-08-08 11:15（v4.0 价格区重写完成）
 
