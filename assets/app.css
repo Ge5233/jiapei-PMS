@@ -278,7 +278,7 @@
 
 /* 选中标签 */
 .ss-tag {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 0.25rem;
     padding: 0.125rem 0.5rem;
@@ -290,6 +290,7 @@
     cursor: default;
     max-width: 100%;
     overflow: hidden;
+    min-width: 160px;
 }
 .ss-tag span {
     overflow: hidden;
