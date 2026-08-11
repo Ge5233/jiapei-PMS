@@ -138,7 +138,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
                                         </template>
                                         <template x-if="item.product_id">
-                                            <div class="ss-tag cursor-pointer" @click="item._prodOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._prodOpen=true">
                                                 <span x-text="item._prodShow"></span>
                                                 <span class="ss-tag-x" @click.stop="qClearProduct(idx)">&times;</span>
                                             </div>
@@ -162,7 +162,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产..." autocomplete="off">
                                         </template>
                                         <template x-if="item.self_product_id">
-                                            <div class="ss-tag cursor-pointer" @click="item._spOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._spOpen=true">
                                                 <span x-text="item._spShow"></span>
                                                 <span class="ss-tag-x" @click.stop="qClearSp(idx)">&times;</span>
                                             </div>

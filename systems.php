@@ -105,14 +105,14 @@ require __DIR__ . '/includes/views/header.php';
                 <div x-show="mod._open!==false">
                     <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
                     <!-- 列头 -->
-                    <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
+                    <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
                          x-show="(mod.items||[]).length>0">
                         <span>#</span><span>类型</span><span>物料名称</span><span>规格</span><span>单位</span><span>数量</span><span>单价</span><span>小计</span><span></span>
                     </div>
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
+                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
                                 <div class="flex items-center gap-1">
                                     <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
@@ -132,7 +132,7 @@ require __DIR__ . '/includes/views/header.php';
                                                class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
                                     </template>
                                     <template x-if="it.pid">
-                                        <div class="ss-tag cursor-pointer" @click="it._prodOpen=true">
+                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._prodOpen=true">
                                             <span x-text="it._prodShow"></span>
                                             <span class="ss-tag-x" @click.stop="clearSystemItem(it,'p')">&times;</span>
                                         </div>
@@ -156,7 +156,7 @@ require __DIR__ . '/includes/views/header.php';
                                                class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
                                     </template>
                                     <template x-if="it.sid">
-                                        <div class="ss-tag cursor-pointer" @click="it._spOpen=true">
+                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._spOpen=true">
                                             <span x-text="it._spShow"></span>
                                             <span class="ss-tag-x" @click.stop="clearSystemItem(it,'s')">&times;</span>
                                         </div>
@@ -185,7 +185,7 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
+                                        <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100">
                                             <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
@@ -200,7 +200,7 @@ require __DIR__ . '/includes/views/header.php';
                                                            class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                 </template>
                                                 <template x-if="s.pid">
-                                                    <div class="ss-tag cursor-pointer" @click="s._prodOpen=true">
+                                                    <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._prodOpen=true">
                                                         <span x-text="s._prodShow"></span>
                                                         <span class="ss-tag-x" @click.stop="clearSystemItem(s,'p')">&times;</span>
                                                     </div>
@@ -224,7 +224,7 @@ require __DIR__ . '/includes/views/header.php';
                                                            class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                 </template>
                                                 <template x-if="s.sid">
-                                                    <div class="ss-tag cursor-pointer" @click="s._spOpen=true">
+                                                    <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._spOpen=true">
                                                         <span x-text="s._spShow"></span>
                                                         <span class="ss-tag-x" @click.stop="clearSystemItem(s,'s')">&times;</span>
                                                     </div>

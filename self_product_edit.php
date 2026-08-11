@@ -311,7 +311,7 @@ require __DIR__ . '/includes/views/header.php';
                                             </template>
                                             <!-- 已选中：只读标签 -->
                                             <template x-if="item.product_id">
-                                                <div class="ss-tag cursor-pointer" @click="item._prodOpen=true">
+                                                <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._prodOpen=true">
                                                     <span x-text="item._prodShow"></span>
                                                     <span class="ss-tag-x" @click.stop="bomClearProduct(idx)">&times;</span>
                                                 </div>
@@ -335,7 +335,7 @@ require __DIR__ . '/includes/views/header.php';
                                                        x-model="item._spShow" class="text-sm border rounded px-2 py-1.5 w-full" placeholder="搜索自产产品..." autocomplete="off">
                                             </template>
                                             <template x-if="item.bom_self_product_id">
-                                                <div class="ss-tag cursor-pointer" @click="item._spOpen=true">
+                                                <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._spOpen=true">
                                                     <span x-text="item._spShow"></span>
                                                     <span class="ss-tag-x" @click.stop="bomClearSp(idx)">&times;</span>
                                                 </div>
