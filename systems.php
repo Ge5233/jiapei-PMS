@@ -104,7 +104,12 @@ require __DIR__ . '/includes/views/header.php';
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
                             <div class="grid grid-cols-[40px_56px_200px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm bg-sky-100 border-t border-sky-300">
-                                <span class="text-sm" x-text="ii+1"></span>
+                                <div class="flex items-center gap-1">
+                                    <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
+                                        <span x-text="it._collapsed?'▶':'▼'"></span>
+                                    </button>
+                                    <span x-text="ii+1"></span>
+                                </div>
                                 <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-sky-50" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
@@ -164,9 +169,6 @@ require __DIR__ . '/includes/views/header.php';
                                 <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                 <div class="flex items-center gap-1.5 justify-end">
                                     <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
-                                    <button class="text-xs text-slate-400" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
-                                        <span x-text="it._collapsed?'▶':'▼'"></span>
-                                    </button>
                                     <button class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)" x-show="editMode">×</button>
                                 </div>
                             </div>
