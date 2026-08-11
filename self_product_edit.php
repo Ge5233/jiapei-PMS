@@ -387,7 +387,7 @@ require __DIR__ . '/includes/views/header.php';
                                 </td>
                                 <td class="px-3 py-2 text-center">
                                     <button type="button" class="text-red-400 hover:text-red-600 text-sm"
-                                            @click="removeBomItem(idx)" title="删除">&times;</button>
+                                            @click="confirm('确认删除该物料？') && removeBomItem(idx)" title="删除">&times;</button>
                                 </td>
                             </tr>
                         </template>
