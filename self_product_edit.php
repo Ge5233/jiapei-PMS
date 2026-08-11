@@ -250,7 +250,7 @@ require __DIR__ . '/includes/views/header.php';
 
     <?php if (canViewCost()): ?>
     <!-- BOM 物料清单 -->
-    <div class="card p-6 mb-4">
+    <div class="card p-6 mb-4" style="overflow:visible">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
@@ -307,8 +307,8 @@ require __DIR__ . '/includes/views/header.php';
                                             <!-- 未选中：搜索框 -->
                                             <template x-if="!item.product_id">
                                                 <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
-                                                       @click.away="item._prodOpen=false"
-                                                       x-model="item._prodShow" class="text-sm border rounded px-1 w-full" placeholder="搜索产品..." autocomplete="off">
+                                                                                                   @click.away="item._prodOpen=false"
+                                                                                                   x-model="item._prodShow" class="text-sm border rounded px-2 py-1.5 w-full" placeholder="搜索产品..." autocomplete="off">
                                             </template>
                                             <!-- 已选中：只读标签 -->
                                             <template x-if="item.product_id">
@@ -333,7 +333,7 @@ require __DIR__ . '/includes/views/header.php';
                                             <template x-if="!item.bom_self_product_id">
                                                 <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
                                                        @click.away="item._spOpen=false"
-                                                       x-model="item._spShow" class="text-sm border rounded px-1 w-full" placeholder="搜索自产产品..." autocomplete="off">
+                                                       x-model="item._spShow" class="text-sm border rounded px-2 py-1.5 w-full" placeholder="搜索自产产品..." autocomplete="off">
                                             </template>
                                             <template x-if="item.bom_self_product_id">
                                                 <div class="ss-tag cursor-pointer" @click="item._spOpen=true">
