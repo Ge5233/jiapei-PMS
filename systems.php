@@ -112,7 +112,7 @@ require __DIR__ . '/includes/views/header.php';
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-l-4 border-blue-400 border-t border-slate-200 font-semibold text-slate-800">
+                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-l-4 border-blue-400 border-t border-b-2 border-slate-300 font-semibold text-slate-800">
                                 <div class="flex items-center gap-1">
                                     <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
