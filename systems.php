@@ -112,14 +112,14 @@ require __DIR__ . '/includes/views/header.php';
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-l-4 border-blue-400 border-t border-slate-200">
+                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-l-4 border-blue-400 border-t border-slate-200 font-semibold text-slate-800">
                                 <div class="flex items-center gap-1">
                                     <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
                                     </button>
                                     <span x-text="ii+1"></span>
                                 </div>
-                                <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-sky-50" @change="srcChanged(it)" :disabled="!editMode">
+                                <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-white" @change="srcChanged(it)" :disabled="!editMode">
                                     <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                 </select>
 
@@ -129,7 +129,7 @@ require __DIR__ . '/includes/views/header.php';
                                         <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
                                                @click.away="it._prodOpen=false"
                                                x-model="it._prodShow" :readonly="!editMode"
-                                               class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
+                                               class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
                                     </template>
                                     <template x-if="it.pid">
                                         <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._prodOpen=true">
@@ -153,7 +153,7 @@ require __DIR__ . '/includes/views/header.php';
                                         <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
                                                @click.away="it._spOpen=false"
                                                x-model="it._spShow" :readonly="!editMode"
-                                               class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="输入关键词搜索..." autocomplete="off">
+                                               class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
                                     </template>
                                     <template x-if="it.sid">
                                         <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._spOpen=true">
@@ -169,12 +169,12 @@ require __DIR__ . '/includes/views/header.php';
                                 </div>
 
                                 <!-- 临时 -->
-                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="名称">
+                                <input x-show="it.src==='a'" x-model="it.name" :readonly="!editMode" class="text-sm border rounded px-1 w-full bg-white" placeholder="名称">
 
-                                <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-sky-50" placeholder="规格">
-                                <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-sky-50" placeholder="单位">
-                                <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="数量">
-                                <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-sky-50" placeholder="单价">
+                                <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-white" placeholder="规格">
+                                <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-white" placeholder="单位">
+                                <input x-model="it.qty" :readonly="!editMode" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="数量">
+                                <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="单价">
                                 <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                 <div class="flex items-center gap-1.5 justify-end">
                                     <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)" x-show="editMode">+配件</button>
@@ -186,13 +186,13 @@ require __DIR__ . '/includes/views/header.php';
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
                                         <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100 border-l-4 border-transparent">
-                                            <span class="text-xs pl-4" x-text="ii+1+'.'+(si+1)"></span>
+                                            <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                             </select>
 
                                             <!-- 外采 -->
-                                            <div x-show="s.src==='p'" class="relative pl-4">
+                                            <div x-show="s.src==='p'" class="relative">
                                                 <template x-if="!s.pid">
                                                     <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
                                                            @click.away="s._prodOpen=false"
@@ -216,7 +216,7 @@ require __DIR__ . '/includes/views/header.php';
                                             </div>
 
                                             <!-- 自产 -->
-                                            <div x-show="s.src==='s'" class="relative pl-4">
+                                            <div x-show="s.src==='s'" class="relative">
                                                 <template x-if="!s.sid">
                                                     <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
                                                            @click.away="s._spOpen=false"
@@ -236,7 +236,7 @@ require __DIR__ . '/includes/views/header.php';
                                                 </div>
                                             </div>
 
-                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 w-full pl-4" placeholder="名称">
+                                            <input x-show="s.src==='a'" x-model="s.name" :readonly="!editMode" class="text-xs border rounded px-1 w-full" placeholder="名称">
                                             <input x-model="s.spec" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full" placeholder="规格">
                                             <input x-model="s.unit" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-center">
                                             <input x-model="s.qty" :readonly="!editMode" class="text-xs border rounded px-1 w-full text-right">
