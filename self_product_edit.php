@@ -827,6 +827,7 @@ document.addEventListener('alpine:init', () => {
                 }
             },
         };
+        return comp;
     });
 });
 </script>
