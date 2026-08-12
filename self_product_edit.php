@@ -512,7 +512,7 @@ document.addEventListener('alpine:init', () => {
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
             },
-            bomItems: (init.bomItems || []).map(item => ({
+            bomItems: ((init.bomItems?.items) || []).map(item => ({
                 ...item,
                 product_id: item.product_id ? String(item.product_id) : (item.bom_self_product_id ? '' : ''),
                 bom_self_product_id: item.bom_self_product_id ? String(item.bom_self_product_id) : '',
