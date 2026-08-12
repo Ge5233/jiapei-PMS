@@ -56,10 +56,10 @@ require __DIR__ . '/includes/views/header.php';
     <div class="flex gap-0 mb-4 border-b-2 border-slate-200">
         <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
                 :class="tab==='info' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
-                @click="tab='info'">基本信息</button>
+                @click="logTab(); tab='info'">基本信息</button>
         <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
                 :class="tab==='bom' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
-                @click="tab='bom'">BOM 物料清单</button>
+                @click="logTab(); tab='bom'">BOM 物料清单</button>
     </div>
     <?php endif; ?>
 
@@ -482,14 +482,16 @@ require __DIR__ . '/includes/views/header.php';
 })();
 
 document.addEventListener('alpine:init', () => {
+    console.log('[DIAG] alpine:init fired');
     Alpine.data('selfProductForm', (init) => {
+        console.log('[DIAG] selfProductForm init, tab will be set');
         // 构建外采产品索引（id → 对象）
         const productMap = {};
         (init.allProducts || []).forEach(p => { productMap[p.id] = p; });
         const selfProductMap = {};
         (init.allSelfProducts || []).forEach(p => { selfProductMap[p.id] = p; });
 
-        return {
+        const comp = {
             tab: 'info',  // Tab 状态
             isEdit: init.isEdit,
             form: {
@@ -578,6 +580,12 @@ document.addEventListener('alpine:init', () => {
             imageChanged: false,       // 是否改过图片
             imageRemoved: false,       // 是否删除了图片
             submitted: false,
+
+            // --- 诊断 ---
+            logTab() {
+                console.log('[DIAG] tab=', this.tab, 'typeof=', typeof this.tab);
+                return this.tab;
+            },
 
             // --- 图片 ---
             handleImageUpload(e) {
