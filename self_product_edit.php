@@ -609,7 +609,6 @@ document.addEventListener('alpine:init', () => {
             },
 
             // --- 模块管理 ---
-            modules: [], // 模块列表 [{name, collapsed:false}]
             getModuleNames() {
                 const names = new Set();
                 this.bomItems.forEach(item => {
