@@ -182,7 +182,9 @@ class SelfProduct
      */
     public static function getBom(int $selfProductId): array
     {
-        $sql = "SELECT i.*, p.name AS product_name, p.sku AS product_sku,
+        $sql = "SELECT i.id, i.self_product_id, i.product_id, i.bom_self_product_id, i.item_name,
+                       i.quantity, i.unit, i.unit_cost, i.sort_order, i.module_name, i.parent_id, i.remark,
+                       p.name AS product_name, p.sku AS product_sku,
                        p.cost_price AS product_cost_price, p.spec AS product_spec,
                        sp.name AS bom_sp_name, sp.total_cost AS bom_sp_cost, sp.model_no AS bom_sp_model
                 FROM self_product_items i
@@ -206,14 +208,44 @@ class SelfProduct
             if (!isset($moduleMap[$modName])) {
                 $moduleMap[$modName] = ['name' => $modName, 'items' => []];
             }
+            // 构建 item 输出（前端 normModules 需要的字段）
+            $out = [
+                'id' => $item['id'],
+                'product_id' => $item['product_id'],
+                'self_product_id' => $item['bom_self_product_id'],
+                'item_name' => $item['item_name'],
+                'spec' => $item['product_id'] ? ($item['product_spec'] ?? '') : ($item['spec'] ?? ''),
+                'unit' => $item['unit'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['product_id'] ? (float)($item['product_cost_price'] ?? 0)
+                    : ($item['bom_self_product_id'] ? (float)($item['bom_sp_cost'] ?? 0)
+                    : (float)($item['unit_cost'] ?? 0)),
+                'sort_order' => $item['sort_order'],
+                'module_name' => $item['module_name'],
+                'remark' => $item['remark'],
+                'subs' => [],
+            ];
             // 找该主材的配件
-            $item['subs'] = [];
             foreach ($subItems as $sub) {
                 if ((int)$sub['parent_id'] === (int)$item['id']) {
-                    $item['subs'][] = $sub;
+                    $out['subs'][] = [
+                        'id' => $sub['id'],
+                        'product_id' => $sub['product_id'],
+                        'self_product_id' => $sub['bom_self_product_id'],
+                        'item_name' => $sub['item_name'],
+                        'spec' => $sub['product_id'] ? ($sub['product_spec'] ?? '') : ($sub['spec'] ?? ''),
+                        'unit' => $sub['unit'],
+                        'quantity' => $sub['quantity'],
+                        'unit_price' => $sub['product_id'] ? (float)($sub['product_cost_price'] ?? 0)
+                            : ($sub['bom_self_product_id'] ? (float)($sub['bom_sp_cost'] ?? 0)
+                            : (float)($sub['unit_cost'] ?? 0)),
+                        'sort_order' => $sub['sort_order'],
+                        'module_name' => $sub['module_name'],
+                        'remark' => $sub['remark'],
+                    ];
                 }
             }
-            $moduleMap[$modName]['items'][] = $item;
+            $moduleMap[$modName]['items'][] = $out;
         }
         unset($item);
 

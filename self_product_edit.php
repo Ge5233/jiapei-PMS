@@ -28,6 +28,21 @@ $allProducts = Product::allForSelect();
 // 自产产品列表（BOM自产类型）
 $allSelfProducts = class_exists('SelfProduct') ? SelfProduct::allForSelect() : [];
 
+// JSON for JS（搜索下拉用）
+$prodJson = json_encode(array_map(fn($p) => [
+    'id' => $p['id'],
+    'label' => $p['sku'] . ' ' . $p['name'],
+    'spec' => $p['spec'] ?? '',
+    'price' => (float)($p['cost_price'] ?? 0),
+    'unit' => $p['unit'] ?? '',
+], $allProducts), JSON_UNESCAPED_UNICODE);
+$spJson = json_encode(array_map(fn($sp) => [
+    'id' => $sp['id'],
+    'label' => $sp['name'],
+    'price' => (float)($sp['total_cost'] ?? 0),
+    'unit' => $sp['unit'] ?? '',
+], $allSelfProducts), JSON_UNESCAPED_UNICODE);
+
 $pageTitle = $isEdit ? '编辑自产产品' : '新增自产产品';
 $activeMenu = 'self_products';
 require __DIR__ . '/includes/views/header.php';
@@ -268,160 +283,214 @@ require __DIR__ . '/includes/views/header.php';
                   placeholder="内部备注（不对客户展示）"></textarea>
     </div>
 
-    <!-- BOM 物料清单 Tab -->
-    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow:visible;min-height:360px;display:flex;flex-direction:column">
+    <!-- BOM 物料清单 Tab — v4.6 模块层级 -->
+    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow:visible;min-height:360px">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
+                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='module' }" @click="bomView='module'">按模块</button>
+                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='summary' }" @click="bomView='summary'">物料汇总</button>
                 <?php if ($isEdit): ?>
-                <a href="/export_bom.php?self_product_id=<?= $id ?>" class="btn btn-secondary text-sm">
-                    <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
-                </a>
+                <a :href="'/export_bom.php?self_product_id='+initId+'&type=module'" class="btn btn-secondary text-sm" style="text-decoration:none">导出-模块</a>
+                <a :href="'/export_bom.php?self_product_id='+initId+'&type=summary'" class="btn btn-secondary text-sm" style="text-decoration:none">导出-汇总</a>
                 <?php endif; ?>
-                <button type="button" class="btn btn-secondary text-sm" @click="addModule">
-                    <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加模块
-                </button>
-                <button type="button" class="btn btn-secondary text-sm" @click="addBomItem">
-                    <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加物料
-                </button>
             </div>
         </div>
 
-        <!-- 空状态 -->
-        <div x-show="bomItems.length === 0" class="text-center py-8 text-slate-400 text-sm flex-1">
-            <i data-lucide="clipboard-list" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-            暂无物料，点击「添加物料」开始
-        </div>
-
-        <!-- 物料表格 -->
-        <div x-show="bomItems.length > 0" class="overflow-x-auto flex-1" style="overflow-x:auto;overflow-y:visible">
-            <table class="w-full" style="overflow:visible">
-                <thead>
-                        <tr class="border-b border-slate-200 bg-slate-50">
-                            <th class="text-left px-3 py-2 text-xs font-medium text-slate-500 w-8">#</th>
-                            <th class="text-left px-3 py-2 text-xs font-medium text-slate-500">类型</th>
-                            <th class="text-left px-3 py-2 text-xs font-medium text-slate-500">物料</th>
-                            <th class="text-right px-3 py-2 text-xs font-medium text-slate-500 w-24">用量</th>
-                            <th class="text-left px-3 py-2 text-xs font-medium text-slate-500 w-20">单位</th>
-                            <th class="text-right px-3 py-2 text-xs font-medium text-slate-500 w-28">单价</th>
-                            <th class="text-right px-3 py-2 text-xs font-medium text-slate-500 w-28">小计</th>
-                            <th class="text-center px-3 py-2 text-xs font-medium text-slate-500 w-16">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(item, idx) in bomItems" :key="idx">
-                            <tr class="border-b border-slate-100 hover:bg-slate-50">
-                                <td class="px-3 py-2 text-sm text-slate-500" x-text="idx + 1"></td>
-                                <td class="px-3 py-2">
-                                    <select :value="bomTypeOf(item)"
-                                            class="form-select text-xs py-1 px-2"
-                                            @change="switchBomType(idx, $event.target.value)">
-                                        <option value="product">外采产品</option>
-                                        <option value="self_product">自产产品</option>
-                                        <option value="adhoc">临时物料</option>
+        <!-- 模块视图 -->
+        <div x-show="bomView==='module'">
+            <template x-for="(mod, mi) in modules" :key="mi">
+                <div class="mb-3 border rounded">
+                    <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
+                        <button class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open" :title="mod._open===false?'展开':'折叠'">
+                            <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
+                        </button>
+                        <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none" style="min-width:80px;max-width:200px" placeholder="模块名称">
+                        <div class="flex items-center gap-6 ml-auto">
+                            <span x-show="moduleItemSum(mi)>0" class="text-xs text-slate-500">主材 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleItemSum(mi))"></span></span>
+                            <span x-show="moduleSubSum(mi)>0" class="text-xs text-slate-500">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(mi))"></span></span>
+                            <span class="font-medium text-sm text-slate-800" x-text="'¥'+fmt(moduleSum(mi))"></span>
+                            <div class="flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                                <button class="text-blue-500 text-xs" @click.stop="addItem(mi)">+主材</button>
+                                <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,-1)">↑</button>
+                                <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(mi,1)">↓</button>
+                                <button class="text-xs text-red-400" @click.stop="confirm('确认删除该模块及所有物料？') && modules.splice(mi,1)">×</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div x-show="mod._open!==false">
+                        <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
+                        <!-- 列头 -->
+                        <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
+                             x-show="(mod.items||[]).length>0">
+                            <span>#</span><span>类型</span><span>物料名称</span><span>规格</span><span>单位</span><span>数量</span><span>单价</span><span>小计</span><span></span>
+                        </div>
+                        <template x-for="(it, ii) in (mod.items||[])" :key="ii">
+                            <div class="border-b border-slate-100">
+                                <!-- 主材行 -->
+                                <div style="border-left:4px solid #60a5fa;border-bottom:2px solid #cbd5e1" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-t border-slate-200 font-semibold text-slate-800">
+                                    <div class="flex items-center gap-1">
+                                        <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
+                                            <span x-text="it._collapsed?'▶':'▼'"></span>
+                                        </button>
+                                        <span x-text="ii+1"></span>
+                                    </div>
+                                    <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-white" @change="srcChanged(it)">
+                                        <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
                                     </select>
-                                </td>
-<td class="px-3 py-2">
-                                    <!-- 外采产品 -->
-                                    <template x-if="bomTypeOf(item)==='product'">
-                                        <div class="relative">
-                                            <!-- 未选中：搜索框 -->
-                                            <template x-if="!item.product_id">
-                                                <input type="text" @focus="item._prodOpen=true" @input="item._prodFilter=$el.value" @keydown.escape="item._prodOpen=false"
-                                                                                                   @click.away="item._prodOpen=false"
-                                                                                                   x-model="item._prodShow" class="text-sm border rounded px-2 py-1.5 w-full" placeholder="搜索产品..." autocomplete="off">
-                                            </template>
-                                            <!-- 已选中：只读标签 -->
-                                            <template x-if="item.product_id">
-                                                <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._prodOpen=true">
-                                                    <span x-text="item._prodShow"></span>
-                                                    <span class="ss-tag-x" @click.stop="bomClearProduct(idx)">&times;</span>
-                                                </div>
-                                            </template>
-                                            <div x-show="item._prodOpen && filteredBomProducts(item._prodFilter||'').length>0" class="ss-dropdown">
-                                                <template x-for="p in filteredBomProducts(item._prodFilter||'')" :key="p.id">
-                                                    <div @mousedown.prevent="bomPickProduct(idx, p)" :class="{sel:item.product_id==p.id}">
-                                                    <span x-text="p.sku + ' ' + p.name"></span>
+
+                                    <!-- 外采搜索 -->
+                                    <div x-show="it.src==='p'" class="relative">
+                                        <template x-if="!it.pid">
+                                            <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
+                                                   @click.away="it._prodOpen=false"
+                                                   x-model="it._prodShow"
+                                                   class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
+                                        </template>
+                                        <template x-if="it.pid">
+                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._prodOpen=true">
+                                                <span x-text="it._prodShow"></span>
+                                                <span class="ss-tag-x" @click.stop="clearItem(it,'p')">&times;</span>
+                                            </div>
+                                        </template>
+                                        <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="ss-dropdown">
+                                            <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
+                                                <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
+                                                    <span x-text="p.label"></span>
                                                     <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
                                                 </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <!-- 自产产品 -->
-                                    <template x-if="bomTypeOf(item)==='self_product'">
-                                        <div class="relative">
-                                            <template x-if="!item.bom_self_product_id">
-                                                <input type="text" @focus="item._spOpen=true" @input="item._spFilter=$el.value" @keydown.escape="item._spOpen=false"
-                                                       @click.away="item._spOpen=false"
-                                                       x-model="item._spShow" class="text-sm border rounded px-2 py-1.5 w-full" placeholder="搜索自产产品..." autocomplete="off">
                                             </template>
-                                            <template x-if="item.bom_self_product_id">
-                                                <div class="ss-tag cursor-pointer min-w-[160px]" @click="item._spOpen=true">
-                                                    <span x-text="item._spShow"></span>
-                                                    <span class="ss-tag-x" @click.stop="bomClearSp(idx)">&times;</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 自产搜索 -->
+                                    <div x-show="it.src==='s'" class="relative">
+                                        <template x-if="!it.sid">
+                                            <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
+                                                   @click.away="it._spOpen=false"
+                                                   x-model="it._spShow"
+                                                   class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
+                                        </template>
+                                        <template x-if="it.sid">
+                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._spOpen=true">
+                                                <span x-text="it._spShow"></span>
+                                                <span class="ss-tag-x" @click.stop="clearItem(it,'s')">&times;</span>
+                                            </div>
+                                        </template>
+                                        <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="ss-dropdown">
+                                            <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
+                                                <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- 临时 -->
+                                    <input x-show="it.src==='a'" x-model="it.name" class="text-sm border rounded px-1 w-full bg-white" placeholder="名称">
+
+                                    <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-white" placeholder="规格">
+                                    <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-white" placeholder="单位">
+                                    <input x-model="it.qty" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="数量">
+                                    <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="单价">
+                                    <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
+                                    <div class="flex items-center gap-1.5 justify-end">
+                                        <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)">+配件</button>
+                                        <button class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)">×</button>
+                                    </div>
+                                </div>
+                                <!-- 配件 -->
+                                <template x-if="(it.subs||[]).length>0">
+                                    <div class="bg-white" x-show="!it._collapsed">
+                                        <template x-for="(s, si) in (it.subs||[])" :key="si">
+                                            <div style="border-bottom:1px solid #cbd5e1" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs">
+                                                <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
+                                                <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)">
+                                                    <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
+                                                </select>
+
+                                                <!-- 外采 -->
+                                                <div x-show="s.src==='p'" class="relative">
+                                                    <template x-if="!s.pid">
+                                                        <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
+                                                               @click.away="s._prodOpen=false"
+                                                               x-model="s._prodShow"
+                                                               class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                    </template>
+                                                    <template x-if="s.pid">
+                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._prodOpen=true">
+                                                            <span x-text="s._prodShow"></span>
+                                                            <span class="ss-tag-x" @click.stop="clearItem(s,'p')">&times;</span>
+                                                        </div>
+                                                    </template>
+                                                    <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="ss-dropdown">
+                                                        <template x-for="p in filteredProducts(s._prodFilter||'')" :key="p.id">
+                                                            <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}">
+                                                                <span x-text="p.label"></span>
+                                                                <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                            </template>
-                                            <div x-show="item._spOpen && filteredBomSpProducts(item._spFilter||'').length>0" class="ss-dropdown">
-                                                <template x-for="p in filteredBomSpProducts(item._spFilter||'')" :key="p.id">
-                                                    <div @mousedown.prevent="bomPickSp(idx, p)" x-text="p.name"></div>
-                                                </template>
+
+                                                <!-- 自产 -->
+                                                <div x-show="s.src==='s'" class="relative">
+                                                    <template x-if="!s.sid">
+                                                        <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
+                                                               @click.away="s._spOpen=false"
+                                                               x-model="s._spShow"
+                                                               class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                    </template>
+                                                    <template x-if="s.sid">
+                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._spOpen=true">
+                                                            <span x-text="s._spShow"></span>
+                                                            <span class="ss-tag-x" @click.stop="clearItem(s,'s')">&times;</span>
+                                                        </div>
+                                                    </template>
+                                                    <div x-show="s._spOpen && filteredSp(s._spFilter||'').length>0" class="ss-dropdown">
+                                                        <template x-for="sp in filteredSp(s._spFilter||'')" :key="sp.id">
+                                                            <div @mousedown.prevent="pickSp(s,sp)" :class="{sel:s.sid==sp.id}" x-text="sp.label"></div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+
+                                                <input x-show="s.src==='a'" x-model="s.name" class="text-xs border rounded px-1 w-full" placeholder="名称">
+                                                <input x-model="s.spec" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full" placeholder="规格">
+                                                <input x-model="s.unit" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-center">
+                                                <input x-model="s.qty" class="text-xs border rounded px-1 w-full text-right">
+                                                <input x-model="s.price" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-right">
+                                                <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
+                                                <div class="flex justify-end">
+                                                    <button class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)">×</button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </template>
-                                    <!-- 临时物料模式 -->
-                                    <template x-if="bomTypeOf(item)==='adhoc'">
-                                        <input type="text" x-model="item.item_name" class="form-input text-sm"
-                                               placeholder="物料名称" @input="calcTotal">
-                                    </template>
-                                </td>
-                                <td class="px-3 py-2">
-                                    <input type="number" x-model="item.quantity" step="0.0001" min="0"
-                                           class="form-input text-sm text-right" @input="calcTotal">
-                                </td>
-                                <td class="px-3 py-2">
-                                    <input type="text" x-model="item.unit" class="form-input text-sm"
-                                           placeholder="个/套/kg" @input="calcTotal">
-                                </td>
-                                <td class="px-3 py-2">
-                                    <!-- 关联产品：显示最新进价（只读） -->
-                                    <template x-if="item.product_id">
-                                        <div class="text-sm text-right tabular-nums text-slate-600">
-                                            ¥<span x-text="formatMoney(item._product_cost ?? 0)"></span>
-                                            <div class="text-xs text-slate-400">（最新进价）</div>
-                                        </div>
-                                    </template>
-                                    <!-- 关联自产产品：显示BOM成本 -->
-                                    <template x-if="item.bom_self_product_id">
-                                        <div class="text-sm text-right tabular-nums text-slate-600">
-                                            ¥<span x-text="formatMoney(item._sp_cost ?? 0)"></span>
-                                            <div class="text-xs text-slate-400">（BOM总成本）</div>
-                                        </div>
-                                    </template>
-                                    <!-- 临时物料：手动填 -->
-                                    <template x-if="bomTypeOf(item)==='adhoc'">
-                                        <input type="number" x-model="item.unit_cost" step="0.01" min="0"
-                                               class="form-input text-sm text-right w-full" @input="calcTotal">
-                                    </template>
-                                </td>
-                                <td class="px-3 py-2 text-right text-sm tabular-nums font-medium">
-                                    ¥<span x-text="formatMoney(bomItemSubtotal(item))"></span>
-                                </td>
-                                <td class="px-3 py-2 text-center">
-                                    <button type="button" class="text-red-400 hover:text-red-600 text-sm"
-                                            @click="confirm('确认删除该物料？') && removeBomItem(idx)" title="删除">&times;</button>
-                                </td>
-                            </tr>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
                         </template>
-                    </tbody>
-                </table>
+                    </div>
+                </div>
+            </template>
+            <!-- 合计 -->
+            <div x-show="modules.length>0" class="text-right font-medium text-sm mt-3 pr-2">
+                材料成本合计：
+                <span class="text-xs text-slate-500 mr-2" x-show="totalItems>0">主材 <span x-text="'¥'+fmt(totalItems)"></span></span>
+                <span class="text-xs text-slate-500 mr-2" x-show="totalSubs>0">配件 <span x-text="'¥'+fmt(totalSubs)"></span></span>
+                <span class="text-blue-600 text-lg" x-text="'¥'+fmt(totalAll)"></span>
             </div>
-        <!-- 合计行 -->
-        <div x-show="bomItems.length > 0" class="pt-2">
-            <div class="flex justify-end items-center bg-slate-50 rounded px-3 py-2 font-medium">
-                <span class="text-sm text-slate-600 mr-4">材料成本合计</span>
-                <span class="text-sm tabular-nums">¥<span x-text="formatMoney(calcMaterialCost)"></span></span>
-            </div>
+            <button class="btn btn-secondary text-sm w-full mt-2" @click="addMod">+ 添加模块</button>
+        </div>
+
+        <!-- 汇总视图 -->
+        <div x-show="bomView==='summary'" class="overflow-x-auto">
+            <table class="data-table text-sm w-full">
+                <thead><tr><th>物料</th><th>规格</th><th class="text-right">数量</th><th>单位</th><th class="text-right">单价</th><th class="text-right">金额</th><th>来源模块</th></tr></thead>
+                <tbody>
+                    <template x-for="r in summary" :key="r.k">
+                        <tr><td x-text="r.n"></td><td x-text="r.spec" class="text-slate-500"></td><td class="text-right" x-text="r.q"></td><td x-text="r.u"></td><td class="text-right" x-text="'¥'+fmt(r.p)"></td><td class="text-right font-medium" x-text="'¥'+fmt(r.t)"></td><td class="text-xs text-slate-400" x-text="r.srcs"></td></tr>
+                    </template>
+                </tbody>
+            </table>
+            <div class="text-right mt-2 pr-4 font-medium">合计：<span class="text-blue-600" x-text="'¥'+fmt(summaryTotal)"></span></div>
         </div>
     </div>
     <?php endif; ?>
@@ -482,17 +551,59 @@ require __DIR__ . '/includes/views/header.php';
 })();
 
 document.addEventListener('alpine:init', () => {
-    console.log('[DIAG] alpine:init fired');
     Alpine.data('selfProductForm', (init) => {
-        console.log('[DIAG] selfProductForm init, tab will be set');
-        // 构建外采产品索引（id → 对象）
-        const productMap = {};
-        (init.allProducts || []).forEach(p => { productMap[p.id] = p; });
-        const selfProductMap = {};
-        (init.allSelfProducts || []).forEach(p => { selfProductMap[p.id] = p; });
+        // 产品列表（搜索用）
+        const PL = <?= $prodJson ?> || [];
+        const SL = <?= $spJson ?> || [];
+
+        // 从服务器 modules 数据还原前端结构
+        function normModules(rawModules) {
+            if (!rawModules || !rawModules.length) return [{ name: '', _open: true, items: [] }];
+            return rawModules.map(m => ({
+                name: m.name || '',
+                _open: true,
+                items: (m.items || []).map(it => {
+                    const src = it.self_product_id ? 's' : (it.product_id ? 'p' : (it.item_name ? 'a' : 'p'));
+                    return {
+                        src: src,
+                        pid: it.product_id || '',
+                        sid: it.self_product_id || '',
+                        name: it.item_name || '',
+                        spec: it.spec || '',
+                        unit: it.unit || '',
+                        qty: parseFloat(it.quantity) || 0,
+                        price: parseFloat(it.unit_price) || 0,
+                        _prodOpen: false, _prodFilter: '',
+                        _prodShow: it.product_id ? (PL.find(x => x.id == it.product_id)?.label || '') : (it.item_name || ''),
+                        _spOpen: false, _spFilter: '',
+                        _spShow: it.self_product_id ? (SL.find(x => x.id == it.self_product_id)?.label || '') : '',
+                        _collapsed: false,
+                        subs: (it.subs || []).map(s => {
+                            const ssrc = s.self_product_id ? 's' : (s.product_id ? 'p' : (s.item_name ? 'a' : 'a'));
+                            return {
+                                src: ssrc,
+                                pid: s.product_id || '',
+                                sid: s.self_product_id || '',
+                                name: s.item_name || '',
+                                spec: s.spec || '',
+                                unit: s.unit || '',
+                                qty: parseFloat(s.quantity) || 0,
+                                price: parseFloat(s.unit_price) || 0,
+                                _prodOpen: false, _prodFilter: '',
+                                _prodShow: s.product_id ? (PL.find(x => x.id == s.product_id)?.label || '') : (s.item_name || ''),
+                                _spOpen: false, _spFilter: '',
+                                _spShow: s.self_product_id ? (SL.find(x => x.id == s.self_product_id)?.label || '') : '',
+                            };
+                        }),
+                    };
+                }),
+            }));
+        }
 
         const comp = {
-            tab: 'info',  // Tab 状态
+            tab: 'info',
+            bomView: 'module',  // BOM 视图：module | summary
+            initId: init.id,
             isEdit: init.isEdit,
             form: {
                 name: init.selfProduct?.name || '',
@@ -512,80 +623,140 @@ document.addEventListener('alpine:init', () => {
                 remark: init.selfProduct?.remark || '',
                 updated_at: init.selfProduct?.updated_at || '',
             },
-            bomItems: ((init.bomItems?.items) || []).map(item => ({
-                ...item,
-                product_id: item.product_id ? String(item.product_id) : (item.bom_self_product_id ? '' : ''),
-                bom_self_product_id: item.bom_self_product_id ? String(item.bom_self_product_id) : '',
-                _product_cost: item.product_id ? (productMap[item.product_id]?.cost_price || 0) : 0,
-                _sp_cost: item.bom_self_product_id ? (selfProductMap[item.bom_self_product_id]?.total_cost || 0) : 0,
-                _prodShow: item.product_id ? ((productMap[item.product_id]?.sku||'') + ' ' + (productMap[item.product_id]?.name||'')) : '',
-                _spShow: item.bom_self_product_id ? (selfProductMap[item.bom_self_product_id]?.name||'') : '',
-                _prodOpen: false, _prodFilter: '', _spOpen: false, _spFilter: '',
-            })),
-            allProducts: init.allProducts || [],
-            allSelfProducts: init.allSelfProducts || [],
-            filteredBomProducts(q) {
-                q = (q || '').toLowerCase();
-                return q ? this.allProducts.filter(p => (p.sku + ' ' + p.name).toLowerCase().includes(q)) : this.allProducts;
-            },
-            filteredBomSpProducts(q) {
-                q = (q || '').toLowerCase();
-                return q ? this.allSelfProducts.filter(p => p.name.toLowerCase().includes(q)) : this.allSelfProducts;
-            },
-            bomTypeOf(item) {
-                if (item.product_id === null && item.bom_self_product_id === null) return 'adhoc';
-                if (item.bom_self_product_id) return 'self_product';
-                return 'product';
-            },
-            bomPickProduct(idx, p) {
-                const item = this.bomItems[idx];
-                item.product_id = p.id;
-                item._prodShow = p.sku + ' ' + p.name;
-                item._prodFilter = '';
-                item._prodOpen = false;
-                item.unit = p.unit || '';
-                item.spec = p.spec || '';
-                item._product_cost = parseFloat(p.cost_price) || 0;
-                this.calcTotal();
-            },
-            bomPickSp(idx, p) {
-                const item = this.bomItems[idx];
-                item.bom_self_product_id = p.id;
-                item._spShow = p.name;
-                item._spFilter = '';
-                item._spOpen = false;
-                item.unit = p.unit || '';
-                item._sp_cost = parseFloat(p.total_cost) || 0;
-                this.calcTotal();
-            },
-            bomClearProduct(idx) {
-                const item = this.bomItems[idx];
-                item.product_id = '';
-                item._prodShow = '';
-                item._prodOpen = false;
-                item._product_cost = 0;
-                this.calcTotal();
-            },
-            bomClearSp(idx) {
-                const item = this.bomItems[idx];
-                item.bom_self_product_id = '';
-                item._spShow = '';
-                item._spOpen = false;
-                item._sp_cost = 0;
-                this.calcTotal();
-            },
-            filterBomProducts() { /* getter 处理 */ },
+            modules: normModules(init.bomItems?.modules || []),
             imagePreview: init.selfProduct?.image ? '/uploads/' + init.selfProduct.image : null,
-            imageFile: null,           // File 对象
-            imageChanged: false,       // 是否改过图片
-            imageRemoved: false,       // 是否删除了图片
+            imageFile: null,
+            imageChanged: false,
+            imageRemoved: false,
             submitted: false,
 
-            // --- 诊断 ---
-            logTab() {
-                console.log('[DIAG] tab=', this.tab, 'typeof=', typeof this.tab);
-                return this.tab;
+            // --- 模块操作 ---
+            addMod() {
+                this.modules.push({ name: '', _open: true, items: [] });
+                this.$nextTick(() => { lucide.createIcons(); });
             },
+            moveMod(i, d) {
+                const t = i + d;
+                if (t < 0 || t >= this.modules.length) return;
+                [this.modules[i], this.modules[t]] = [this.modules[t], this.modules[i]];
+            },
+            addItem(mi) {
+                this.modules[mi].items = [...this.modules[mi].items, {
+                    src: 'p', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0,
+                    _prodOpen: false, _prodFilter: '', _prodShow: '',
+                    _spOpen: false, _spFilter: '', _spShow: '',
+                    _collapsed: true, subs: [],
+                }];
+                this.modules[mi]._open = true;
+            },
+            addSub(it) {
+                it.subs = [...it.subs, {
+                    src: 'p', pid: '', sid: '', name: '', spec: '', unit: '', qty: 0, price: 0,
+                    _prodOpen: false, _prodFilter: '', _prodShow: '',
+                    _spOpen: false, _spFilter: '', _spShow: '',
+                }];
+                it._collapsed = false;
+            },
+
+            // --- 搜索 ---
+            filteredProducts(q) {
+                q = (q || '').toLowerCase();
+                return q ? PL.filter(p => p.label.toLowerCase().includes(q)) : PL;
+            },
+            filteredSp(q) {
+                q = (q || '').toLowerCase();
+                return q ? SL.filter(s => s.label.toLowerCase().includes(q)) : SL;
+            },
+            pickProduct(it, p) {
+                it.pid = p.id; it._prodShow = p.label; it._prodFilter = ''; it._prodOpen = false;
+                it.price = p.price; it.unit = p.unit; it.spec = p.spec || ''; it.name = '';
+            },
+            pickSp(it, s) {
+                it.sid = s.id; it._spShow = s.label; it._spFilter = ''; it._spOpen = false;
+                it.price = s.price; it.unit = s.unit; it.name = '';
+            },
+            clearItem(it, src) {
+                if (src === 'p') { it.pid = ''; it._prodShow = ''; it.price = 0; it.spec = ''; it.unit = ''; }
+                else { it.sid = ''; it._spShow = ''; it.price = 0; it.unit = ''; }
+            },
+            srcChanged(it) {
+                ['pid', 'sid', 'name', 'price', '_prodShow', '_spShow', 'spec', 'unit'].forEach(k => it[k] = '');
+            },
+
+            // --- 金额计算 ---
+            moduleSum(i) {
+                const mod = this.modules[i]; let t = 0;
+                (mod.items || []).forEach(it => {
+                    t += (it.qty || 0) * (it.price || 0);
+                    (it.subs || []).forEach(s => t += (s.qty || 0) * (s.price || 0));
+                });
+                return t;
+            },
+            moduleItemSum(i) {
+                const mod = this.modules[i]; let t = 0;
+                (mod.items || []).forEach(it => { t += (it.qty || 0) * (it.price || 0); });
+                return t;
+            },
+            moduleSubSum(i) {
+                const mod = this.modules[i]; let t = 0;
+                (mod.items || []).forEach(it => {
+                    (it.subs || []).forEach(s => { t += (s.qty || 0) * (s.price || 0); });
+                });
+                return t;
+            },
+            get totalAll() { let t = 0; this.modules.forEach((m, i) => t += this.moduleSum(i)); return t; },
+            get totalItems() { let t = 0; this.modules.forEach((m, i) => t += this.moduleItemSum(i)); return t; },
+            get totalSubs() { let t = 0; this.modules.forEach((m, i) => t += this.moduleSubSum(i)); return t; },
+
+            // --- 汇总视图 ---
+            get summary() {
+                const m = {};
+                const add = (k, n, spec, u, q, p, src) => {
+                    if (!m[k]) m[k] = { k, n, spec, u, q: 0, p, t: 0, srcs: new Set };
+                    m[k].q = +(m[k].q + parseFloat(q)).toFixed(2);
+                    m[k].t = +(m[k].t + parseFloat(q) * parseFloat(p)).toFixed(2);
+                    m[k].srcs.add(src);
+                };
+                this.modules.forEach(mod => {
+                    (mod.items || []).forEach(it => {
+                        const nm = it.src === 'a' ? it.name : (it.pid ? (PL.find(x => String(x.id) == String(it.pid))?.label) : SL.find(x => String(x.id) == String(it.sid))?.label);
+                        add(nm || '?', nm || '?', it.spec, it.unit, it.qty || 0, it.price || 0, mod.name);
+                        (it.subs || []).forEach(s => {
+                            const sn = s.src === 'a' ? s.name : (s.pid ? (PL.find(x => String(x.id) == String(s.pid))?.label) : SL.find(x => String(x.id) == String(s.sid))?.label);
+                            add(sn || '?', sn || '?', s.spec, s.unit, s.qty || 0, s.price || 0, mod.name);
+                        });
+                    });
+                });
+                return Object.values(m).map(r => ({ ...r, srcs: [...r.srcs].join(', ') }));
+            },
+            get summaryTotal() { return this.summary.reduce((t, r) => t + r.t, 0); },
+
+            // --- 成本（用于基本信息Tab） ---
+            get calcMaterialCost() { return this.totalAll; },
+            get totalCost() {
+                return this.calcMaterialCost
+                    + (parseFloat(this.form.labor_cost) || 0)
+                    + (parseFloat(this.form.overhead_cost) || 0)
+                    + (parseFloat(this.form.other_cost) || 0);
+            },
+            calcTotal() {},
+            get marginPercent() {
+                const price = this.totalCost / (1 - parseFloat(this.form.guide_margin_rate || 30) / 100);
+                if (price <= 0) return '—';
+                return ((price - this.totalCost) / price * 100).toFixed(1);
+            },
+            get marginColor() {
+                const m = parseFloat(this.marginPercent);
+                if (isNaN(m)) return 'text-slate-400';
+                return m >= 15 ? 'text-emerald-600' : (m >= 5 ? 'text-amber-600' : 'text-red-600');
+            },
+            get marginLabel() {
+                const m = parseFloat(this.marginPercent);
+                if (isNaN(m)) return '';
+                return m >= 15 ? '健康' : (m >= 5 ? '偏低' : '警告');
+            },
+            formatMoney(v) { return Number(v || 0).toFixed(2); },
+            fmt(v) { return (parseFloat(v) || 0).toFixed(2); },
 
             // --- 图片 ---
             handleImageUpload(e) {
@@ -608,160 +779,30 @@ document.addEventListener('alpine:init', () => {
                 if (this.$refs.imageInput) this.$refs.imageInput.value = '';
             },
 
-            // --- 模块管理 ---
-            getModuleNames() {
-                const names = new Set();
-                this.bomItems.forEach(item => {
-                    if (item.module_name) names.add(item.module_name);
-                });
-                return Array.from(names);
-            },
-            addModule() {
-                const name = prompt('模块名称（如：框架结构、电控系统）：');
-                if (!name || !name.trim()) return;
-                this.bomItems.push({
-                    product_id: '',
-                    bom_self_product_id: '',
-                    item_name: '',
-                    quantity: 1,
-                    unit: '',
-                    unit_cost: 0,
-                    _product_cost: 0,
-                    _sp_cost: 0,
-                    _prodShow: '',
-                    _spShow: '',
-                    _prodOpen: false,
-                    _prodFilter: '',
-                    _spOpen: false,
-                    _spFilter: '',
-                    sort_order: this.bomItems.length,
-                    module_name: name.trim(),
-                    remark: '',
-                });
-                this.$nextTick(() => { lucide.createIcons(); });
-                this.tab = 'bom'; // 切到 BOM Tab
-            },
-
-            // --- BOM ---
-            addBomItem() {
-                this.bomItems.push({
-                    product_id: '',
-                    bom_self_product_id: '',
-                    item_name: '',
-                    quantity: 1,
-                    unit: '',
-                    unit_cost: 0,
-                    _product_cost: 0,
-                    _sp_cost: 0,
-                    _prodShow: '',
-                    _spShow: '',
-                    _prodOpen: false,
-                    _prodFilter: '',
-                    _spOpen: false,
-                    _spFilter: '',
-                    sort_order: this.bomItems.length,
-                    module_name: '',
-                    remark: '',
-                });
-                this.$nextTick(() => { lucide.createIcons(); });
-            },
-            removeBomItem(idx) {
-                this.bomItems.splice(idx, 1);
-                this.calcTotal();
-            },
-            switchBomType(idx, type) {
-                const item = this.bomItems[idx];
-                // clear all
-                item.product_id = '';
-                item.bom_self_product_id = '';
-                item.item_name = '';
-                item._product_cost = 0;
-                item._sp_cost = 0;
-                item.unit_cost = 0;
-                item._prodShow = '';
-                item._spShow = '';
-                if (type === 'product') {
-                    item.product_id = '';
-                } else if (type === 'self_product') {
-                    item.bom_self_product_id = '';
-                } else {
-                    // adhoc - stays cleared
-                }
-                this.calcTotal();
-            },
-            bomProductChanged(idx, pid) {
-                const item = this.bomItems[idx];
-                item.product_id = pid;
-                if (pid && productMap[pid]) {
-                    item.unit = productMap[pid].unit || '';
-                    item._product_cost = parseFloat(productMap[pid].cost_price) || 0;
-                } else {
-                    item._product_cost = 0;
-                }
-                this.calcTotal();
-            },
-            bomSpChanged(idx, sid) {
-                const item = this.bomItems[idx];
-                item.bom_self_product_id = sid;
-                if (sid && selfProductMap[sid]) {
-                    item.unit = selfProductMap[sid].unit || '';
-                    item._sp_cost = parseFloat(selfProductMap[sid].total_cost) || 0;
-                } else {
-                    item._sp_cost = 0;
-                }
-                this.calcTotal();
-            },
-            bomItemSubtotal(item) {
-                const qty = parseFloat(item.quantity) || 0;
-                let cost = 0;
-                if (item.product_id) {
-                    cost = parseFloat(item._product_cost) || 0;
-                } else if (item.bom_self_product_id) {
-                    cost = parseFloat(item._sp_cost) || 0;
-                } else {
-                    cost = parseFloat(item.unit_cost) || 0;
-                }
-                return qty * cost;
-            },
-
-            // --- 成本计算 ---
-            get calcMaterialCost() {
-                return this.bomItems.reduce((sum, item) => sum + this.bomItemSubtotal(item), 0);
-            },
-            get totalCost() {
-                return this.calcMaterialCost
-                    + (parseFloat(this.form.labor_cost) || 0)
-                    + (parseFloat(this.form.overhead_cost) || 0)
-                    + (parseFloat(this.form.other_cost) || 0);
-            },
-            calcTotal() {},
-            get marginPercent() {
-                const price = this.totalCost / (1 - parseFloat(this.form.guide_margin_rate || 30) / 100);
-                if (price <= 0) return '—';
-                const m = ((price - this.totalCost) / price * 100);
-                return m.toFixed(1);
-            },
-            get marginColor() {
-                const m = parseFloat(this.marginPercent);
-                if (isNaN(m)) return 'text-slate-400';
-                return m >= 15 ? 'text-emerald-600' : (m >= 5 ? 'text-amber-600' : 'text-red-600');
-            },
-            get marginLabel() {
-                const m = parseFloat(this.marginPercent);
-                if (isNaN(m)) return '';
-                return m >= 15 ? '健康' : (m >= 5 ? '偏低' : '警告');
-            },
-            formatMoney(v) {
-                return Number(v || 0).toFixed(2);
-            },
-
             // --- 保存 ---
             async save() {
                 if (this.submitted) return;
                 if (!this.form.name.trim()) { alert('请输入产品名称'); return; }
                 this.submitted = true;
 
-                // 用 FormData 支持图片上传
+                // 序列化 BOM：模块 → 主材 → 配件
+                const ser = it => {
+                    let source = 'adhoc';
+                    if (it.src === 'p' && it.pid) source = 'product';
+                    else if (it.src === 's' && it.sid) source = 'self_product';
+                    return {
+                        source_type: source,
+                        product_id: source === 'product' ? parseInt(it.pid) : null,
+                        self_product_id: source === 'self_product' ? parseInt(it.sid) : null,
+                        item_name: source === 'product' ? null : (source === 'self_product' ? null : ((it.name || it._prodShow || '').trim() || null)),
+                        spec: it.spec || '',
+                        unit: it.unit || '',
+                        quantity: parseFloat(it.qty) || 0,
+                        unit_price: parseFloat(it.price) || 0,
+                        sub_items: (it.subs || []).map(ser),
+                    };
+                };
+
                 const fd = new FormData();
                 fd.append('id', init.id);
                 fd.append('name', this.form.name);
@@ -773,7 +814,6 @@ document.addEventListener('alpine:init', () => {
                 fd.append('labor_cost', this.form.labor_cost);
                 fd.append('overhead_cost', this.form.overhead_cost);
                 fd.append('other_cost', this.form.other_cost);
-                // 指导售价 = 总成本 × 系数（自动计算）
                 const gp = this.totalCost / (1 - parseFloat(this.form.guide_margin_rate || 30) / 100);
                 fd.append('guide_price', gp.toFixed(2));
                 fd.append('min_discount', this.form.min_discount);
@@ -790,17 +830,10 @@ document.addEventListener('alpine:init', () => {
                     fd.append('image_remove', '1');
                 }
 
-                // BOM 数据
-                fd.append('bom', JSON.stringify(this.bomItems.map((item, i) => ({
-                    product_id: item.product_id || null,
-                    bom_self_product_id: item.bom_self_product_id || null,
-                    item_name: item.item_name || null,
-                    quantity: parseFloat(item.quantity) || 0,
-                    unit: item.unit || '',
-                    unit_cost: item.product_id || item.bom_self_product_id ? 0 : (parseFloat(item.unit_cost) || 0),
-                    sort_order: i,
-                    module_name: item.module_name || null,
-                    remark: item.remark || '',
+                // BOM: 模块结构
+                fd.append('bom', JSON.stringify(this.modules.map(m => ({
+                    name: m.name,
+                    items: (m.items || []).map(ser),
                 }))));
 
                 try {

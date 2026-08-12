@@ -107,9 +107,39 @@ try {
         $actionLabel = '创建';
     }
 
-    // BOM
-    $bomInput = json_decode($bomJson, true) ?: [];
-    SelfProduct::saveBom($id, $bomInput);
+    // BOM — v4.6 模块嵌套结构：modules[{name, items:[{source_type,product_id,self_product_id,item_name,spec,unit,quantity,unit_price,sub_items:[...]}]}]
+    $bomModules = json_decode($bomJson, true) ?: [];
+    // 转为 saveBom 需要的扁平结构（含 parent_id）
+    $flatItems = [];
+    foreach ($bomModules as $mi => $mod) {
+        foreach ($mod['items'] ?? [] as $ii => $item) {
+            $flatItems[] = [
+                'product_id' => $item['product_id'] ?? null,
+                'bom_self_product_id' => $item['self_product_id'] ?? null,
+                'item_name' => $item['item_name'] ?? null,
+                'quantity' => $item['quantity'] ?? 1,
+                'unit' => $item['unit'] ?? null,
+                'unit_cost' => $item['unit_price'] ?? 0,
+                'sort_order' => count($flatItems),
+                'module_name' => $mod['name'] ?: null,
+                'remark' => $item['remark'] ?? null,
+                'subs' => array_map(function($sub) use ($mod) {
+                    return [
+                        'product_id' => $sub['product_id'] ?? null,
+                        'bom_self_product_id' => $sub['self_product_id'] ?? null,
+                        'item_name' => $sub['item_name'] ?? null,
+                        'quantity' => $sub['quantity'] ?? 1,
+                        'unit' => $sub['unit'] ?? null,
+                        'unit_cost' => $sub['unit_price'] ?? 0,
+                        'sort_order' => $sub['sort_order'] ?? 0,
+                        'module_name' => $mod['name'] ?: null,
+                        'remark' => $sub['remark'] ?? null,
+                    ];
+                }, $item['sub_items'] ?? []),
+            ];
+        }
+    }
+    SelfProduct::saveBom($id, $flatItems);
 
     logAction($isEdit ? 'update' : 'create', 'self_product', $id, "{$actionLabel}自产产品：{$name}");
 
