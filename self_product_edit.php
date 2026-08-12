@@ -51,11 +51,23 @@ require __DIR__ . '/includes/views/header.php';
         </a>
     </div>
 
+    <?php if (canViewCost()): ?>
+    <!-- Tab 标签 -->
+    <div class="flex gap-0 mb-4 border-b-2 border-slate-200">
+        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+                :class="tab==='info' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
+                @click="tab='info'">基本信息</button>
+        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+                :class="tab==='bom' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
+                @click="tab='bom'">BOM 物料清单</button>
+    </div>
+    <?php endif; ?>
+
     <form @submit.prevent="save" id="selfProductForm">
     <?= csrfField() ?>
 
     <!-- 基本信息 -->
-    <div class="card p-6 mb-4">
+    <div x-show="tab==='info'" class="card p-6 mb-4">
         <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">基本信息</h3>
 
         <!-- 产品主图 -->
@@ -133,7 +145,7 @@ require __DIR__ . '/includes/views/header.php';
 
     <?php if (canViewCost()): ?>
     <!-- 成本与定价 -->
-    <div class="card p-6 mb-4">
+    <div x-show="tab==='info'" class="card p-6 mb-4">
         <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">成本与定价</h3>
 
         <div class="grid grid-cols-3 gap-4 mb-4">
@@ -249,16 +261,6 @@ require __DIR__ . '/includes/views/header.php';
     <?php endif; ?>
 
     <?php if (canViewCost()): ?>
-    <!-- Tab 标签 -->
-    <div class="flex gap-0 mb-4 border-b-2 border-slate-200">
-        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
-                :class="tab==='info' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
-                @click="tab='info'">基本信息</button>
-        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
-                :class="tab==='bom' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
-                @click="tab='bom'">BOM 物料清单</button>
-    </div>
-
     <!-- 备注（基本信息Tab内） -->
     <div x-show="tab==='info'" class="card p-6 mb-4">
         <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">备注</h3>
