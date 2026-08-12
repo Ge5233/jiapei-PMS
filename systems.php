@@ -185,7 +185,7 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-100 border-l-4 border-transparent">
+                                        <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200 border-l-4 border-transparent">
                                             <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
