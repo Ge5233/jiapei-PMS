@@ -249,8 +249,25 @@ require __DIR__ . '/includes/views/header.php';
     <?php endif; ?>
 
     <?php if (canViewCost()): ?>
-    <!-- BOM 物料清单 -->
-    <div class="card p-6 mb-4" style="overflow:visible;min-height:360px;display:flex;flex-direction:column">
+    <!-- Tab 标签 -->
+    <div class="flex gap-0 mb-4 border-b-2 border-slate-200">
+        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+                :class="tab==='info' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
+                @click="tab='info'">基本信息</button>
+        <button type="button" class="px-6 py-2.5 text-sm font-medium rounded-t-lg transition-colors"
+                :class="tab==='bom' ? 'bg-white text-blue-600 border-2 border-b-white border-slate-200 -mb-0.5' : 'text-slate-500 hover:text-slate-700'"
+                @click="tab='bom'">BOM 物料清单</button>
+    </div>
+
+    <!-- 备注（基本信息Tab内） -->
+    <div x-show="tab==='info'" class="card p-6 mb-4">
+        <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">备注</h3>
+        <textarea x-model="form.remark" class="form-input" rows="2" maxlength="2000"
+                  placeholder="内部备注（不对客户展示）"></textarea>
+    </div>
+
+    <!-- BOM 物料清单 Tab -->
+    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow:visible;min-height:360px;display:flex;flex-direction:column">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
@@ -259,6 +276,9 @@ require __DIR__ . '/includes/views/header.php';
                     <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i>导出 Excel
                 </a>
                 <?php endif; ?>
+                <button type="button" class="btn btn-secondary text-sm" @click="addModule">
+                    <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加模块
+                </button>
                 <button type="button" class="btn btn-secondary text-sm" @click="addBomItem">
                     <i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i>添加物料
                 </button>
@@ -404,13 +424,6 @@ require __DIR__ . '/includes/views/header.php';
     </div>
     <?php endif; ?>
 
-    <!-- 备注 -->
-    <div class="card p-6 mb-4">
-        <h3 class="text-base font-medium text-slate-800 mb-4 pb-2 border-b border-slate-100">备注</h3>
-        <textarea x-model="form.remark" class="form-input" rows="2" maxlength="2000"
-                  placeholder="内部备注（不对客户展示）"></textarea>
-    </div>
-
     <!-- 操作按钮 -->
     <div class="flex items-center justify-between">
         <div class="text-xs text-slate-400" x-show="isEdit" x-text="'最后更新：' + form.updated_at"></div>
@@ -475,6 +488,7 @@ document.addEventListener('alpine:init', () => {
         (init.allSelfProducts || []).forEach(p => { selfProductMap[p.id] = p; });
 
         return {
+            tab: 'info',  // Tab 状态
             isEdit: init.isEdit,
             form: {
                 name: init.selfProduct?.name || '',
@@ -584,6 +598,41 @@ document.addEventListener('alpine:init', () => {
                 if (this.$refs.imageInput) this.$refs.imageInput.value = '';
             },
 
+            // --- 模块管理 ---
+            modules: [], // 模块列表 [{name, collapsed:false}]
+            getModuleNames() {
+                const names = new Set();
+                this.bomItems.forEach(item => {
+                    if (item.module_name) names.add(item.module_name);
+                });
+                return Array.from(names);
+            },
+            addModule() {
+                const name = prompt('模块名称（如：框架结构、电控系统）：');
+                if (!name || !name.trim()) return;
+                this.bomItems.push({
+                    product_id: '',
+                    bom_self_product_id: '',
+                    item_name: '',
+                    quantity: 1,
+                    unit: '',
+                    unit_cost: 0,
+                    _product_cost: 0,
+                    _sp_cost: 0,
+                    _prodShow: '',
+                    _spShow: '',
+                    _prodOpen: false,
+                    _prodFilter: '',
+                    _spOpen: false,
+                    _spFilter: '',
+                    sort_order: this.bomItems.length,
+                    module_name: name.trim(),
+                    remark: '',
+                });
+                this.$nextTick(() => { lucide.createIcons(); });
+                this.tab = 'bom'; // 切到 BOM Tab
+            },
+
             // --- BOM ---
             addBomItem() {
                 this.bomItems.push({
@@ -602,6 +651,7 @@ document.addEventListener('alpine:init', () => {
                     _spOpen: false,
                     _spFilter: '',
                     sort_order: this.bomItems.length,
+                    module_name: '',
                     remark: '',
                 });
                 this.$nextTick(() => { lucide.createIcons(); });
@@ -740,6 +790,7 @@ document.addEventListener('alpine:init', () => {
                     unit: item.unit || '',
                     unit_cost: item.product_id || item.bom_self_product_id ? 0 : (parseFloat(item.unit_cost) || 0),
                     sort_order: i,
+                    module_name: item.module_name || null,
                     remark: item.remark || '',
                 }))));
 

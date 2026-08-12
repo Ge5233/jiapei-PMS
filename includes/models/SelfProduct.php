@@ -177,13 +177,14 @@ class SelfProduct
     }
 
     /**
-     * 获取 BOM 物料列表（含外采产品最新进价）
+     * 获取 BOM 物料列表（含外采产品最新进价），返回模块层级结构
+     * @return array ['items'=>[...], 'modules'=>[{name, items:[{...subs:[...]}]}]]
      */
     public static function getBom(int $selfProductId): array
     {
         $sql = "SELECT i.*, p.name AS product_name, p.sku AS product_sku,
-                       p.cost_price AS product_cost_price,
-                       sp.name AS bom_sp_name, sp.total_cost AS bom_sp_cost
+                       p.cost_price AS product_cost_price, p.spec AS product_spec,
+                       sp.name AS bom_sp_name, sp.total_cost AS bom_sp_cost, sp.model_no AS bom_sp_model
                 FROM self_product_items i
                 LEFT JOIN products p ON p.id = i.product_id
                 LEFT JOIN self_products sp ON sp.id = i.bom_self_product_id
@@ -191,7 +192,35 @@ class SelfProduct
                 ORDER BY i.sort_order ASC, i.id ASC";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([$selfProductId]);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+
+        // 主材（parent_id IS NULL）
+        $mainItems = array_values(array_filter($rows, fn($r) => empty($r['parent_id'])));
+        // 配件
+        $subItems = array_filter($rows, fn($r) => !empty($r['parent_id']));
+
+        // 按模块分组
+        $moduleMap = [];
+        foreach ($mainItems as &$item) {
+            $modName = $item['module_name'] ?: '未分类';
+            if (!isset($moduleMap[$modName])) {
+                $moduleMap[$modName] = ['name' => $modName, 'items' => []];
+            }
+            // 找该主材的配件
+            $item['subs'] = [];
+            foreach ($subItems as $sub) {
+                if ((int)$sub['parent_id'] === (int)$item['id']) {
+                    $item['subs'][] = $sub;
+                }
+            }
+            $moduleMap[$modName]['items'][] = $item;
+        }
+        unset($item);
+
+        return [
+            'items' => $rows,
+            'modules' => array_values($moduleMap),
+        ];
     }
 
     /**
@@ -203,10 +232,10 @@ class SelfProduct
         foreach ($items as $item) {
             $qty = (float)$item['quantity'];
             if (!empty($item['product_id']) && isset($item['product_cost_price'])) {
-                // 关联外采产品 → 取最新进价
                 $total += $qty * (float)$item['product_cost_price'];
+            } else if (!empty($item['bom_self_product_id']) && isset($item['bom_sp_cost'])) {
+                $total += $qty * (float)$item['bom_sp_cost'];
             } else {
-                // 临时物料 → 取存的手动单价
                 $total += $qty * (float)$item['unit_cost'];
             }
         }
@@ -214,29 +243,54 @@ class SelfProduct
     }
 
     /**
-     * 保存 BOM 物料（先删后插）
-     * @param array $items [{product_id, item_name, quantity, unit, unit_cost, sort_order, remark}, ...]
+     * 保存 BOM 物料（先删后插），支持模块层级
+     * @param array $items [{product_id, bom_self_product_id, item_name, quantity, unit, unit_cost, sort_order, module_name, subs:[...]}]
      */
     public static function saveBom(int $selfProductId, array $items): void
     {
         $db = Database::getInstance();
         $db->prepare("DELETE FROM self_product_items WHERE self_product_id = ?")->execute([$selfProductId]);
 
-        $sql = "INSERT INTO self_product_items (self_product_id, product_id, bom_self_product_id, item_name, quantity, unit, unit_cost, sort_order, remark)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO self_product_items (self_product_id, product_id, bom_self_product_id, item_name, quantity, unit, unit_cost, sort_order, module_name, parent_id, remark)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $db->prepare($sql);
+
         foreach ($items as $i => $item) {
+            // 主材
             $stmt->execute([
                 $selfProductId,
                 !empty($item['product_id']) ? (int)$item['product_id'] : null,
                 !empty($item['bom_self_product_id']) ? (int)$item['bom_self_product_id'] : null,
-                (empty($item['product_id']) && empty($item['bom_self_product_id'])) ? ($item['item_name'] ?: null) : null,
+                (!empty($item['product_id']) || !empty($item['bom_self_product_id'])) ? null : ($item['item_name'] ?: null),
                 $item['quantity'] ?? 1,
                 $item['unit'] ?: null,
                 $item['unit_cost'] ?? 0,
                 $item['sort_order'] ?? $i,
+                $item['module_name'] ?: null,
+                null, // parent_id
                 $item['remark'] ?: null,
             ]);
+
+            $mainId = (int)$db->lastInsertId();
+
+            // 配件
+            if (!empty($item['subs'])) {
+                foreach ($item['subs'] as $si => $sub) {
+                    $stmt->execute([
+                        $selfProductId,
+                        !empty($sub['product_id']) ? (int)$sub['product_id'] : null,
+                        !empty($sub['bom_self_product_id']) ? (int)$sub['bom_self_product_id'] : null,
+                        (!empty($sub['product_id']) || !empty($sub['bom_self_product_id'])) ? null : ($sub['item_name'] ?: null),
+                        $sub['quantity'] ?? 1,
+                        $sub['unit'] ?: null,
+                        $sub['unit_cost'] ?? 0,
+                        $sub['sort_order'] ?? $si,
+                        $item['module_name'] ?: null,
+                        $mainId, // parent_id 指向主材
+                        $sub['remark'] ?: null,
+                    ]);
+                }
+            }
         }
     }
 
