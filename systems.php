@@ -112,7 +112,7 @@ require __DIR__ . '/includes/views/header.php';
                     <template x-for="(it,ii) in (mod.items||[])" :key="ii">
                         <div class="border-b border-slate-100">
                             <!-- 主材行 -->
-                            <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-l-4 border-blue-400 border-t border-b-2 border-slate-300 font-semibold text-slate-800">
+                            <div style="border-left:4px solid #60a5fa;border-bottom:2px solid #cbd5e1" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-t border-slate-200 font-semibold text-slate-800">
                                 <div class="flex items-center gap-1">
                                     <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                         <span x-text="it._collapsed?'▶':'▼'"></span>
@@ -185,7 +185,7 @@ require __DIR__ . '/includes/views/header.php';
                             <template x-if="(it.subs||[]).length>0">
                                 <div class="bg-white" x-show="!it._collapsed">
                                     <template x-for="(s,si) in (it.subs||[])" :key="si">
-                                        <div class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs border-b border-slate-200 border-l-4 border-transparent">
+                                        <div style="border-bottom:1px solid #e2e8f0" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs">
                                             <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
                                             <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)" :disabled="!editMode">
                                                 <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
