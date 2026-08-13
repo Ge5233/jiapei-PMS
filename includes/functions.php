@@ -277,3 +277,79 @@ function generateSku(int $categoryId): string
     
     return $sku;
 }
+
+/**
+ * 处理上传图片：缩放 + 居中剪裁成正方形，输出 JPEG，控制在指定体积内
+ * 
+ * @param string $srcPath 源文件路径
+ * @param string $destPath 目标文件路径
+ * @param int $size 目标边长（正方形，默认 400）
+ * @param int $maxBytes 最大体积（默认 200KB）
+ * @return bool 成功返回 true
+ * @throws RuntimeException 图片无法处理时
+ */
+function processProductImage(string $srcPath, string $destPath, int $size = 400, int $maxBytes = 204800): bool
+{
+    if (!function_exists('imagecreatetruecolor')) {
+        throw new RuntimeException('GD 库未安装');
+    }
+
+    $info = @getimagesize($srcPath);
+    if (!$info) {
+        throw new RuntimeException('无法识别的图片格式');
+    }
+
+    $mime = $info['mime'];
+    switch ($mime) {
+        case 'image/jpeg': $src = imagecreatefromjpeg($srcPath); break;
+        case 'image/png':  $src = imagecreatefrompng($srcPath); break;
+        case 'image/gif':  $src = imagecreatefromgif($srcPath); break;
+        case 'image/webp': $src = imagecreatefromwebp($srcPath); break;
+        default: throw new RuntimeException('不支持的图片格式：' . $mime);
+    }
+    if (!$src) {
+        throw new RuntimeException('图片读取失败');
+    }
+
+    $srcW = imagesx($src);
+    $srcH = imagesy($src);
+
+    // 计算缩放 + 居中剪裁参数
+    // 先缩放到能覆盖目标正方形的最小尺寸（等比缩放，取较长边）
+    $scale = max($size / $srcW, $size / $srcH);
+    $newW = (int)round($srcW * $scale);
+    $newH = (int)round($srcH * $scale);
+
+    $tmp = imagecreatetruecolor($newW, $newH);
+    // 保留透明（PNG/GIF）
+    imagealphablending($tmp, false);
+    imagesavealpha($tmp, true);
+    $transparent = imagecolorallocatealpha($tmp, 0, 0, 0, 127);
+    imagefilledrectangle($tmp, 0, 0, $newW, $newH, $transparent);
+    imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newW, $newH, $srcW, $srcH);
+
+    // 居中剪裁成 size×size
+    $dst = imagecreatetruecolor($size, $size);
+    $bg = imagecolorallocate($dst, 255, 255, 255);
+    imagefill($dst, 0, 0, $bg);
+    $cropX = (int)(($newW - $size) / 2);
+    $cropY = (int)(($newH - $size) / 2);
+    imagecopy($dst, $tmp, 0, 0, max(0, $cropX), max(0, $cropY), $size, $size);
+
+    imagedestroy($src);
+    imagedestroy($tmp);
+
+    // 输出 JPEG，逐步降质量直到体积达标
+    $quality = 90;
+    do {
+        imagejpeg($dst, $destPath, $quality);
+        $fileSize = filesize($destPath);
+        if ($fileSize <= $maxBytes || $quality <= 40) {
+            break;
+        }
+        $quality -= 10;
+    } while (true);
+
+    imagedestroy($dst);
+    return true;
+}

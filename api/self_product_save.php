@@ -46,16 +46,20 @@ $imageName = null;
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
     $file = $_FILES['image'];
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
-        jsonResponse(['ok' => false, 'message' => '仅支持 JPG/PNG 格式']);
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        jsonResponse(['ok' => false, 'message' => '仅支持 JPG/PNG/GIF/WEBP 格式']);
     }
-    if ($file['size'] > 2 * 1024 * 1024) {
-        jsonResponse(['ok' => false, 'message' => '图片不能超过 2MB']);
+    if ($file['size'] > 10 * 1024 * 1024) {
+        jsonResponse(['ok' => false, 'message' => '图片不能超过 10MB']);
     }
-    $imageName = date('Ymd_') . bin2hex(random_bytes(8)) . '.' . $ext;
+    // 先存临时文件，再处理成 400×400 正方形 JPEG
+    $tmpPath = $file['tmp_name'];
+    $imageName = date('Ymd_') . bin2hex(random_bytes(8)) . '.jpg';
     $uploadPath = __DIR__ . '/../uploads/' . $imageName;
-    if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
-        jsonResponse(['ok' => false, 'message' => '图片上传失败']);
+    try {
+        processProductImage($tmpPath, $uploadPath, 400, 204800);
+    } catch (\Throwable $e) {
+        jsonResponse(['ok' => false, 'message' => '图片处理失败：' . $e->getMessage()]);
     }
     // 编辑时删旧图
     if ($isEdit) {

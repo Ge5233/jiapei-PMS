@@ -112,7 +112,7 @@ require __DIR__ . '/includes/views/header.php';
                     支持 JPG / PNG<br>建议 400×400，≤ 2MB
                 </div>
             </div>
-            <input type="file" x-ref="imageInput" accept="image/jpeg,image/png" class="hidden" @change="handleImageUpload">
+            <input type="file" x-ref="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" @change="handleImageUpload">
         </div>
 
         <!-- SKU / 名称 / 型号 -->
@@ -767,8 +767,8 @@ document.addEventListener('alpine:init', () => {
             handleImageUpload(e) {
                 const file = e.target.files[0];
                 if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { alert('图片不能超过2MB'); return; }
-                if (!['image/jpeg', 'image/png'].includes(file.type)) { alert('仅支持JPG/PNG'); return; }
+                if (file.size > 10 * 1024 * 1024) { alert('图片不能超过10MB'); return; }
+                if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) { alert('仅支持JPG/PNG/GIF/WEBP'); return; }
                 this.imageFile = file;
                 this.imageChanged = true;
                 this.imageRemoved = false;
