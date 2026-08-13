@@ -47,7 +47,7 @@ $activeMenu = 'projects';
 require __DIR__ . '/includes/views/header.php';
 ?>
 
-<div class="max-w-6xl mx-auto" x-data="projectForm(<?= h(json_encode([
+<div class="max-w-7xl mx-auto" x-data="projectForm(<?= h(json_encode([
     'id' => $id,
     'isEdit' => $isEdit,
     'project' => $project,

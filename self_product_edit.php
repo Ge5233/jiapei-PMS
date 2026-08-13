@@ -48,7 +48,7 @@ $activeMenu = 'self_products';
 require __DIR__ . '/includes/views/header.php';
 ?>
 
-<div class="max-w-4xl mx-auto" x-data="selfProductForm(<?= h(json_encode([
+<div class="max-w-7xl mx-auto" x-data="selfProductForm(<?= h(json_encode([
     'id' => $id,
     'isEdit' => $isEdit,
     'selfProduct' => $selfProduct,

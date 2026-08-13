@@ -44,7 +44,7 @@ $activeMenu = 'production_tasks';
 require __DIR__ . '/includes/views/header.php';
 ?>
 
-<div class="max-w-5xl mx-auto" x-data="taskForm(<?= h(json_encode([
+<div class="max-w-7xl mx-auto" x-data="taskForm(<?= h(json_encode([
     'id' => $id,
     'task' => $task,
     'modules' => $modules,
