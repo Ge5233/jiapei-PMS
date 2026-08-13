@@ -294,7 +294,7 @@ require __DIR__ . '/includes/views/header.php';
     <div class="flex items-center justify-between">
         <a href="/production_tasks.php" class="btn btn-secondary">返回</a>
         <div class="flex gap-3">
-            <button type="button" class="btn btn-primary" id="btnSaveTask">
+            <button type="button" class="btn btn-primary" id="btnSaveTask" @click="save">
                 <i data-lucide="save" class="w-4 h-4 mr-1.5"></i>保存
             </button>
             <button type="button" class="btn btn-success" x-show="form.status==='pending'" @click="confirmTask">
