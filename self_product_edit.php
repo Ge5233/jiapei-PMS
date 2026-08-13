@@ -288,7 +288,7 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <!-- BOM 物料清单 Tab — v4.6 模块层级 -->
-    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow-x:auto;min-height:360px">
+    <div x-show="tab==='bom'" class="card p-6 mb-4" style="min-height:420px">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
@@ -304,7 +304,7 @@ require __DIR__ . '/includes/views/header.php';
         <!-- 模块视图 -->
         <div x-show="bomView==='module'">
             <template x-for="(mod, mi) in modules" :key="mi">
-                <div class="mb-3 border rounded" style="overflow-x:auto">
+                <div class="mb-3 border rounded">
                     <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
                         <button type="button" class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open" :title="mod._open===false?'展开':'折叠'">
                             <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
@@ -323,162 +323,199 @@ require __DIR__ . '/includes/views/header.php';
                         </div>
                     </div>
                     <div x-show="mod._open!==false">
-                        <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
-                        <!-- \u5217\u5934 -->
-                        <div class="grid grid-cols-[40px_56px_210px_160px_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
-                             x-show="(mod.items||[]).length>0">
-                            <div class="flex items-center gap-1 min-w-[24px]">#</div>
-                            <span>类型</span>
-                            <span>物料名称</span>
-                            <span>规格</span>
-                            <span>单位</span>
-                            <span>数量</span>
-                            <span>单价</span>
-                            <span>小计</span>
-                            <div class="flex items-center gap-1.5 justify-end"></div>
-                        </div>
-                        <template x-for="(it, ii) in (mod.items||[])" :key="ii">
-                            <div class="border-b border-slate-100">
-                                <!-- 主材行 -->
-                                <div style="border-left:4px solid #60a5fa;border-bottom:2px solid #cbd5e1" class="grid grid-cols-[40px_56px_210px_160px_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-t border-slate-200 font-semibold text-slate-800">
-                                    <div class="flex items-center gap-1 min-w-[24px]">
-                                        <button type="button" class="text-xs text-slate-400 leading-none w-3" :class="(it.subs||[]).length>0 ? '' : 'invisible'" @click="it._collapsed=!it._collapsed">
-                                            <span x-text="it._collapsed?'▶':'▼'"></span>
-                                        </button>
-                                        <span x-text="ii+1"></span>
-                                    </div>
-                                    <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-white" @change="srcChanged(it)">
-                                        <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
-                                    </select>
-
-                                    <!-- 外采搜索 -->
-                                    <div x-show="it.src==='p'" class="relative">
-                                        <template x-if="!it.pid">
-                                            <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
-                                                   @click.away="it._prodOpen=false"
-                                                   x-model="it._prodShow"
-                                                   class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
-                                        </template>
-                                        <template x-if="it.pid">
-                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._prodOpen=true">
-                                                <span x-text="it._prodShow"></span>
-                                                <span class="ss-tag-x" @click.stop="clearItem(it,'p')">&times;</span>
+                        <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-8">还没有主材，点上方 +主材 添加</div>
+                        <table class="w-full border-collapse" x-show="(mod.items||[]).length>0">
+                            <colgroup>
+                                <col style="width:36px">
+                                <col style="width:64px">
+                                <col>
+                                <col style="width:24%">
+                                <col style="width:56px">
+                                <col style="width:76px">
+                                <col style="width:88px">
+                                <col style="width:88px">
+                                <col style="width:88px">
+                            </colgroup>
+                            <thead>
+                                <tr class="text-xs text-slate-400 border-b border-slate-100">
+                                    <th class="py-1.5 pr-1 font-medium text-left">#</th>
+                                    <th class="py-1.5 pr-1 font-medium text-left">类型</th>
+                                    <th class="py-1.5 pr-1 font-medium text-left">物料名称</th>
+                                    <th class="py-1.5 pr-1 font-medium text-left">规格</th>
+                                    <th class="py-1.5 pr-1 font-medium text-left">单位</th>
+                                    <th class="py-1.5 pr-1 font-medium text-right">数量</th>
+                                    <th class="py-1.5 pr-1 font-medium text-right">单价</th>
+                                    <th class="py-1.5 pr-1 font-medium text-right">小计</th>
+                                    <th class="py-1.5 font-medium text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(it, ii) in (mod.items||[])" :key="ii">
+                                    <!-- 主材行 -->
+                                    <tr class="border-b-2 border-slate-200 align-top text-sm font-semibold text-slate-800" style="background:linear-gradient(90deg,#eff6ff 0,#eff6ff 4px,#fff 4px)">
+                                        <td class="py-2 pr-1">
+                                            <div class="flex items-center gap-1">
+                                                <button type="button" class="text-xs text-slate-400 leading-none w-3" :class="(it.subs||[]).length>0 ? '' : 'invisible'" @click="it._collapsed=!it._collapsed">
+                                                    <span x-text="it._collapsed?'▶':'▼'"></span>
+                                                </button>
+                                                <span x-text="ii+1"></span>
                                             </div>
-                                        </template>
-                                        <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="ss-dropdown">
-                                            <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
-                                                <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
-                                                    <span x-text="p.label"></span>
-                                                    <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-
-                                    <!-- 自产搜索 -->
-                                    <div x-show="it.src==='s'" class="relative">
-                                        <template x-if="!it.sid">
-                                            <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
-                                                   @click.away="it._spOpen=false"
-                                                   x-model="it._spShow"
-                                                   class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
-                                        </template>
-                                        <template x-if="it.sid">
-                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._spOpen=true">
-                                                <span x-text="it._spShow"></span>
-                                                <span class="ss-tag-x" @click.stop="clearItem(it,'s')">&times;</span>
-                                            </div>
-                                        </template>
-                                        <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="ss-dropdown">
-                                            <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
-                                                <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
-                                            </template>
-                                        </div>
-                                    </div>
-
-                                    <!-- 临时 -->
-                                    <input x-show="it.src==='a'" x-model="it.name" class="text-sm border rounded px-1 w-full bg-white" placeholder="名称">
-
-                                    <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-white" placeholder="规格">
-                                    <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-white" placeholder="单位">
-                                    <input x-model="it.qty" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="数量">
-                                    <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="单价">
-                                    <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
-                                    <div class="flex items-center gap-1.5 justify-end">
-                                        <button type="button" class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)">+配件</button>
-                                        <button type="button" class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)">×</button>
-                                    </div>
-                                </div>
-                                <!-- 配件 -->
-                                <template x-if="(it.subs||[]).length>0">
-                                    <div class="bg-white" x-show="!it._collapsed">
-                                        <template x-for="(s, si) in (it.subs||[])" :key="si">
-                                            <div style="border-bottom:1px solid #cbd5e1" class="grid grid-cols-[40px_56px_210px_160px_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1 text-xs">
-                                                <span class="text-xs" x-text="ii+1+'.'+(si+1)"></span>
-                                                <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)">
-                                                    <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
-                                                </select>
-
-                                                <!-- 外采 -->
-                                                <div x-show="s.src==='p'" class="relative">
-                                                    <template x-if="!s.pid">
-                                                        <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
-                                                               @click.away="s._prodOpen=false"
-                                                               x-model="s._prodShow"
-                                                               class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
-                                                    </template>
-                                                    <template x-if="s.pid">
-                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._prodOpen=true">
-                                                            <span x-text="s._prodShow"></span>
-                                                            <span class="ss-tag-x" @click.stop="clearItem(s,'p')">&times;</span>
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <select x-model="it.src" class="text-xs border rounded py-0.5 w-full bg-white" @change="srcChanged(it)">
+                                                <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
+                                            </select>
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <!-- 外采搜索 -->
+                                            <div x-show="it.src==='p'" class="relative">
+                                                <template x-if="!it.pid">
+                                                    <input type="text" @click="it._prodOpen=true" @focus="it._prodOpen=true" @input="it._prodFilter=$el.value" @keydown.escape="it._prodOpen=false"
+                                                           @click.away="it._prodOpen=false"
+                                                           x-model="it._prodShow"
+                                                           class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
+                                                </template>
+                                                <template x-if="it.pid">
+                                                    <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._prodOpen=true">
+                                                        <span x-text="it._prodShow"></span>
+                                                        <span class="ss-tag-x" @click.stop="clearItem(it,'p')">&times;</span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="it._prodOpen && filteredProducts(it._prodFilter||'').length>0" class="ss-dropdown">
+                                                    <template x-for="p in filteredProducts(it._prodFilter||'')" :key="p.id">
+                                                        <div @mousedown.prevent="pickProduct(it,p)" :class="{sel:it.pid==p.id}">
+                                                            <span x-text="p.label"></span>
+                                                            <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
                                                         </div>
                                                     </template>
-                                                    <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="ss-dropdown">
-                                                        <template x-for="p in filteredProducts(s._prodFilter||'')" :key="p.id">
-                                                            <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}">
-                                                                <span x-text="p.label"></span>
-                                                                <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                </div>
+                                            </div>
+                                            <!-- 自产搜索 -->
+                                            <div x-show="it.src==='s'" class="relative">
+                                                <template x-if="!it.sid">
+                                                    <input type="text" @click="it._spOpen=true" @focus="it._spOpen=true" @input="it._spFilter=$el.value" @keydown.escape="it._spOpen=false"
+                                                           @click.away="it._spOpen=false"
+                                                           x-model="it._spShow"
+                                                           class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
+                                                </template>
+                                                <template x-if="it.sid">
+                                                    <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._spOpen=true">
+                                                        <span x-text="it._spShow"></span>
+                                                        <span class="ss-tag-x" @click.stop="clearItem(it,'s')">&times;</span>
+                                                    </div>
+                                                </template>
+                                                <div x-show="it._spOpen && filteredSp(it._spFilter||'').length>0" class="ss-dropdown">
+                                                    <template x-for="s in filteredSp(it._spFilter||'')" :key="s.id">
+                                                        <div @mousedown.prevent="pickSp(it,s)" :class="{sel:it.sid==s.id}" x-text="s.label"></div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <!-- 临时 -->
+                                            <input x-show="it.src==='a'" x-model="it.name" class="text-sm border rounded px-1 w-full bg-white" placeholder="名称">
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <input x-model="it.spec" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full bg-white" placeholder="规格">
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <input x-model="it.unit" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-center bg-white" placeholder="单位">
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <input x-model="it.qty" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="数量">
+                                        </td>
+                                        <td class="py-2 pr-1">
+                                            <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="单价">
+                                        </td>
+                                        <td class="py-2 pr-1 text-right">
+                                            <span class="text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
+                                        </td>
+                                        <td class="py-2 text-right">
+                                            <div class="flex items-center gap-1.5 justify-end">
+                                                <button type="button" class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)">+配件</button>
+                                                <button type="button" class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)">×</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- 配件行 -->
+                                    <template x-if="(it.subs||[]).length>0">
+                                        <template x-for="(s, si) in (it.subs||[])" :key="si">
+                                            <tr x-show="!it._collapsed" class="border-b border-slate-100 align-top text-xs">
+                                                <td class="py-1 pr-1 text-slate-400" x-text="ii+1+'.'+(si+1)"></td>
+                                                <td class="py-1 pr-1">
+                                                    <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)">
+                                                        <option value="p">外采</option><option value="s">自产</option><option value="a">临时</option>
+                                                    </select>
+                                                </td>
+                                                <td class="py-1 pr-1">
+                                                    <!-- 外采 -->
+                                                    <div x-show="s.src==='p'" class="relative">
+                                                        <template x-if="!s.pid">
+                                                            <input type="text" @click="s._prodOpen=true" @focus="s._prodOpen=true" @input="s._prodFilter=$el.value" @keydown.escape="s._prodOpen=false"
+                                                                   @click.away="s._prodOpen=false"
+                                                                   x-model="s._prodShow"
+                                                                   class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                        </template>
+                                                        <template x-if="s.pid">
+                                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._prodOpen=true">
+                                                                <span x-text="s._prodShow"></span>
+                                                                <span class="ss-tag-x" @click.stop="clearItem(s,'p')">&times;</span>
                                                             </div>
                                                         </template>
-                                                    </div>
-                                                </div>
-
-                                                <!-- 自产 -->
-                                                <div x-show="s.src==='s'" class="relative">
-                                                    <template x-if="!s.sid">
-                                                        <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
-                                                               @click.away="s._spOpen=false"
-                                                               x-model="s._spShow"
-                                                               class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
-                                                    </template>
-                                                    <template x-if="s.sid">
-                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._spOpen=true">
-                                                            <span x-text="s._spShow"></span>
-                                                            <span class="ss-tag-x" @click.stop="clearItem(s,'s')">&times;</span>
+                                                        <div x-show="s._prodOpen && filteredProducts(s._prodFilter||'').length>0" class="ss-dropdown">
+                                                            <template x-for="p in filteredProducts(s._prodFilter||'')" :key="p.id">
+                                                                <div @mousedown.prevent="pickProduct(s,p)" :class="{sel:s.pid==p.id}">
+                                                                    <span x-text="p.label"></span>
+                                                                    <span class="text-xs text-slate-400 ml-1" x-text="p.spec ? '【'+p.spec+'】' : ''"></span>
+                                                                </div>
+                                                            </template>
                                                         </div>
-                                                    </template>
-                                                    <div x-show="s._spOpen && filteredSp(s._spFilter||'').length>0" class="ss-dropdown">
-                                                        <template x-for="sp in filteredSp(s._spFilter||'')" :key="sp.id">
-                                                            <div @mousedown.prevent="pickSp(s,sp)" :class="{sel:s.sid==sp.id}" x-text="sp.label"></div>
-                                                        </template>
                                                     </div>
-                                                </div>
-
-                                                <input x-show="s.src==='a'" x-model="s.name" class="text-xs border rounded px-1 w-full" placeholder="名称">
-                                                <input x-model="s.spec" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full" placeholder="规格">
-                                                <input x-model="s.unit" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-center">
-                                                <input x-model="s.qty" class="text-xs border rounded px-1 w-full text-right">
-                                                <input x-model="s.price" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-right">
-                                                <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
-                                                <div class="flex justify-end">
+                                                    <!-- 自产 -->
+                                                    <div x-show="s.src==='s'" class="relative">
+                                                        <template x-if="!s.sid">
+                                                            <input type="text" @click="s._spOpen=true" @focus="s._spOpen=true" @input="s._spFilter=$el.value" @keydown.escape="s._spOpen=false"
+                                                                   @click.away="s._spOpen=false"
+                                                                   x-model="s._spShow"
+                                                                   class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
+                                                        </template>
+                                                        <template x-if="s.sid">
+                                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._spOpen=true">
+                                                                <span x-text="s._spShow"></span>
+                                                                <span class="ss-tag-x" @click.stop="clearItem(s,'s')">&times;</span>
+                                                            </div>
+                                                        </template>
+                                                        <div x-show="s._spOpen && filteredSp(s._spFilter||'').length>0" class="ss-dropdown">
+                                                            <template x-for="sp in filteredSp(s._spFilter||'')" :key="sp.id">
+                                                                <div @mousedown.prevent="pickSp(s,sp)" :class="{sel:s.sid==sp.id}" x-text="sp.label"></div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 临时 -->
+                                                    <input x-show="s.src==='a'" x-model="s.name" class="text-xs border rounded px-1 w-full" placeholder="名称">
+                                                </td>
+                                                <td class="py-1 pr-1">
+                                                    <input x-model="s.spec" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full" placeholder="规格">
+                                                </td>
+                                                <td class="py-1 pr-1">
+                                                    <input x-model="s.unit" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-center">
+                                                </td>
+                                                <td class="py-1 pr-1">
+                                                    <input x-model="s.qty" class="text-xs border rounded px-1 w-full text-right">
+                                                </td>
+                                                <td class="py-1 pr-1">
+                                                    <input x-model="s.price" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-right">
+                                                </td>
+                                                <td class="py-1 pr-1 text-right">
+                                                    <span class="tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
+                                                </td>
+                                                <td class="py-1 text-right">
                                                     <button type="button" class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)">×</button>
-                                                </div>
-                                            </div>
+                                                </td>
+                                            </tr>
                                         </template>
-                                    </div>
+                                    </template>
                                 </template>
-                            </div>
-                        </template>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </template>

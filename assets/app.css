@@ -290,7 +290,7 @@
     cursor: default;
     max-width: 100%;
     overflow: hidden;
-    min-width: 160px;
+    min-width: 0;
 }
 .ss-tag span {
     overflow: hidden;
