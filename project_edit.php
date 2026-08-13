@@ -273,10 +273,11 @@ require __DIR__ . '/includes/views/header.php';
 
             <button type="button" class="btn btn-secondary text-sm w-full mt-2" @click="addMod(activeList)">+ 添加模块</button>
 
-            <!-- 当前清单合计 -->
-            <div x-show="(lists[activeList].modules||[]).length>0" class="text-right font-medium text-sm mt-3 pr-2">
-                清单合计：
-                <span class="text-blue-600 text-lg" x-text="'¥'+fmt(listTotal(activeList))"></span>
+            <!-- 当前清单合计（三档） -->
+            <div x-show="(lists[activeList].modules||[]).length>0" class="flex justify-end items-center gap-6 mt-3 pt-3 pr-2 border-t border-slate-200">
+                <span class="text-xs text-slate-500">自产小计 <span class="font-medium text-slate-700" x-text="'¥'+fmt(listSelfTotal(activeList))"></span></span>
+                <span class="text-xs text-slate-500">外采小计 <span class="font-medium text-slate-700" x-text="'¥'+fmt(listPurchaseTotal(activeList))"></span></span>
+                <span class="font-medium text-sm text-slate-800">合计 <span class="text-blue-600 text-lg" x-text="'¥'+fmt(listTotal(activeList))"></span></span>
             </div>
         </div>
     </div>
@@ -389,6 +390,26 @@ document.addEventListener('alpine:init', () => {
             moduleItemSum(li, mi) { const mod = this.lists[li].modules[mi]; let t = 0; (mod.items || []).forEach(it => { t += (it.qty || 0) * (it.price || 0); }); return t; },
             moduleSubSum(li, mi) { const mod = this.lists[li].modules[mi]; let t = 0; (mod.items || []).forEach(it => { (it.subs || []).forEach(s => { t += (s.qty || 0) * (s.price || 0); }); }); return t; },
             listTotal(li) { const list = this.lists[li]; let t = 0; (list.modules || []).forEach((mod, mi) => t += this.moduleSum(li, mi)); return t; },
+            listSelfTotal(li) {
+                const list = this.lists[li]; let t = 0;
+                (list.modules || []).forEach(mod => {
+                    (mod.items || []).forEach(it => {
+                        if (it.src === 's') t += (it.qty || 0) * (it.price || 0);
+                        (it.subs || []).forEach(s => { if (s.src === 's') t += (s.qty || 0) * (s.price || 0); });
+                    });
+                });
+                return t;
+            },
+            listPurchaseTotal(li) {
+                const list = this.lists[li]; let t = 0;
+                (list.modules || []).forEach(mod => {
+                    (mod.items || []).forEach(it => {
+                        if (it.src !== 's') t += (it.qty || 0) * (it.price || 0);
+                        (it.subs || []).forEach(s => { if (s.src !== 's') t += (s.qty || 0) * (s.price || 0); });
+                    });
+                });
+                return t;
+            },
             fmt(v) { return (parseFloat(v) || 0).toFixed(2); },
 
             serializeLists() {
