@@ -92,6 +92,7 @@ require __DIR__ . '/includes/views/header.php';
             <thead>
             <tr class="border-b border-slate-200 bg-slate-50">
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600 w-12">主图</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">SKU</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">名称 / 型号</th>
                 <?php if (canViewCost()): ?>
                 <th class="text-right px-4 py-3 text-sm font-medium text-slate-600">总成本</th>
@@ -125,10 +126,10 @@ require __DIR__ . '/includes/views/header.php';
                     </div>
                     <?php endif; ?>
                 </td>
+                <td class="px-4 py-3 text-sm text-slate-500 tabular-nums"><?= h($row['sku'] ?? '—') ?></td>
                 <td class="px-4 py-3">
                     <a href="/self_product_edit.php?id=<?= $row['id'] ?>" class="font-medium text-blue-600 hover:underline"><?= h($row['name']) ?></a>
                     <div class="text-xs text-slate-400 mt-0.5">
-                        <?php if (!empty($row['sku'])): ?><span class="mr-2"><?= h($row['sku']) ?></span><?php endif; ?>
                         <?= h($row['model_no'] ?? '') ?>
                     </div>
                     <?php if (!empty($row['spec'])): ?>
