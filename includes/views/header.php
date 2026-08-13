@@ -80,6 +80,13 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>报价管理
                         </a>
                     </li>
+                    <?php if (canViewCost()): ?>
+                    <li>
+                        <a href="/projects.php" class="nav-link <?= $activeMenu === 'projects' ? 'active' : '' ?>">
+                            <i data-lucide="folder" class="w-4 h-4 mr-2"></i>项目管理
+                        </a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
             </div>
 
