@@ -115,8 +115,12 @@ require __DIR__ . '/includes/views/header.php';
             <input type="file" x-ref="imageInput" accept="image/jpeg,image/png" class="hidden" @change="handleImageUpload">
         </div>
 
-        <!-- 名称 / 型号 -->
-        <div class="grid grid-cols-2 gap-4 mb-4">
+        <!-- SKU / 名称 / 型号 -->
+        <div class="grid grid-cols-3 gap-4 mb-4">
+            <div>
+                <label class="form-label">SKU</label>
+                <input type="text" x-model="form.sku" class="form-input bg-slate-50 text-slate-600" readonly placeholder="自动生成">
+            </div>
             <div>
                 <label class="form-label">产品名称 <span class="text-red-500">*</span></label>
                 <input type="text" x-model="form.name" class="form-input" required maxlength="200" placeholder="例：智能配肥机 V2">
@@ -606,6 +610,7 @@ document.addEventListener('alpine:init', () => {
             initId: init.id,
             isEdit: init.isEdit,
             form: {
+                sku: init.selfProduct?.sku || '',
                 name: init.selfProduct?.name || '',
                 model_no: init.selfProduct?.model_no || '',
                 spec: init.selfProduct?.spec || '',

@@ -60,17 +60,34 @@ class SelfProduct
     }
 
     /**
+     * 生成下一个 SKU（jp + 3位序号，如 jp001）
+     */
+    public static function nextSku(): string
+    {
+        $stmt = Database::getInstance()->query(
+            "SELECT sku FROM self_products WHERE sku LIKE 'jp%' ORDER BY sku DESC LIMIT 1"
+        );
+        $last = $stmt->fetchColumn();
+        if ($last) {
+            $num = (int)substr($last, 2);
+            return 'jp' . str_pad($num + 1, 3, '0', STR_PAD_LEFT);
+        }
+        return 'jp001';
+    }
+
+    /**
      * 创建自产产品（不含 BOM）
      * @return int 新 ID
      */
     public static function create(array $data): int
     {
-        $sql = "INSERT INTO self_products (name, image, model_no, spec, unit, description,
+        $sql = "INSERT INTO self_products (sku, name, image, model_no, spec, unit, description,
                 labor_cost, overhead_cost, other_cost, material_cost, total_cost,
                 guide_price, min_discount, guide_margin_rate, min_margin_rate, cost_remark, status, remark, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = Database::getInstance()->prepare($sql);
         $stmt->execute([
+            $data['sku'] ?? self::nextSku(),
             $data['name'],
             $data['image'] ?: null,
             $data['model_no'] ?: null,
@@ -340,7 +357,7 @@ class SelfProduct
     public static function allForSelect(): array
     {
         return Database::getInstance()->query(
-            "SELECT id, name, model_no, guide_price, total_cost, guide_margin_rate, min_margin_rate
+            "SELECT id, sku, name, model_no, guide_price, total_cost, guide_margin_rate, min_margin_rate
              FROM self_products WHERE status = 1
              ORDER BY name ASC"
         )->fetchAll();

@@ -127,9 +127,10 @@ require __DIR__ . '/includes/views/header.php';
                 </td>
                 <td class="px-4 py-3">
                     <a href="/self_product_edit.php?id=<?= $row['id'] ?>" class="font-medium text-blue-600 hover:underline"><?= h($row['name']) ?></a>
-                    <?php if ($row['model_no']): ?>
-                    <div class="text-xs text-slate-400 mt-0.5"><?= h($row['model_no']) ?></div>
-                    <?php endif; ?>
+                    <div class="text-xs text-slate-400 mt-0.5">
+                        <?php if (!empty($row['sku'])): ?><span class="mr-2"><?= h($row['sku']) ?></span><?php endif; ?>
+                        <?= h($row['model_no'] ?? '') ?>
+                    </div>
                 </td>
                 <?php if (canViewCost()): ?>
                 <td class="px-4 py-3 text-right text-sm font-medium tabular-nums">¥<?= number_format($totalCost, 2) ?></td>

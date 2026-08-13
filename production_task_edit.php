@@ -25,6 +25,7 @@ $allSelfProducts = class_exists('SelfProduct') ? SelfProduct::allForSelect() : [
 
 $prodJson = json_encode(array_map(fn($p) => [
     'id' => $p['id'],
+    'sku' => $p['sku'] ?? '',
     'label' => $p['sku'] . ' ' . $p['name'],
     'spec' => $p['spec'] ?? '',
     'price' => (float)($p['cost_price'] ?? 0),
@@ -32,6 +33,7 @@ $prodJson = json_encode(array_map(fn($p) => [
 ], $allProducts), JSON_UNESCAPED_UNICODE);
 $spJson = json_encode(array_map(fn($sp) => [
     'id' => $sp['id'],
+    'sku' => $sp['sku'] ?? '',
     'label' => $sp['name'],
     'price' => (float)($sp['total_cost'] ?? 0),
     'unit' => $sp['unit'] ?? '',
@@ -279,10 +281,10 @@ require __DIR__ . '/includes/views/header.php';
         <!-- 汇总视图 -->
         <div x-show="view==='summary'" class="overflow-x-auto">
             <table class="data-table text-sm w-full">
-                <thead><tr><th>物料</th><th>规格</th><th class="text-right">数量</th><th>单位</th><th class="text-right">单价</th><th class="text-right">金额</th><th>来源模块</th></tr></thead>
+                <thead><tr><th>SKU</th><th>物料</th><th>规格</th><th class="text-right">数量</th><th>单位</th><th class="text-right">单价</th><th class="text-right">金额</th><th>来源模块</th></tr></thead>
                 <tbody>
-                    <template x-for="r in summary" :key="r.k">
-                        <tr><td x-text="r.n"></td><td x-text="r.spec" class="text-slate-500"></td><td class="text-right" x-text="r.q"></td><td x-text="r.u"></td><td class="text-right" x-text="'¥'+fmt(r.p)"></td><td class="text-right font-medium" x-text="'¥'+fmt(r.t)"></td><td class="text-xs text-slate-400" x-text="r.srcs"></td></tr>
+                    <template x-for="r in summary" :key="r.key">
+                        <tr><td x-text="r.sku" class="text-slate-500"></td><td x-text="r.n"></td><td x-text="r.spec" class="text-slate-500"></td><td class="text-right" x-text="r.q"></td><td x-text="r.u"></td><td class="text-right" x-text="'¥'+fmt(r.p)"></td><td class="text-right font-medium" x-text="'¥'+fmt(r.t)"></td><td class="text-xs text-slate-400" x-text="r.srcs"></td></tr>
                     </template>
                 </tbody>
             </table>
@@ -406,23 +408,47 @@ document.addEventListener('alpine:init', () => {
 
             get summary() {
                 const m = {};
-                const add = (k, n, spec, u, q, p, src) => {
-                    if (!m[k]) m[k] = { k, n, spec, u, q: 0, p, t: 0, srcs: new Set };
-                    m[k].q = +(m[k].q + parseFloat(q)).toFixed(2);
-                    m[k].t = +(m[k].t + parseFloat(q) * parseFloat(p)).toFixed(2);
-                    m[k].srcs.add(src);
+                // add 用唯一 key 合并，同时记录排序字段 sortKey（自产=0/外采=1/临时=2）和 sku
+                const add = (key, n, sku, spec, u, q, p, src, sortKey) => {
+                    if (!m[key]) m[key] = { key, n, sku, spec, u, q: 0, p, t: 0, srcs: new Set, sortKey };
+                    m[key].q = +(m[key].q + parseFloat(q)).toFixed(2);
+                    m[key].t = +(m[key].t + parseFloat(q) * parseFloat(p)).toFixed(2);
+                    m[key].srcs.add(src);
                 };
                 this.modules.forEach(mod => {
                     (mod.items || []).forEach(it => {
-                        const nm = it.src === 'a' ? it.name : (it.pid ? (PL.find(x => String(x.id) == String(it.pid))?.label) : SL.find(x => String(x.id) == String(it.sid))?.label);
-                        add(nm || '?', nm || '?', it.spec, it.unit, it.qty || 0, it.price || 0, mod.name);
+                        let key, n, sku, sortKey;
+                        if (it.src === 'p' && it.pid) {
+                            const pl = PL.find(x => String(x.id) == String(it.pid));
+                            sku = pl?.sku || ''; n = pl?.label || ''; key = 'p' + it.pid; sortKey = 1;
+                        } else if (it.src === 's' && it.sid) {
+                            const sl = SL.find(x => String(x.id) == String(it.sid));
+                            sku = sl?.sku || ''; n = sl?.label || ''; key = 's' + it.sid; sortKey = 0;
+                        } else {
+                            sku = ''; n = it.name || '?'; key = 'a' + (it.name || ''); sortKey = 2;
+                        }
+                        add(key, n, sku, it.spec, it.unit, it.qty || 0, it.price || 0, mod.name, sortKey);
                         (it.subs || []).forEach(s => {
-                            const sn = s.src === 'a' ? s.name : (s.pid ? (PL.find(x => String(x.id) == String(s.pid))?.label) : SL.find(x => String(x.id) == String(s.sid))?.label);
-                            add(sn || '?', sn || '?', s.spec, s.unit, s.qty || 0, s.price || 0, mod.name);
+                            let sk2, n2, sku2, sortKey2;
+                            if (s.src === 'p' && s.pid) {
+                                const pl = PL.find(x => String(x.id) == String(s.pid));
+                                sku2 = pl?.sku || ''; n2 = pl?.label || ''; sk2 = 'p' + s.pid; sortKey2 = 1;
+                            } else if (s.src === 's' && s.sid) {
+                                const sl = SL.find(x => String(x.id) == String(s.sid));
+                                sku2 = sl?.sku || ''; n2 = sl?.label || ''; sk2 = 's' + s.sid; sortKey2 = 0;
+                            } else {
+                                sku2 = ''; n2 = s.name || '?'; sk2 = 'a' + (s.name || ''); sortKey2 = 2;
+                            }
+                            add(sk2, n2, sku2, s.spec, s.unit, s.qty || 0, s.price || 0, mod.name, sortKey2);
                         });
                     });
                 });
-                return Object.values(m).map(r => ({ ...r, srcs: [...r.srcs].join(', ') }));
+                return Object.values(m)
+                    .map(r => ({ ...r, srcs: [...r.srcs].join(', ') }))
+                    .sort((a, b) => {
+                        if (a.sortKey !== b.sortKey) return a.sortKey - b.sortKey;
+                        return (a.sku || '').localeCompare(b.sku || '');
+                    });
             },
             get summaryTotal() { return this.summary.reduce((t, r) => t + r.t, 0); },
             fmt(v) { return (parseFloat(v) || 0).toFixed(2); },

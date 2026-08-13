@@ -28,6 +28,7 @@ $allSelfProducts = class_exists('SelfProduct') ? SelfProduct::allForSelect() : [
 
 $prodJson = json_encode(array_map(fn($p) => [
     'id' => $p['id'],
+    'sku' => $p['sku'] ?? '',
     'label' => $p['sku'] . ' ' . $p['name'],
     'spec' => $p['spec'] ?? '',
     'price' => (float)($p['cost_price'] ?? 0),
@@ -35,6 +36,7 @@ $prodJson = json_encode(array_map(fn($p) => [
 ], $allProducts), JSON_UNESCAPED_UNICODE);
 $spJson = json_encode(array_map(fn($sp) => [
     'id' => $sp['id'],
+    'sku' => $sp['sku'] ?? '',
     'label' => $sp['name'],
     'price' => (float)($sp['total_cost'] ?? 0),
     'unit' => $sp['unit'] ?? '',
