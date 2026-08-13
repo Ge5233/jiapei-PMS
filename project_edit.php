@@ -307,7 +307,7 @@ document.addEventListener('alpine:init', () => {
                 qty: parseFloat(it.quantity) || 0, price: parseFloat(it.unit_price) || 0,
                 _prodOpen: false, _prodFilter: '', _prodShow: it.product_id ? (PL.find(x => x.id == it.product_id)?.label || '') : (it.item_name || ''),
                 _spOpen: false, _spFilter: '', _spShow: it.self_product_id ? (SL.find(x => x.id == it.self_product_id)?.label || '') : '',
-                _collapsed: false,
+                _collapsed: true,
                 subs: (it.subs || []).map(s => {
                     const ssrc = s.self_product_id ? 's' : (s.product_id ? 'p' : 'a');
                     return {
