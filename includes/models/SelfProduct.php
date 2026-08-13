@@ -165,8 +165,7 @@ class SelfProduct
             $data['cost_remark'] ?: null,
             $data['status'] ?? 1,
             $data['remark'] ?: null,
-            $id
-        ], $params);
+        ], $params, [$id]);
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
