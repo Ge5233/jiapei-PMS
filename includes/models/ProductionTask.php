@@ -60,13 +60,14 @@ class ProductionTask
     public static function generateFromProject(int $projectId, array $requirementMap = []): array
     {
         $db = Database::getInstance();
-        // 项目里的自产产品
+        // 遍历项目所有清单，找自产产品（主材或配件中 source_type='self_product'）
         $stmt = $db->prepare(
-            "SELECT pp.*, sp.name, sp.model_no, sp.spec, sp.unit
-             FROM project_products pp
-             JOIN self_products sp ON sp.id = pp.self_product_id
-             WHERE pp.project_id = ? AND pp.item_type = 'self_product'
-             ORDER BY pp.sort_order, pp.id"
+            "SELECT i.*, sp.name, sp.model_no, sp.spec, sp.unit
+             FROM project_list_items i
+             JOIN project_lists l ON l.id = i.list_id
+             JOIN self_products sp ON sp.id = i.self_product_id
+             WHERE l.project_id = ? AND i.source_type = 'self_product' AND i.parent_id IS NULL
+             ORDER BY l.sort_order, i.sort_order, i.id"
         );
         $stmt->execute([$projectId]);
         $selfProducts = $stmt->fetchAll();

@@ -1,6 +1,6 @@
 <?php
 /**
- * API: 项目保存（新增/编辑 + 项目产品）
+ * API: 项目保存（新增/编辑 + 多清单）
  */
 define('PMS_ENTRY', true);
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -28,36 +28,44 @@ try {
     $name = trim($_POST['name'] ?? '');
     if ($name === '') throw new \RuntimeException('项目名称不能为空');
 
-    if ($id > 0) {
-        Project::update($id, [
-            'name' => $name,
-            'customer_name' => $_POST['customer_name'] ?? null,
-            'status' => $_POST['status'] ?? 'active',
-            'remark' => $_POST['remark'] ?? null,
-        ]);
-        $actionLabel = '编辑';
-    } else {
-        $id = Project::create([
-            'name' => $name,
-            'customer_name' => $_POST['customer_name'] ?? null,
-            'status' => $_POST['status'] ?? 'active',
-            'remark' => $_POST['remark'] ?? null,
-            'created_by' => $_SESSION['user_id'] ?? null,
-        ]);
-        $actionLabel = '创建';
-    }
-
-    // 项目产品
-    $itemsJson = $_POST['items'] ?? '';
-    if ($itemsJson !== '') {
-        $items = json_decode($itemsJson, true);
-        if (is_array($items)) {
-            Project::saveProducts($id, $items);
+    $db = Database::getInstance();
+    $db->beginTransaction();
+    try {
+        if ($id > 0) {
+            Project::update($id, [
+                'name' => $name,
+                'customer_name' => $_POST['customer_name'] ?? null,
+                'status' => $_POST['status'] ?? 'active',
+                'remark' => $_POST['remark'] ?? null,
+            ]);
+            $actionLabel = '编辑';
+        } else {
+            $id = Project::create([
+                'name' => $name,
+                'customer_name' => $_POST['customer_name'] ?? null,
+                'status' => $_POST['status'] ?? 'active',
+                'remark' => $_POST['remark'] ?? null,
+                'created_by' => $_SESSION['user_id'] ?? null,
+            ]);
+            $actionLabel = '创建';
         }
-    }
 
-    logAction($id > 0 && $actionLabel === '编辑' ? 'update' : 'create', 'project', $id, "{$actionLabel}项目：{$name}");
-    jsonResponse(['ok' => true, 'id' => $id]);
+        // 多清单
+        $listsJson = $_POST['lists'] ?? '';
+        if ($listsJson !== '') {
+            $lists = json_decode($listsJson, true);
+            if (is_array($lists)) {
+                Project::saveLists($id, $lists);
+            }
+        }
+
+        $db->commit();
+        logAction($actionLabel === '编辑' ? 'update' : 'create', 'project', $id, "{$actionLabel}项目：{$name}");
+        jsonResponse(['ok' => true, 'id' => $id]);
+    } catch (\Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
 } catch (\Throwable $e) {
     jsonResponse(['ok' => false, 'message' => $e->getMessage()]);
 }
