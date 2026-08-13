@@ -131,6 +131,9 @@ require __DIR__ . '/includes/views/header.php';
                         <?php if (!empty($row['sku'])): ?><span class="mr-2"><?= h($row['sku']) ?></span><?php endif; ?>
                         <?= h($row['model_no'] ?? '') ?>
                     </div>
+                    <?php if (!empty($row['spec'])): ?>
+                    <div class="text-xs text-slate-500 mt-0.5">规格：<?= h($row['spec']) ?></div>
+                    <?php endif; ?>
                 </td>
                 <?php if (canViewCost()): ?>
                 <td class="px-4 py-3 text-right text-sm font-medium tabular-nums">¥<?= number_format($totalCost, 2) ?></td>
