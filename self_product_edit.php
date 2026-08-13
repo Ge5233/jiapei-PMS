@@ -304,7 +304,7 @@ require __DIR__ . '/includes/views/header.php';
         <!-- 模块视图 -->
         <div x-show="bomView==='module'">
             <template x-for="(mod, mi) in modules" :key="mi">
-                <div class="mb-3 border rounded">
+                <div class="mb-3 border rounded" style="overflow-x:auto">
                     <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
                         <button type="button" class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open" :title="mod._open===false?'展开':'折叠'">
                             <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
@@ -352,7 +352,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
                                         </template>
                                         <template x-if="it.pid">
-                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._prodOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._prodOpen=true">
                                                 <span x-text="it._prodShow"></span>
                                                 <span class="ss-tag-x" @click.stop="clearItem(it,'p')">&times;</span>
                                             </div>
@@ -376,7 +376,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    class="text-sm border rounded px-1 w-full bg-white" placeholder="输入关键词搜索..." autocomplete="off">
                                         </template>
                                         <template x-if="it.sid">
-                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._spOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._spOpen=true">
                                                 <span x-text="it._spShow"></span>
                                                 <span class="ss-tag-x" @click.stop="clearItem(it,'s')">&times;</span>
                                             </div>
@@ -420,7 +420,7 @@ require __DIR__ . '/includes/views/header.php';
                                                                class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                     </template>
                                                     <template x-if="s.pid">
-                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._prodOpen=true">
+                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._prodOpen=true">
                                                             <span x-text="s._prodShow"></span>
                                                             <span class="ss-tag-x" @click.stop="clearItem(s,'p')">&times;</span>
                                                         </div>
@@ -444,7 +444,7 @@ require __DIR__ . '/includes/views/header.php';
                                                                class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                     </template>
                                                     <template x-if="s.sid">
-                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._spOpen=true">
+                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._spOpen=true">
                                                             <span x-text="s._spShow"></span>
                                                             <span class="ss-tag-x" @click.stop="clearItem(s,'s')">&times;</span>
                                                         </div>

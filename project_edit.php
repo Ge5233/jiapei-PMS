@@ -162,7 +162,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    x-model="it._prodShow" class="text-sm border rounded px-1 w-full bg-white" placeholder="搜索..." autocomplete="off">
                                         </template>
                                         <template x-if="it.pid">
-                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._prodOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._prodOpen=true">
                                                 <span x-text="it._prodShow"></span>
                                                 <span class="ss-tag-x" @click.stop="clearItem(it,'p')">&times;</span>
                                             </div>
@@ -184,7 +184,7 @@ require __DIR__ . '/includes/views/header.php';
                                                    x-model="it._spShow" class="text-sm border rounded px-1 w-full bg-white" placeholder="搜索..." autocomplete="off">
                                         </template>
                                         <template x-if="it.sid">
-                                            <div class="ss-tag cursor-pointer min-w-[160px]" @click="it._spOpen=true">
+                                            <div class="ss-tag cursor-pointer min-w-0 truncate" @click="it._spOpen=true">
                                                 <span x-text="it._spShow"></span>
                                                 <span class="ss-tag-x" @click.stop="clearItem(it,'s')">&times;</span>
                                             </div>
@@ -222,7 +222,7 @@ require __DIR__ . '/includes/views/header.php';
                                                                x-model="s._prodShow" class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                     </template>
                                                     <template x-if="s.pid">
-                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._prodOpen=true">
+                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._prodOpen=true">
                                                             <span x-text="s._prodShow"></span>
                                                             <span class="ss-tag-x" @click.stop="clearItem(s,'p')">&times;</span>
                                                         </div>
@@ -243,7 +243,7 @@ require __DIR__ . '/includes/views/header.php';
                                                                x-model="s._spShow" class="text-xs border rounded px-1 w-full" placeholder="搜索..." autocomplete="off">
                                                     </template>
                                                     <template x-if="s.sid">
-                                                        <div class="ss-tag cursor-pointer min-w-[160px]" @click="s._spOpen=true">
+                                                        <div class="ss-tag cursor-pointer min-w-0 truncate" @click="s._spOpen=true">
                                                             <span x-text="s._spShow"></span>
                                                             <span class="ss-tag-x" @click.stop="clearItem(s,'s')">&times;</span>
                                                         </div>
