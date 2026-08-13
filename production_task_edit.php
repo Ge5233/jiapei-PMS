@@ -136,7 +136,15 @@ require __DIR__ . '/includes/views/header.php';
                         <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-3">还没有主材，点上方 +主材 添加</div>
                         <div class="grid grid-cols-[40px_56px_210px_160px_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-1.5 text-xs text-slate-400 border-b border-slate-100"
                              x-show="(mod.items||[]).length>0">
-                            <span>#</span><span>类型</span><span>物料名称</span><span>规格</span><span>单位</span><span>数量</span><span>单价</span><span>小计</span><span></span>
+                            <div class="flex items-center gap-1 min-w-[24px]">#</div>
+                            <span>类型</span>
+                            <span>物料名称</span>
+                            <span>规格</span>
+                            <span>单位</span>
+                            <span>数量</span>
+                            <span>单价</span>
+                            <span>小计</span>
+                            <div class="flex items-center gap-1.5 justify-end"></div>
                         </div>
                         <template x-for="(it, ii) in (mod.items||[])" :key="ii">
                             <div class="border-b border-slate-100">
