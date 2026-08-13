@@ -14,7 +14,7 @@ $items = [];
 
 if ($isEdit) {
     $quote = Quote::find($id);
-    if (!$quote) { setFlash('danger','报价单不存在'); header('Location: /quotes.php'); exit; }
+    if (!$quote) { flash('error', '报价单不存在'); header('Location: /quotes.php'); exit; }
     $items = Quote::getItems($id);
 }
 

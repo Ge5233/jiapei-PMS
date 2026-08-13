@@ -16,7 +16,7 @@ $bomItems = [];
 if ($isEdit) {
     $selfProduct = SelfProduct::find($id);
     if (!$selfProduct) {
-        setFlash('danger', '产品不存在');
+        flash('error', '产品不存在');
         header('Location: /self_products.php');
         exit;
     }
