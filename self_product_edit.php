@@ -777,6 +777,7 @@ document.addEventListener('alpine:init', () => {
                 reader.readAsDataURL(file);
             },
             removeImage() {
+                if (!confirm('确定删除主图吗？')) return;
                 this.imagePreview = null;
                 this.imageFile = null;
                 this.imageChanged = true;
