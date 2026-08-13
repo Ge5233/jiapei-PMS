@@ -436,8 +436,9 @@ require __DIR__ . '/includes/views/header.php';
                                         </td>
                                     </tr>
                                     <!-- 配件行 -->
-                                    <template x-for="(s, si) in (it.subs||[])" :key="si">
-                                        <tr x-show="!it._collapsed" class="border-b border-slate-100 align-top text-xs">
+                                    <template x-if="(it.subs||[]).length>0">
+                                        <template x-for="(s, si) in (it.subs||[])" :key="si">
+                                            <tr x-show="!it._collapsed" class="border-b border-slate-100 align-top text-xs">
                                                 <td class="py-1 pr-1 text-slate-400" x-text="ii+1+'.'+(si+1)"></td>
                                                 <td class="py-1 pr-1">
                                                     <select x-model="s.src" class="text-xs border rounded py-0.5 w-full" @change="srcChanged(s)">
@@ -511,6 +512,7 @@ require __DIR__ . '/includes/views/header.php';
                                                 </td>
                                             </tr>
                                         </template>
+                                    </template>
                                 </template>
                             </tbody>
                         </table>
