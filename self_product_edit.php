@@ -329,8 +329,8 @@ require __DIR__ . '/includes/views/header.php';
                             <div class="border-b border-slate-100">
                                 <!-- 主材行 -->
                                 <div style="border-left:4px solid #60a5fa;border-bottom:2px solid #cbd5e1" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-t border-slate-200 font-semibold text-slate-800">
-                                    <div class="flex items-center gap-1">
-                                        <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
+                                    <div class="flex items-center gap-1 min-w-[24px]">
+                                        <button type="button" class="text-xs text-slate-400 leading-none w-3" :class="(it.subs||[]).length>0 ? '' : 'invisible'">
                                             <span x-text="it._collapsed?'▶':'▼'"></span>
                                         </button>
                                         <span x-text="ii+1"></span>
@@ -577,7 +577,7 @@ document.addEventListener('alpine:init', () => {
                         _prodShow: it.product_id ? (PL.find(x => x.id == it.product_id)?.label || '') : (it.item_name || ''),
                         _spOpen: false, _spFilter: '',
                         _spShow: it.self_product_id ? (SL.find(x => x.id == it.self_product_id)?.label || '') : '',
-                        _collapsed: false,
+                        _collapsed: true,
                         subs: (it.subs || []).map(s => {
                             const ssrc = s.self_product_id ? 's' : (s.product_id ? 'p' : (s.item_name ? 'a' : 'a'));
                             return {
