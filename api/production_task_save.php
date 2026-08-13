@@ -35,12 +35,16 @@ try {
         }
     }
 
-    // 确认动作：confirm_requirement（项目负责人确认需求）/ confirm_production（产品经理确认生产）
+    // 确认动作
     $action = $_POST['confirm'] ?? '';
-    if ($action === 'confirm_requirement') {
-        ProductionTask::updateStatus($id, 'requirement_confirmed');
-    } elseif ($action === 'confirm_production') {
-        ProductionTask::updateStatus($id, 'confirmed');
+    $statusMap = [
+        'confirm_requirement' => 'requirement_confirmed', // 项目负责人确认需求
+        'confirm_production' => 'confirmed',              // 产品经理确认生产
+        'start_production' => 'in_production',            // 开始生产
+        'finish_production' => 'done',                    // 生产完成
+    ];
+    if (isset($statusMap[$action])) {
+        ProductionTask::updateStatus($id, $statusMap[$action]);
     }
 
     logAction('update', 'production_task', $id, '更新生产任务单 ' . $task['task_no']);

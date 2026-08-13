@@ -35,6 +35,8 @@ require __DIR__ . '/includes/views/header.php';
                 <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>待确认</option>
                 <option value="requirement_confirmed" <?= $status === 'requirement_confirmed' ? 'selected' : '' ?>>需求已确认</option>
                 <option value="confirmed" <?= $status === 'confirmed' ? 'selected' : '' ?>>已确认</option>
+                <option value="in_production" <?= $status === 'in_production' ? 'selected' : '' ?>>生产中</option>
+                <option value="done" <?= $status === 'done' ? 'selected' : '' ?>>生产完成</option>
             </select>
         </div>
         <div>
@@ -83,6 +85,8 @@ require __DIR__ . '/includes/views/header.php';
                         'pending' => ['待确认', 'bg-amber-50 text-amber-700'],
                         'requirement_confirmed' => ['需求已确认', 'bg-blue-50 text-blue-700'],
                         'confirmed' => ['已确认', 'bg-emerald-50 text-emerald-700'],
+                        'in_production' => ['生产中', 'bg-indigo-50 text-indigo-700'],
+                        'done' => ['生产完成', 'bg-slate-100 text-slate-600'],
                     ];
                     $st = $stMap[$t['status']] ?? $stMap['pending'];
                     ?>

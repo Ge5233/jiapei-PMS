@@ -303,6 +303,12 @@ require __DIR__ . '/includes/views/header.php';
             <button type="button" class="btn btn-success" x-show="form.status==='requirement_confirmed'" @click="confirmProduction">
                 <i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i>确认生产
             </button>
+            <button type="button" class="btn btn-success" x-show="form.status==='confirmed'" @click="startProduction">
+                <i data-lucide="play-circle" class="w-4 h-4 mr-1.5"></i>开始生产
+            </button>
+            <button type="button" class="btn btn-success" x-show="form.status==='in_production'" @click="finishProduction">
+                <i data-lucide="check-check" class="w-4 h-4 mr-1.5"></i>生产完成
+            </button>
         </div>
     </div>
     </form>
@@ -365,6 +371,8 @@ document.addEventListener('alpine:init', () => {
                     'pending': { text: '待确认', class: 'bg-amber-50 text-amber-700' },
                     'requirement_confirmed': { text: '需求已确认', class: 'bg-blue-50 text-blue-700' },
                     'confirmed': { text: '已确认', class: 'bg-emerald-50 text-emerald-700' },
+                    'in_production': { text: '生产中', class: 'bg-indigo-50 text-indigo-700' },
+                    'done': { text: '生产完成', class: 'bg-slate-100 text-slate-600' },
                 };
                 return map[this.form.status] || map.pending;
             },
@@ -494,6 +502,32 @@ document.addEventListener('alpine:init', () => {
                     if (data.ok) { alert('已确认生产'); location.reload(); }
                     else { alert(data.message || '确认失败'); this.submitted = false; }
                 } catch (e) { alert('确认失败：' + e.message); this.submitted = false; }
+            },
+            async startProduction() {
+                if (!confirm('开始生产？')) return;
+                await this.doConfirm('start_production', '已开始生产');
+            },
+            async finishProduction() {
+                if (!confirm('确认生产完成？')) return;
+                await this.doConfirm('finish_production', '生产完成');
+            },
+            async doConfirm(action, okMsg) {
+                this.submitted = true;
+                const fd = new FormData();
+                fd.append('id', init.id);
+                fd.append('requirement', this.form.requirement);
+                fd.append('bom', JSON.stringify(this.serializeBom()));
+                fd.append('confirm', action);
+                try {
+                    const resp = await fetch('/api/production_task_save.php', {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || '' },
+                        body: fd,
+                    });
+                    const data = await resp.json();
+                    if (data.ok) { alert(okMsg); location.reload(); }
+                    else { alert(data.message || '操作失败'); this.submitted = false; }
+                } catch (e) { alert('操作失败：' + e.message); this.submitted = false; }
             },
         };
         return comp;
