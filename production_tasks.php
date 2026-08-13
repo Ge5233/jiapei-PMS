@@ -50,6 +50,8 @@ require __DIR__ . '/includes/views/header.php';
     </form>
 </div>
 
+<input type="hidden" name="_csrf" value="<?= h(csrfToken()) ?>">
+
 <?php if (empty($tasks)): ?>
 <div class="card p-12 text-center">
     <i data-lucide="clipboard-check" class="w-12 h-12 mx-auto text-slate-300 mb-3"></i>
@@ -64,9 +66,11 @@ require __DIR__ . '/includes/views/header.php';
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">任务单号</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">项目</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">产品</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">规格</th>
                 <th class="text-right px-4 py-3 text-sm font-medium text-slate-600">数量</th>
                 <th class="text-center px-4 py-3 text-sm font-medium text-slate-600">状态</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-slate-600">更新时间</th>
+                <th class="text-center px-4 py-3 text-sm font-medium text-slate-600 w-16">操作</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -78,6 +82,7 @@ require __DIR__ . '/includes/views/header.php';
                     <?= h($t['product_name']) ?>
                     <?php if ($t['model_no']): ?><span class="text-xs text-slate-400 ml-1"><?= h($t['model_no']) ?></span><?php endif; ?>
                 </td>
+                <td class="px-4 py-3 text-sm text-slate-600"><?= h($t['spec'] ?: '—') ?></td>
                 <td class="px-4 py-3 text-right text-sm tabular-nums"><?= rtrim(rtrim(number_format($t['quantity'], 4), '0'), '.') ?> <?= h($t['unit']) ?></td>
                 <td class="px-4 py-3 text-center">
                     <?php
@@ -93,11 +98,36 @@ require __DIR__ . '/includes/views/header.php';
                     <span class="inline-block px-2 py-0.5 text-xs rounded <?= $st[1] ?>"><?= $st[0] ?></span>
                 </td>
                 <td class="px-4 py-3 text-sm text-slate-500"><?= h($t['updated_at']) ?></td>
+                <td class="px-4 py-3 text-center">
+                    <button type="button" class="text-red-400 hover:text-red-600" onclick="event.stopPropagation(); deleteTask(<?= $t['id'] ?>, '<?= h(addslashes($t['task_no'])) ?>')" title="删除">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 <?php endif; ?>
+
+<script>
+async function deleteTask(id, no) {
+    if (!confirm('确定删除任务单"' + no + '"吗？此操作不可恢复！')) return;
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('_csrf', document.querySelector('input[name="_csrf"]')?.value || '');
+    try {
+        const resp = await fetch('/api/production_task_delete.php', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.ok) {
+            location.reload();
+        } else {
+            alert(data.message || '删除失败');
+        }
+    } catch (e) {
+        alert('网络错误，请重试');
+    }
+}
+</script>
 
 <?php require __DIR__ . '/includes/views/footer.php'; ?>
