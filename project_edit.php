@@ -84,7 +84,7 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <!-- 清单 Tab -->
-    <div class="card p-6 mb-4">
+    <div class="card p-6 mb-4" style="overflow-x:auto">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <div class="flex items-center gap-1 flex-wrap">
                 <template x-for="(list, li) in lists" :key="li">

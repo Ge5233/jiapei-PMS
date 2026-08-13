@@ -288,7 +288,7 @@ require __DIR__ . '/includes/views/header.php';
     </div>
 
     <!-- BOM 物料清单 Tab — v4.6 模块层级 -->
-    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow:visible;min-height:360px">
+    <div x-show="tab==='bom'" class="card p-6 mb-4" style="overflow-x:auto;min-height:360px">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
