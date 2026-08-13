@@ -324,17 +324,17 @@ require __DIR__ . '/includes/views/header.php';
                     </div>
                     <div x-show="mod._open!==false">
                         <div x-show="!(mod.items||[]).length" class="text-center text-xs text-slate-400 py-8">还没有主材，点上方 +主材 添加</div>
-                        <table class="w-full border-collapse" x-show="(mod.items||[]).length>0">
+                        <table class="w-full border-collapse table-fixed bom-table" x-show="(mod.items||[]).length>0">
                             <colgroup>
-                                <col style="width:36px">
-                                <col style="width:64px">
-                                <col>
-                                <col style="width:24%">
-                                <col style="width:56px">
-                                <col style="width:76px">
-                                <col style="width:88px">
-                                <col style="width:88px">
-                                <col style="width:88px">
+                                <col style="width:7%">
+                                <col style="width:7%">
+                                <col style="width:28%">
+                                <col style="width:18%">
+                                <col style="width:5%">
+                                <col style="width:9%">
+                                <col style="width:9%">
+                                <col style="width:9%">
+                                <col style="width:8%">
                             </colgroup>
                             <thead>
                                 <tr class="text-xs text-slate-400 border-b border-slate-100">
@@ -352,10 +352,10 @@ require __DIR__ . '/includes/views/header.php';
                             <tbody>
                                 <template x-for="(it, ii) in (mod.items||[])" :key="ii">
                                     <!-- 主材行 -->
-                                    <tr class="border-b-2 border-slate-200 align-top text-sm font-semibold text-slate-800" style="background:linear-gradient(90deg,#eff6ff 0,#eff6ff 4px,#fff 4px)">
-                                        <td class="py-2 pr-1">
+                                    <tr class="border-b-2 border-slate-200 align-top text-sm font-semibold text-slate-800 bg-white">
+                                        <td class="py-2 pr-1 border-l-4 border-blue-400" style="border-left-color:#60a5fa">
                                             <div class="flex items-center gap-1">
-                                                <button type="button" class="text-xs text-slate-400 leading-none w-3" :class="(it.subs||[]).length>0 ? '' : 'invisible'" @click="it._collapsed=!it._collapsed">
+                                                <button type="button" class="px-1 py-0.5 text-xs text-slate-400 rounded hover:bg-slate-100" :class="(it.subs||[]).length>0 ? '' : 'invisible'" @click="it._collapsed=!it._collapsed">
                                                     <span x-text="it._collapsed?'▶':'▼'"></span>
                                                 </button>
                                                 <span x-text="ii+1"></span>

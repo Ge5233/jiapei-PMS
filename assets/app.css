@@ -315,3 +315,17 @@
     font-size: 0.875rem;
     line-height: 2rem;
 }
+
+/* BOM 物料表格（table-fixed 时输入框不可撑破列宽） */
+.bom-table td {
+    overflow: hidden;
+}
+.bom-table input,
+.bom-table select,
+.bom-table .ss-tag {
+    min-width: 0;
+    max-width: 100%;
+}
+.bom-table .ss-tag span {
+    min-width: 0;
+}
