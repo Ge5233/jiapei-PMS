@@ -505,7 +505,7 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex gap-3">
             <a href="/self_products.php" class="btn btn-secondary">返回</a>
             <?php if (canViewCost()): ?>
-            <button type="button" class="btn btn-primary" id="btnSaveSp" @click="save">
+            <button type="button" class="btn btn-primary" id="btnSaveSp" @click="save" onclick="window.__saving=true">
                 <i data-lucide="save" class="w-4 h-4 mr-1.5"></i>
                 <span x-text="isEdit ? '保存修改' : '创建产品'"></span>
             </button>
@@ -550,7 +550,7 @@ require __DIR__ . '/includes/views/header.php';
         dlg.addEventListener('click', function(ev) { if (ev.target === dlg) dlg.remove(); });
     }, true);
     window.addEventListener('beforeunload', function(e) {
-        if (dirty && !saving) { e.preventDefault(); e.returnValue = ''; }
+        if (dirty && !saving && !window.__saving) { e.preventDefault(); e.returnValue = ''; }
     });
 })();
 
