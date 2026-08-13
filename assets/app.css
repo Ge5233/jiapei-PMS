@@ -318,7 +318,7 @@
 
 /* BOM 物料表格（table-fixed 时输入框不可撑破列宽） */
 .bom-table td {
-    overflow: hidden;
+    vertical-align: top;
 }
 .bom-table input,
 .bom-table select,
