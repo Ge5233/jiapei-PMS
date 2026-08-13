@@ -118,7 +118,7 @@ require __DIR__ . '/includes/views/header.php';
             <template x-for="(mod, mi) in (lists[activeList].modules || [])" :key="mi">
                 <div class="mb-3 border rounded">
                     <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b">
-                        <button class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open">
+                        <button type="button" class="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded" @click="mod._open=!mod._open">
                             <span x-text="mod._open===false?'▶':'▼'" class="text-xs leading-none"></span>
                         </button>
                         <input x-model="mod.name" class="font-medium text-sm bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none" style="min-width:80px;max-width:200px" placeholder="模块名称">
@@ -127,10 +127,10 @@ require __DIR__ . '/includes/views/header.php';
                             <span x-show="moduleSubSum(activeList,mi)>0" class="text-xs text-slate-500">配件 <span class="font-medium text-slate-700" x-text="'¥'+fmt(moduleSubSum(activeList,mi))"></span></span>
                             <span class="font-medium text-sm text-slate-800" x-text="'¥'+fmt(moduleSum(activeList,mi))"></span>
                             <div class="flex items-center gap-1.5 border-l border-slate-200 pl-4">
-                                <button class="text-blue-500 text-xs" @click.stop="addItem(activeList,mi)">+主材</button>
-                                <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(activeList,mi,-1)">↑</button>
-                                <button class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(activeList,mi,1)">↓</button>
-                                <button class="text-xs text-red-400" @click.stop="confirm('确认删除该模块？') && lists[activeList].modules.splice(mi,1)">×</button>
+                                <button type="button" class="text-blue-500 text-xs" @click.stop="addItem(activeList,mi)">+主材</button>
+                                <button type="button" class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(activeList,mi,-1)">↑</button>
+                                <button type="button" class="text-xs text-slate-400 hover:text-slate-600" @click.stop="moveMod(activeList,mi,1)">↓</button>
+                                <button type="button" class="text-xs text-red-400" @click.stop="confirm('确认删除该模块？') && lists[activeList].modules.splice(mi,1)">×</button>
                             </div>
                         </div>
                     </div>
@@ -144,7 +144,7 @@ require __DIR__ . '/includes/views/header.php';
                             <div class="border-b border-slate-100">
                                 <div style="border-left:4px solid #60a5fa;border-bottom:2px solid #cbd5e1" class="grid grid-cols-[40px_56px_260px_1fr_56px_72px_96px_100px_80px] items-center gap-1 px-3 py-2 text-sm border-t border-slate-200 font-semibold text-slate-800">
                                     <div class="flex items-center gap-1">
-                                        <button class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
+                                        <button type="button" class="text-xs text-slate-400 leading-none" @click="it._collapsed=!it._collapsed" x-show="(it.subs||[]).length>0">
                                             <span x-text="it._collapsed?'▶':'▼'"></span>
                                         </button>
                                         <span x-text="ii+1"></span>
@@ -201,8 +201,8 @@ require __DIR__ . '/includes/views/header.php';
                                     <input x-model="it.price" :readonly="it.src!=='a'" class="text-sm border rounded px-1 w-full text-right bg-white" placeholder="单价">
                                     <span class="text-right text-xs tabular-nums" x-text="'¥'+fmt(it.qty*it.price)"></span>
                                     <div class="flex items-center gap-1.5 justify-end">
-                                        <button class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)">+配件</button>
-                                        <button class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)">×</button>
+                                        <button type="button" class="text-xs text-blue-400 whitespace-nowrap" @click="addSub(it)">+配件</button>
+                                        <button type="button" class="text-xs text-red-400" @click="confirm('确认删除该行？') && mod.items.splice(ii,1)">×</button>
                                     </div>
                                 </div>
                                 <template x-if="(it.subs||[]).length>0">
@@ -259,7 +259,7 @@ require __DIR__ . '/includes/views/header.php';
                                                 <input x-model="s.price" :readonly="s.src!=='a'" class="text-xs border rounded px-1 w-full text-right">
                                                 <span class="text-right tabular-nums" x-text="'¥'+fmt(s.qty*s.price)"></span>
                                                 <div class="flex justify-end">
-                                                    <button class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)">×</button>
+                                                    <button type="button" class="text-xs text-red-400" @click="confirm('确认删除该配件？') && it.subs.splice(si,1)">×</button>
                                                 </div>
                                             </div>
                                         </template>
@@ -271,7 +271,7 @@ require __DIR__ . '/includes/views/header.php';
                 </div>
             </template>
 
-            <button class="btn btn-secondary text-sm w-full mt-2" @click="addMod(activeList)">+ 添加模块</button>
+            <button type="button" class="btn btn-secondary text-sm w-full mt-2" @click="addMod(activeList)">+ 添加模块</button>
 
             <!-- 当前清单合计 -->
             <div x-show="(lists[activeList].modules||[]).length>0" class="text-right font-medium text-sm mt-3 pr-2">
