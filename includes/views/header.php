@@ -86,6 +86,11 @@ $bodyClass = $bodyClass ?? '';
                             <i data-lucide="folder" class="w-4 h-4 mr-2"></i>项目管理
                         </a>
                     </li>
+                    <li>
+                        <a href="/production_tasks.php" class="nav-link <?= $activeMenu === 'production_tasks' ? 'active' : '' ?>">
+                            <i data-lucide="clipboard-check" class="w-4 h-4 mr-2"></i>生产任务
+                        </a>
+                    </li>
                     <?php endif; ?>
                 </ul>
             </div>
