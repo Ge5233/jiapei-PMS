@@ -58,13 +58,6 @@ $bodyClass = $bodyClass ?? '';
                     </li>
                     <?php if (canViewCost()): ?>
                     <li>
-                        <a href="/systems.php" class="nav-link <?= $activeMenu === 'systems' ? 'active' : '' ?>">
-                            <i data-lucide="cpu" class="w-4 h-4 mr-2"></i>大型系统
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                    <?php if (canViewCost()): ?>
-                    <li>
                         <a href="/categories.php" class="nav-link <?= $activeMenu === 'categories' ? 'active' : '' ?>">
                             <i data-lucide="folder-tree" class="w-4 h-4 mr-2"></i>分类管理
                         </a>
