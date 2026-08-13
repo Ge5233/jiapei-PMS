@@ -35,8 +35,11 @@ try {
         }
     }
 
-    // 确认
-    if (($_POST['confirm'] ?? '') === '1') {
+    // 确认动作：confirm_requirement（项目负责人确认需求）/ confirm_production（产品经理确认生产）
+    $action = $_POST['confirm'] ?? '';
+    if ($action === 'confirm_requirement') {
+        ProductionTask::updateStatus($id, 'requirement_confirmed');
+    } elseif ($action === 'confirm_production') {
         ProductionTask::updateStatus($id, 'confirmed');
     }
 

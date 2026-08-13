@@ -33,6 +33,7 @@ require __DIR__ . '/includes/views/header.php';
             <select name="status" class="form-select">
                 <option value="">全部</option>
                 <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>待确认</option>
+                <option value="requirement_confirmed" <?= $status === 'requirement_confirmed' ? 'selected' : '' ?>>需求已确认</option>
                 <option value="confirmed" <?= $status === 'confirmed' ? 'selected' : '' ?>>已确认</option>
             </select>
         </div>
@@ -77,9 +78,15 @@ require __DIR__ . '/includes/views/header.php';
                 </td>
                 <td class="px-4 py-3 text-right text-sm tabular-nums"><?= rtrim(rtrim(number_format($t['quantity'], 4), '0'), '.') ?> <?= h($t['unit']) ?></td>
                 <td class="px-4 py-3 text-center">
-                    <span class="inline-block px-2 py-0.5 text-xs rounded <?= $t['status'] === 'confirmed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' ?>">
-                        <?= $t['status'] === 'confirmed' ? '已确认' : '待确认' ?>
-                    </span>
+                    <?php
+                    $stMap = [
+                        'pending' => ['待确认', 'bg-amber-50 text-amber-700'],
+                        'requirement_confirmed' => ['需求已确认', 'bg-blue-50 text-blue-700'],
+                        'confirmed' => ['已确认', 'bg-emerald-50 text-emerald-700'],
+                    ];
+                    $st = $stMap[$t['status']] ?? $stMap['pending'];
+                    ?>
+                    <span class="inline-block px-2 py-0.5 text-xs rounded <?= $st[1] ?>"><?= $st[0] ?></span>
                 </td>
                 <td class="px-4 py-3 text-sm text-slate-500"><?= h($t['updated_at']) ?></td>
             </tr>

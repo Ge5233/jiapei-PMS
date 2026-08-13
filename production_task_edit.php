@@ -66,8 +66,8 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">产品信息</h3>
             <span class="inline-block px-2 py-0.5 text-xs rounded"
-                  :class="form.status==='confirmed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
-                  x-text="form.status==='confirmed' ? '已确认' : '待确认'"></span>
+                  :class="statusBadge.class"
+                  x-text="statusBadge.text"></span>
         </div>
         <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
@@ -297,8 +297,11 @@ require __DIR__ . '/includes/views/header.php';
             <button type="button" class="btn btn-primary" id="btnSaveTask" @click="save">
                 <i data-lucide="save" class="w-4 h-4 mr-1.5"></i>保存
             </button>
-            <button type="button" class="btn btn-success" x-show="form.status==='pending'" @click="confirmTask">
-                <i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i>确认任务
+            <button type="button" class="btn btn-success" x-show="form.status==='pending'" @click="confirmRequirement">
+                <i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i>确认需求
+            </button>
+            <button type="button" class="btn btn-success" x-show="form.status==='requirement_confirmed'" @click="confirmProduction">
+                <i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i>确认生产
             </button>
         </div>
     </div>
@@ -356,6 +359,15 @@ document.addEventListener('alpine:init', () => {
             },
             modules: normModules(init.modules || []),
             submitted: false,
+
+            get statusBadge() {
+                const map = {
+                    'pending': { text: '待确认', class: 'bg-amber-50 text-amber-700' },
+                    'requirement_confirmed': { text: '需求已确认', class: 'bg-blue-50 text-blue-700' },
+                    'confirmed': { text: '已确认', class: 'bg-emerald-50 text-emerald-700' },
+                };
+                return map[this.form.status] || map.pending;
+            },
 
             addMod() { this.modules.push({ name: '', _open: true, items: [] }); },
             moveMod(i, d) { const t = i + d; if (t < 0 || t >= this.modules.length) return; [this.modules[i], this.modules[t]] = [this.modules[t], this.modules[i]]; },
@@ -445,14 +457,14 @@ document.addEventListener('alpine:init', () => {
                     else { alert(data.message || '保存失败'); this.submitted = false; }
                 } catch (e) { alert('保存失败：' + e.message); this.submitted = false; }
             },
-            async confirmTask() {
-                if (!confirm('确认此任务？确认后车间将按此 BOM 生产。')) return;
+            async confirmRequirement() {
+                if (!confirm('确认需求？确认后任务将交给产品经理调整 BOM。')) return;
                 this.submitted = true;
                 const fd = new FormData();
                 fd.append('id', init.id);
                 fd.append('requirement', this.form.requirement);
                 fd.append('bom', JSON.stringify(this.serializeBom()));
-                fd.append('confirm', '1');
+                fd.append('confirm', 'confirm_requirement');
                 try {
                     const resp = await fetch('/api/production_task_save.php', {
                         method: 'POST',
@@ -460,7 +472,26 @@ document.addEventListener('alpine:init', () => {
                         body: fd,
                     });
                     const data = await resp.json();
-                    if (data.ok) { alert('已确认'); location.reload(); }
+                    if (data.ok) { alert('需求已确认'); location.reload(); }
+                    else { alert(data.message || '确认失败'); this.submitted = false; }
+                } catch (e) { alert('确认失败：' + e.message); this.submitted = false; }
+            },
+            async confirmProduction() {
+                if (!confirm('确认生产？确认后车间将按此 BOM 生产。')) return;
+                this.submitted = true;
+                const fd = new FormData();
+                fd.append('id', init.id);
+                fd.append('requirement', this.form.requirement);
+                fd.append('bom', JSON.stringify(this.serializeBom()));
+                fd.append('confirm', 'confirm_production');
+                try {
+                    const resp = await fetch('/api/production_task_save.php', {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-Token': document.querySelector('input[name="_csrf"]')?.value || '' },
+                        body: fd,
+                    });
+                    const data = await resp.json();
+                    if (data.ok) { alert('已确认生产'); location.reload(); }
                     else { alert(data.message || '确认失败'); this.submitted = false; }
                 } catch (e) { alert('确认失败：' + e.message); this.submitted = false; }
             },
