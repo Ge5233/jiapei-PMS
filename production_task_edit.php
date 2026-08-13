@@ -104,8 +104,8 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
-                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='module' }" @click="view='module'">按模块</button>
-                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='summary' }" @click="view='summary'">物料汇总</button>
+                <button type="button" class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='module' }" @click="view='module'">按模块</button>
+                <button type="button" class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': view==='summary' }" @click="view='summary'">物料汇总</button>
             </div>
         </div>
 

@@ -288,8 +288,8 @@ require __DIR__ . '/includes/views/header.php';
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
             <h3 class="text-base font-medium text-slate-800">BOM 物料清单</h3>
             <div class="flex gap-2 items-center">
-                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='module' }" @click="bomView='module'">按模块</button>
-                <button class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='summary' }" @click="bomView='summary'">物料汇总</button>
+                <button type="button" class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='module' }" @click="bomView='module'">按模块</button>
+                <button type="button" class="btn btn-secondary text-sm" :class="{ 'ring-2 ring-blue-300': bomView==='summary' }" @click="bomView='summary'">物料汇总</button>
                 <?php if ($isEdit): ?>
                 <a :href="'/export_bom.php?self_product_id='+initId+'&type=module'" class="btn btn-secondary text-sm" style="text-decoration:none">导出-模块</a>
                 <a :href="'/export_bom.php?self_product_id='+initId+'&type=summary'" class="btn btn-secondary text-sm" style="text-decoration:none">导出-汇总</a>
@@ -477,7 +477,7 @@ require __DIR__ . '/includes/views/header.php';
                 <span class="text-xs text-slate-500 mr-2" x-show="totalSubs>0">配件 <span x-text="'¥'+fmt(totalSubs)"></span></span>
                 <span class="text-blue-600 text-lg" x-text="'¥'+fmt(totalAll)"></span>
             </div>
-            <button class="btn btn-secondary text-sm w-full mt-2" @click="addMod">+ 添加模块</button>
+            <button type="button" class="btn btn-secondary text-sm w-full mt-2" @click="addMod">+ 添加模块</button>
         </div>
 
         <!-- 汇总视图 -->
